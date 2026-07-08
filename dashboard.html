@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<!--
+  Shell (topnav + sidebar) ini sama persis di semua halaman guru.
+  Untuk sekarang (Phase 5 prototype) ditulis manual per halaman.
+  Phase 6-7 bisa direfaktor jadi 1 partial yang di-inject lewat JS
+  kalau mau, tapi duplikasi ini masih wajar untuk vanilla JS tanpa build step.
+-->
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <svg class="icon" style="color:var(--color-ink-muted)"><use href="assets/icons/icons.svg#icon-user"/></svg>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-primary" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <div>
+      <h1 id="greeting">Selamat pagi, Fita 👋</h1>
+      <p class="text-muted" id="todayDate">Rabu, 8 Juli 2026</p>
+    </div>
+
+    <div class="grid-cards">
+      <div class="card card-stat" id="statJadwal">
+        <div class="stat-value">–</div>
+        <div class="stat-label">Jadwal Hari Ini</div>
+      </div>
+      <div class="card card-stat" id="statTugas">
+        <div class="stat-value">–</div>
+        <div class="stat-label">Tugas Mendekati Deadline</div>
+      </div>
+      <div class="card card-stat" id="statDraft">
+        <div class="stat-value">–</div>
+        <div class="stat-label">RPP Masih Draft</div>
+      </div>
+      <div class="card card-interactive stack" style="align-items:center; text-align:center;">
+        <div id="ringKelengkapan"></div>
+        <div class="stat-label">Kelengkapan Administrasi</div>
+      </div>
+    </div>
+
+    <div class="grid-cards" style="grid-template-columns: 1.5fr 1fr;">
+
+      <section class="card">
+        <h3>Jadwal Hari Ini</h3>
+        <div class="stack gap-3" id="scheduleList">
+          <!-- Data dummy — diganti query ke `calendar_events` di Phase 6 -->
+          <div class="row gap-3" style="justify-content:space-between;">
+            <div class="row gap-3">
+              <svg class="icon" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-clock"/></svg>
+              <div>
+                <strong>IPA — Kelas 8B</strong>
+                <div class="text-sm text-muted">Sistem Pencernaan Manusia</div>
+              </div>
+            </div>
+            <span class="badge badge-info">07.00</span>
+          </div>
+          <div class="row gap-3" style="justify-content:space-between;">
+            <div class="row gap-3">
+              <svg class="icon" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-clock"/></svg>
+              <div>
+                <strong>Prakarya — Kelas 7A</strong>
+                <div class="text-sm text-muted">Kerajinan Bahan Limbah</div>
+              </div>
+            </div>
+            <span class="badge badge-info">09.15</span>
+          </div>
+          <div class="row gap-3" style="justify-content:space-between;">
+            <div class="row gap-3">
+              <svg class="icon" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-clock"/></svg>
+              <div>
+                <strong>IPA — Kelas 7G</strong>
+                <div class="text-sm text-muted">Ekosistem</div>
+              </div>
+            </div>
+            <span class="badge badge-info">11.00</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Tugas Mendatang</h3>
+        <div class="stack gap-3" id="taskList">
+          <!-- Data dummy — diganti query ke `tasks` di Phase 6 -->
+          <div class="row gap-2" style="justify-content:space-between;">
+            <span class="text-sm">Input nilai ASAT 8B</span>
+            <span class="badge badge-danger">Tinggi</span>
+          </div>
+          <div class="row gap-2" style="justify-content:space-between;">
+            <span class="text-sm">Siapkan soal remedial 7A</span>
+            <span class="badge badge-warning">Sedang</span>
+          </div>
+          <div class="row gap-2" style="justify-content:space-between;">
+            <span class="text-sm">Update Prota semester 2</span>
+            <span class="badge badge-info">Rendah</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <section class="card">
+      <h3>Lesson Plan Terbaru</h3>
+      <div class="stack gap-3" id="recentLessonPlans">
+        <!-- Data dummy — diganti query ke `lesson_plans` di Phase 6 -->
+        <div class="row gap-3" style="justify-content:space-between;">
+          <span>Ekosistem — IPA Kelas 7G</span>
+          <span class="badge badge-warning">Draft</span>
+        </div>
+        <div class="row gap-3" style="justify-content:space-between;">
+          <span>Kerajinan Bahan Limbah — Prakarya Kelas 7A</span>
+          <span class="badge badge-success">Final</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson Planner — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <svg class="icon" style="color:var(--color-ink-muted)"><use href="assets/icons/icons.svg#icon-user"/></svg>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-primary" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <div class="row gap-3" style="justify-content:space-between;">
+      <h1>Lesson Planner</h1>
+      <button class="btn btn-primary" id="btnNewPlan">
+        <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> RPP Baru
+      </button>
+    </div>
+
+    <!-- Filter -->
+    <div class="card row gap-3" style="flex-wrap:wrap;">
+      <select class="input" id="filterKelas" style="max-width:180px;">
+        <option value="">Semua Kelas</option>
+      </select>
+      <select class="input" id="filterMapel" style="max-width:180px;">
+        <option value="">Semua Mapel</option>
+        <option>IPA</option>
+        <option>Prakarya</option>
+      </select>
+      <input class="input" type="search" id="filterSearch" placeholder="Cari topik..." style="flex:1; min-width:200px;">
+    </div>
+
+    <!-- Form tambah/edit RPP — tersembunyi sampai tombol "RPP Baru" / "Edit" diklik -->
+    <section class="card" id="formPanel" style="display:none;">
+      <h3 id="formTitle">RPP Baru</h3>
+      <form class="stack gap-4" id="lessonPlanForm">
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="fKelas">Kelas</label>
+            <select class="input" id="fKelas" required>
+            </select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="fMapel">Mata Pelajaran</label>
+            <select class="input" id="fMapel" required>
+              <option>IPA</option>
+              <option>Prakarya</option>
+            </select>
+          </div>
+          <div class="stack gap-1" style="flex:2; min-width:200px;">
+            <label class="text-sm text-muted" for="fTopik">Topik</label>
+            <input class="input" id="fTopik" type="text" placeholder="Misal: Ekosistem" required>
+          </div>
+        </div>
+
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="fTujuan">Tujuan Pembelajaran</label>
+          <textarea class="input" id="fTujuan" rows="2"></textarea>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="fMateri">Materi</label>
+          <textarea class="input" id="fMateri" rows="2"></textarea>
+        </div>
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="fMetode">Metode</label>
+            <input class="input" id="fMetode" type="text">
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="fMedia">Media</label>
+            <input class="input" id="fMedia" type="text">
+          </div>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="fAsesmen">Asesmen</label>
+          <textarea class="input" id="fAsesmen" rows="2"></textarea>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="fCatatan">Catatan</label>
+          <textarea class="input" id="fCatatan" rows="2"></textarea>
+        </div>
+
+        <div class="row gap-4" style="justify-content:space-between;">
+          <div class="stack gap-1" style="max-width:200px;">
+            <label class="text-sm text-muted" for="fStatus">Status</label>
+            <select class="input" id="fStatus">
+              <option value="draft">Draft</option>
+              <option value="final">Final</option>
+            </select>
+          </div>
+          <div class="row gap-2">
+            <button type="button" class="btn btn-secondary" id="btnCancelForm">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- List RPP -->
+    <div class="stack gap-3" id="lessonPlanList">
+      <!-- Data dummy — diganti query tabel `lesson_plans` di Phase 6 -->
+    </div>
+
+  </main>
+</div>
+
+<script type="module" src="js/lesson-planner.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+<style>
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .login-card { width:100%; max-width:380px; }
+</style>
+</head>
+<body>
+
+<div class="card login-card stack gap-4">
+  <div class="row gap-3" style="justify-content:center;">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+
+  <div class="stack gap-1">
+    <label class="text-sm text-muted" for="email">Email</label>
+    <input class="input" type="email" id="email" autocomplete="username" required>
+  </div>
+  <div class="stack gap-1">
+    <label class="text-sm text-muted" for="password">Password</label>
+    <input class="input" type="password" id="password" autocomplete="current-password" required>
+  </div>
+
+  <p class="text-sm" style="color:var(--color-danger); display:none;" id="errorMsg"></p>
+
+  <button class="btn btn-primary" id="btnLogin" style="width:100%;">Masuk</button>
+  <button class="btn btn-ghost" id="btnSignup" style="width:100%;">Belum punya akun? Daftar</button>
+</div>
+
+<script type="module" src="js/login.js"></script>
+</body>
+</html>
