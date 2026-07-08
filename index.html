@@ -1,1 +1,27 @@
-<!-- index.html -- entry point, redirect ke login/dashboard. Konten dibuat di Phase 5 -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<style>
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+</style>
+</head>
+<body>
+
+<p class="text-muted">Memuat...</p>
+
+<script type="module">
+  import { supabase } from './js/config/supabase.js';
+
+  const { data: { session } } = await supabase.auth.getSession();
+  window.location.replace(session ? 'dashboard.html' : 'login.html');
+</script>
+
+</body>
+</html>
