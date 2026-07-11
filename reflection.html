@@ -1,1 +1,187 @@
-<!-- reflection.html -- konten dibuat di Phase 5 (Prototype HTML/CSS) -->
+<!-- reflection.html -- Refleksi Pembelajaran -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Refleksi — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-primary" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <div class="row gap-3" style="justify-content:space-between;">
+      <h1>Refleksi Pembelajaran</h1>
+      <button class="btn btn-primary" id="btnNewReflection">
+        <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi Baru
+      </button>
+    </div>
+
+    <!-- Filter -->
+    <div class="card row gap-3" style="flex-wrap:wrap;">
+      <select class="input" id="filterKelas" style="max-width:180px;">
+        <option value="">Semua Kelas</option>
+      </select>
+      <select class="input" id="filterMapel" style="max-width:180px;">
+        <option value="">Semua Mapel</option>
+        <option>IPA</option>
+        <option>Prakarya</option>
+      </select>
+      <select class="input" id="filterTanggal" style="max-width:180px;">
+        <option value="">Semua Periode</option>
+        <option value="today">Hari Ini</option>
+        <option value="week">Minggu Ini</option>
+        <option value="month">Bulan Ini</option>
+      </select>
+    </div>
+
+    <!-- Form tambah refleksi -->
+    <section class="card" id="reflectionFormPanel" style="display:none;">
+      <h3 id="reflectionFormTitle">Refleksi Baru</h3>
+      <form class="stack gap-4" id="reflectionForm">
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="rKelas">Kelas</label>
+            <select class="input" id="rKelas" required></select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="rMapel">Mapel</label>
+            <select class="input" id="rMapel" required>
+              <option>IPA</option>
+              <option>Prakarya</option>
+            </select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="rTopik">Topik</label>
+            <input class="input" id="rTopik" type="text" placeholder="Misal: Ekosistem" required>
+          </div>
+        </div>
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="rTanggal">Tanggal</label>
+            <input class="input" id="rTanggal" type="date" required>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="rRating">Rating</label>
+            <select class="input" id="rRating">
+              <option value="5">⭐ Sangat Baik</option>
+              <option value="4">⭐ Baik</option>
+              <option value="3">⭐ Cukup</option>
+              <option value="2">⭐ Kurang</option>
+              <option value="1">⭐ Sangat Kurang</option>
+            </select>
+          </div>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="rKeberhasilan">Apa yang berhasil?</label>
+          <textarea class="input" id="rKeberhasilan" rows="3" placeholder="Hal-hal positif yang terjadi dalam pembelajaran..."></textarea>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="rTantangan">Apa tantangannya?</label>
+          <textarea class="input" id="rTantangan" rows="3" placeholder="Kesulitan yang dihadapi..."></textarea>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="rPerbaikan">Rencana Perbaikan</label>
+          <textarea class="input" id="rPerbaikan" rows="3" placeholder="Strategi perbaikan untuk pertemuan berikutnya..."></textarea>
+        </div>
+        <div class="row gap-2" style="justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary" id="btnCancelReflection">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Daftar Refleksi -->
+    <section class="card">
+      <h3>Riwayat Refleksi</h3>
+      <div class="stack gap-4" id="reflectionList">
+        <!-- Data akan diisi oleh JavaScript -->
+        <div class="reflection-item" style="border-left: 4px solid var(--color-accent-blue); padding-left: var(--space-4);">
+          <div class="row gap-3" style="justify-content:space-between;">
+            <div>
+              <strong>Ekosistem — IPA 7G</strong>
+              <span class="badge badge-info" style="margin-left:var(--space-2);">⭐ 4/5</span>
+            </div>
+            <span class="text-sm text-muted">Rabu, 8 Juli 2026</span>
+          </div>
+          <p class="text-sm" style="margin-top:var(--space-2);">Siswa sangat antusias dalam diskusi kelompok. Penggunaan media video membantu pemahaman konsep ekosistem.</p>
+          <div style="margin-top:var(--space-1);">
+            <span class="badge badge-warning">Perbaikan: Tambahkan lebih banyak contoh konkret</span>
+          </div>
+        </div>
+        <div class="reflection-item" style="border-left: 4px solid var(--color-accent-green); padding-left: var(--space-4);">
+          <div class="row gap-3" style="justify-content:space-between;">
+            <div>
+              <strong>Kerajinan Bahan Limbah — Prakarya 7A</strong>
+              <span class="badge badge-info" style="margin-left:var(--space-2);">⭐ 5/5</span>
+            </div>
+            <span class="text-sm text-muted">Selasa, 7 Juli 2026</span>
+          </div>
+          <p class="text-sm" style="margin-top:var(--space-2);">Praktik langsung sangat efektif. Semua siswa berhasil membuat kerajinan dari botol plastik bekas.</p>
+          <div style="margin-top:var(--space-1);">
+            <span class="badge badge-success">Berhasil: Praktik langsung meningkatkan pemahaman</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/reflection.js"></script>
+</body>
+</html>

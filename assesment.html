@@ -1,0 +1,195 @@
+<!-- assessment.html -- Penilaian & Evaluasi -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penilaian — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-primary" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <div class="row gap-3" style="justify-content:space-between;">
+      <h1>Penilaian &amp; Evaluasi</h1>
+      <button class="btn btn-primary" id="btnNewAssessment">
+        <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Nilai Baru
+      </button>
+    </div>
+
+    <!-- Filter -->
+    <div class="card row gap-3" style="flex-wrap:wrap;">
+      <select class="input" id="filterKelas" style="max-width:180px;">
+        <option value="">Semua Kelas</option>
+      </select>
+      <select class="input" id="filterMapel" style="max-width:180px;">
+        <option value="">Semua Mapel</option>
+        <option>IPA</option>
+        <option>Prakarya</option>
+      </select>
+      <select class="input" id="filterJenis" style="max-width:180px;">
+        <option value="">Semua Jenis</option>
+        <option>Harian</option>
+        <option>UH</option>
+        <option>PTS</option>
+        <option>PAS</option>
+        <option>ASAT</option>
+      </select>
+    </div>
+
+    <!-- Form tambah penilaian -->
+    <section class="card" id="assessmentFormPanel" style="display:none;">
+      <h3 id="assessmentFormTitle">Tambah Penilaian</h3>
+      <form class="stack gap-4" id="assessmentForm">
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="aKelas">Kelas</label>
+            <select class="input" id="aKelas" required></select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="aMapel">Mapel</label>
+            <select class="input" id="aMapel" required>
+              <option>IPA</option>
+              <option>Prakarya</option>
+            </select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="aSiswa">Siswa</label>
+            <select class="input" id="aSiswa" required></select>
+          </div>
+        </div>
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="aJenis">Jenis</label>
+            <select class="input" id="aJenis" required>
+              <option>Harian</option>
+              <option>UH</option>
+              <option>PTS</option>
+              <option>PAS</option>
+              <option>ASAT</option>
+            </select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="aNilai">Nilai</label>
+            <input class="input" id="aNilai" type="number" min="0" max="100" step="0.5" required>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="aTanggal">Tanggal</label>
+            <input class="input" id="aTanggal" type="date" required>
+          </div>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="aCatatan">Catatan</label>
+          <textarea class="input" id="aCatatan" rows="2" placeholder="Catatan khusus (opsional)"></textarea>
+        </div>
+        <div class="row gap-2" style="justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary" id="btnCancelAssessment">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Ringkasan Statistik -->
+    <div class="grid-cards">
+      <div class="card card-stat">
+        <div class="stat-value" id="totalSiswa">–</div>
+        <div class="stat-label">Total Siswa</div>
+      </div>
+      <div class="card card-stat">
+        <div class="stat-value" id="rataRata">–</div>
+        <div class="stat-label">Rata-rata Kelas</div>
+      </div>
+      <div class="card card-stat">
+        <div class="stat-value" id="diAtasKKM">–</div>
+        <div class="stat-label">Di Atas KKM</div>
+      </div>
+      <div class="card card-stat">
+        <div class="stat-value" id="remidi">–</div>
+        <div class="stat-label">Perlu Remidi</div>
+      </div>
+    </div>
+
+    <!-- Daftar Nilai -->
+    <section class="card">
+      <h3>Daftar Nilai</h3>
+      <div class="table-responsive">
+        <table class="table" id="assessmentTable">
+          <thead>
+            <tr>
+              <th>Siswa</th>
+              <th>Kelas</th>
+              <th>Mapel</th>
+              <th>Jenis</th>
+              <th>Nilai</th>
+              <th>Status</th>
+              <th>Tanggal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="assessmentList">
+            <!-- Data akan diisi oleh JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/assessment.js"></script>
+</body>
+</html>
