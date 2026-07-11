@@ -1,1 +1,129 @@
-<!-- todo.html -- konten dibuat di Phase 5 (Prototype HTML/CSS) -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>To-do — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+<style>
+  .todo-item.is-done .todo-title { text-decoration: line-through; color: var(--color-ink-muted); }
+  .checkbox-circle {
+    width: 22px; height: 22px; border-radius: var(--radius-full);
+    border: 2px solid var(--color-line); display:flex; align-items:center; justify-content:center;
+    cursor: pointer; flex-shrink:0; transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+  .checkbox-circle.is-checked { background: var(--color-accent-green); border-color: var(--color-accent-green); }
+  .checkbox-circle svg { width:14px; height:14px; stroke:#fff; display:none; }
+  .checkbox-circle.is-checked svg { display:block; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-primary" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <div class="row gap-3" style="justify-content:space-between;">
+      <h1>To-do List</h1>
+      <button class="btn btn-primary" id="btnNewTask">+ Tugas Baru</button>
+    </div>
+
+    <section class="card" id="taskFormPanel" style="display:none;">
+      <h3 id="taskFormTitle">Tugas Baru</h3>
+      <form class="stack gap-4" id="taskForm">
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="tJudul">Judul Tugas</label>
+          <input class="input" id="tJudul" type="text" required>
+        </div>
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:140px;">
+            <label class="text-sm text-muted" for="tPriority">Prioritas</label>
+            <select class="input" id="tPriority">
+              <option value="rendah">Rendah</option>
+              <option value="sedang" selected>Sedang</option>
+              <option value="tinggi">Tinggi</option>
+            </select>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="tDeadline">Deadline</label>
+            <input class="input" id="tDeadline" type="date">
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:120px;">
+            <label class="text-sm text-muted" for="tProgress">Progress (%)</label>
+            <input class="input" id="tProgress" type="number" min="0" max="100" value="0">
+          </div>
+        </div>
+        <div class="row gap-2" style="justify-content:flex-end;">
+          <button type="button" class="btn btn-secondary" id="btnCancelTask">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Belum Selesai</h3>
+      <div class="stack gap-3" id="taskListActive"></div>
+    </section>
+
+    <section class="card">
+      <h3>Sudah Selesai</h3>
+      <div class="stack gap-3" id="taskListDone"></div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/todo.js"></script>
+</body>
+</html>

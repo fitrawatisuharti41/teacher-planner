@@ -1,24 +1,25 @@
 -- ============================================================
 -- Data Import: Kelas 7C (dari daftar MPLS "Pasar Lama" 2026/2027)
--- Jalankan SEKALI SAJA (setelah migration-003) — jangan run 2x,
--- nanti siswanya duplikat karena tidak ada constraint unique di NISN.
+-- Versi AMAN DIULANG — bisa di-run berkali-kali tanpa bikin data dobel.
 -- ============================================================
 
--- 1. Buat kelas 7C (kalau belum ada), sekaligus tandai Fita sebagai wali kelas
+-- 1. Buat kelas 7C HANYA KALAU BELUM ADA untuk guru ini
 insert into classes (owner_id, nama_kelas, tingkat, wali_kelas_id)
-values (
-  (select id from teachers limit 1),
-  '7C',
-  '7',
-  (select id from teachers limit 1)
-);
+select
+  t.id, '7C', '7', t.id
+from teachers t
+where not exists (
+  select 1 from classes c where c.nama_kelas = '7C' and c.owner_id = t.id
+)
+limit 1;
 
 -- 2. Import 33 siswa (nomor HP & asal sekolah TIDAK disertakan — pertimbangan privasi data anak)
+--    HANYA insert siswa yang NIS-nya belum ada di kelas 7C (aman diulang)
 insert into students (class_id, owner_id, nama, nis, jenis_kelamin)
 select
-  (select id from classes where nama_kelas = '7C' and owner_id = (select id from teachers limit 1)),
-  (select id from teachers limit 1),
-  nama, nis, jenis_kelamin
+  kelas_7c.id,
+  kelas_7c.owner_id,
+  siswa_baru.nama, siswa_baru.nis, siswa_baru.jenis_kelamin
 from (values
   ('ABDURAHMAN WAHIDIN', '3131607659', 'L'),
   ('ABINAYA ZAHDAN FAHREZA', '3147680544', 'L'),
@@ -53,8 +54,14 @@ from (values
   ('YASYFA GURUH PERMATA PUTRY', '3134828531', 'P'),
   ('ZAHRA AMALIA PUTRI', '0149352448', 'P'),
   ('ZEIN BILAL AL-BANTANI', '3134394026', 'L')
-) as siswa_baru(nama, nis, jenis_kelamin);
+) as siswa_baru(nama, nis, jenis_kelamin)
+cross join (
+  select id, owner_id from classes where nama_kelas = '7C' order by created_at asc limit 1
+) as kelas_7c
+where not exists (
+  select 1 from students s where s.nis = siswa_baru.nis and s.class_id = kelas_7c.id
+);
 
 -- ============================================================
--- SELESAI — 1 kelas + 33 siswa ter-import
+-- SELESAI — aman dijalankan ulang kapan saja
 -- ============================================================
