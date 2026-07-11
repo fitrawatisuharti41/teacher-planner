@@ -1,4 +1,3 @@
-<!-- resources.html -- Arsip & Administrasi -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -66,124 +65,80 @@
 
     <div>
       <h1>Arsip &amp; Administrasi</h1>
-      <p class="text-muted">Kelola dokumen administrasi mengajar dan arsip pembelajaran.</p>
+      <p class="text-muted">Kelengkapan dokumen administrasi pembelajaran per kategori, dan arsip materi umum.</p>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid-cards">
-      <div class="card card-stat">
-        <div class="stat-value" id="totalRPP">–</div>
-        <div class="stat-label">Total RPP</div>
-      </div>
-      <div class="card card-stat">
-        <div class="stat-value" id="totalMateri">–</div>
-        <div class="stat-label">Materi Ajar</div>
-      </div>
-      <div class="card card-stat">
-        <div class="stat-value" id="totalMedia">–</div>
-        <div class="stat-label">Media Pembelajaran</div>
-      </div>
-      <div class="card card-stat">
-        <div class="stat-value" id="totalArsip">–</div>
-        <div class="stat-label">Arsip Lainnya</div>
-      </div>
-    </div>
+    <section class="card">
+      <h3>Administrasi Pembelajaran</h3>
+      <div class="grid-cards" id="adminCategoryGrid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));"></div>
+    </section>
 
-    <!-- Kategori Arsip -->
-    <div class="grid-cards" style="grid-template-columns: 1fr 1fr;">
-
-      <!-- RPP -->
-      <section class="card">
-        <h3>📋 RPP</h3>
-        <div class="stack gap-2" id="rppList">
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">Ekosistem — IPA 7G</span>
-            <span class="badge badge-success">Final</span>
-          </div>
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">Sistem Pencernaan — IPA 8B</span>
-            <span class="badge badge-warning">Draft</span>
-          </div>
-        </div>
-        <button class="btn btn-ghost text-sm" style="margin-top:var(--space-2);">Lihat semua →</button>
-      </section>
-
-      <!-- Materi Ajar -->
-      <section class="card">
-        <h3>📚 Materi Ajar</h3>
-        <div class="stack gap-2" id="materiList">
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">PPT Ekosistem</span>
-            <span class="badge badge-info">Presentasi</span>
-          </div>
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">LKS Pencernaan</span>
-            <span class="badge badge-info">Lembar Kerja</span>
-          </div>
-        </div>
-        <button class="btn btn-ghost text-sm" style="margin-top:var(--space-2);">Lihat semua →</button>
-      </section>
-
-      <!-- Media Pembelajaran -->
-      <section class="card">
-        <h3>🎬 Media Pembelajaran</h3>
-        <div class="stack gap-2" id="mediaList">
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">Video Ekosistem</span>
-            <span class="badge badge-info">Video</span>
-          </div>
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">Gambar Sistem Pencernaan</span>
-            <span class="badge badge-info">Gambar</span>
-          </div>
-        </div>
-        <button class="btn btn-ghost text-sm" style="margin-top:var(--space-2);">Lihat semua →</button>
-      </section>
-
-      <!-- Arsip Lainnya -->
-      <section class="card">
-        <h3>📁 Arsip Lainnya</h3>
-        <div class="stack gap-2" id="arsipList">
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">Prota Semester 2</span>
-            <span class="badge badge-secondary">Prota</span>
-          </div>
-          <div class="row gap-2" style="justify-content:space-between;">
-            <span class="text-sm">Silabus IPA 2024</span>
-            <span class="badge badge-secondary">Silabus</span>
-          </div>
-        </div>
-        <button class="btn btn-ghost text-sm" style="margin-top:var(--space-2);">Lihat semua →</button>
-      </section>
-
-    </div>
-
-    <!-- Upload Arsip Baru -->
     <section class="card">
       <div class="row gap-3" style="justify-content:space-between;">
-        <h3>Upload Arsip Baru</h3>
-        <button class="btn btn-secondary" id="btnUpload">+ Upload</button>
+        <h3>Upload Dokumen Administrasi</h3>
+        <button class="btn btn-secondary" id="btnToggleAdminUpload">+ Upload</button>
       </div>
-      <form class="row gap-4" id="uploadForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-top:var(--space-4);">
-        <div class="stack gap-1" style="flex:1; min-width:160px;">
-          <label class="text-sm text-muted" for="uKategori">Kategori</label>
-          <select class="input" id="uKategori" required>
-            <option>RPP</option>
-            <option>Materi Ajar</option>
-            <option>Media Pembelajaran</option>
-            <option>Arsip Lainnya</option>
+      <form class="row gap-4" id="adminUploadForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-top:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="duKategori">Kategori</label>
+          <select class="input" id="duKategori" required>
+            <option value="modul_ajar">Modul Ajar</option>
+            <option value="kktp">KKTP</option>
+            <option value="cp">CP</option>
+            <option value="atp">ATP</option>
+            <option value="prota">Prota</option>
+            <option value="promes">Promes</option>
+            <option value="kaldik">KalDik</option>
+          </select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="duKelas">Kelas</label>
+          <select class="input" id="duKelas" required></select>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="duJudul">Judul</label>
+          <input class="input" id="duJudul" type="text" placeholder="Misal: Modul Ajar Ekosistem" required>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="duUrl">Link Dokumen (Drive/Canva/dsb)</label>
+          <input class="input" id="duUrl" type="url" placeholder="https://...">
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+
+      <div class="stack gap-2" id="adminDocList" style="margin-top:var(--space-4);"></div>
+    </section>
+
+    <section class="card">
+      <div class="row gap-3" style="justify-content:space-between;">
+        <h3>Arsip Materi Umum</h3>
+        <button class="btn btn-secondary" id="btnToggleGeneralUpload">+ Tambah Arsip</button>
+      </div>
+      <p class="text-sm text-muted">Materi ajar, video, atau link lain yang gak masuk 7 kategori administrasi.</p>
+
+      <form class="row gap-4" id="generalUploadForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-top:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="guTipe">Tipe</label>
+          <select class="input" id="guTipe">
+            <option value="pdf">PDF</option>
+            <option value="word">Word</option>
+            <option value="ppt">PPT</option>
+            <option value="video">Video</option>
+            <option value="link">Link</option>
           </select>
         </div>
         <div class="stack gap-1" style="flex:2; min-width:200px;">
-          <label class="text-sm text-muted" for="uNama">Nama File</label>
-          <input class="input" id="uNama" type="text" placeholder="Misal: PPT_Ekosistem" required>
+          <label class="text-sm text-muted" for="guJudul">Judul</label>
+          <input class="input" id="guJudul" type="text" required>
         </div>
-        <div class="stack gap-1" style="flex:1; min-width:160px;">
-          <label class="text-sm text-muted" for="uFile">File</label>
-          <input class="input" id="uFile" type="file" style="padding:var(--space-1);">
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="guUrl">Link</label>
+          <input class="input" id="guUrl" type="url" placeholder="https://...">
         </div>
-        <button type="submit" class="btn btn-primary">Upload</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
       </form>
+
+      <div class="stack gap-2" id="generalResourceList" style="margin-top:var(--space-4);"></div>
     </section>
 
   </main>
