@@ -6,7 +6,7 @@ Aplikasi perencanaan mengajar pribadi untuk guru SMP di Indonesia. Gratis selama
 ## Profil guru
 
 - **Nama:** Fitrawati Suharti, S.Tr.T (panggilan: Fita)
-- **Mengajar:** IPA kelas 7 & 8, Prakarya kelas 7
+- **Mengajar:** IPA kelas 7A–7C & 8A, Prakarya kelas 7F–7I (roster kelas 7 masih menyusul, akan diacak & ditambah siswa baru)
 - **Wali kelas:** 7C (tahun ajaran 2026/2027, 33 siswa)
 
 ## Kebutuhan non-fungsional

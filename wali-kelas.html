@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wali Kelas — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+<style>
+  .tab-bar { display:flex; gap: var(--space-2); flex-wrap:wrap; border-bottom:1px solid var(--color-line); padding-bottom: var(--space-3); }
+  .tab-btn { background:transparent; border:none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+    font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-ink-muted); cursor:pointer; }
+  .tab-btn.is-active { background: var(--color-accent-blue-soft); color: var(--color-accent-blue); }
+  .tab-panel { display:none; }
+  .tab-panel.is-active { display:block; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-primary" href="wali-kelas.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Wali Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <div>
+      <h1>Wali Kelas <span id="namaKelasWali" class="text-muted"></span></h1>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn is-active" data-tab="dashboard">Dashboard Kelas</button>
+      <button class="tab-btn" data-tab="agenda">Agenda Kelas</button>
+      <button class="tab-btn" data-tab="jurnal">Jurnal</button>
+      <button class="tab-btn" data-tab="prestasi">Prestasi &amp; Pelanggaran</button>
+      <button class="tab-btn" data-tab="komunikasi">Komunikasi Ortu</button>
+      <button class="tab-btn" data-tab="administrasi">Administrasi</button>
+    </div>
+
+    <!-- TAB: Dashboard Kelas -->
+    <div class="tab-panel is-active" id="panel-dashboard">
+      <div class="grid-cards">
+        <div class="card stack" style="align-items:center; text-align:center;">
+          <div id="ringKehadiran"></div>
+          <div class="stat-label">Persentase Kehadiran</div>
+        </div>
+        <div class="card card-stat"><div class="stat-value" id="statRataNilai">–</div><div class="stat-label">Rata-rata Nilai Kelas</div></div>
+        <div class="card card-stat"><div class="stat-value" id="statPrestasi">–</div><div class="stat-label">Jumlah Prestasi</div></div>
+        <div class="card card-stat"><div class="stat-value" id="statPelanggaran">–</div><div class="stat-label">Jumlah Pelanggaran</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: Agenda Kelas -->
+    <div class="tab-panel" id="panel-agenda">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Agenda Kelas</h3>
+        <button class="btn btn-primary" id="btnNewAgenda">+ Agenda Baru</button>
+      </div>
+      <form class="card row gap-4" id="agendaForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="agTanggal">Tanggal</label>
+          <input class="input" id="agTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="agJudul">Kegiatan</label>
+          <input class="input" id="agJudul" type="text" required>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="agDeskripsi">Deskripsi</label>
+          <input class="input" id="agDeskripsi" type="text">
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+      <div class="stack gap-3" id="agendaList"></div>
+    </div>
+
+    <!-- TAB: Jurnal -->
+    <div class="tab-panel" id="panel-jurnal">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Jurnal Wali Kelas</h3>
+        <button class="btn btn-primary" id="btnNewJurnal">+ Catatan Baru</button>
+      </div>
+      <form class="card stack gap-4" id="jurnalForm" style="display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="jTanggal">Tanggal</label>
+          <input class="input" id="jTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="jCatatan">Catatan</label>
+          <textarea class="input" id="jCatatan" rows="3" required></textarea>
+        </div>
+        <div class="row gap-2" style="justify-content:flex-end;">
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+      <div class="stack gap-3" id="jurnalList"></div>
+    </div>
+
+    <!-- TAB: Prestasi & Pelanggaran -->
+    <div class="tab-panel" id="panel-prestasi">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Prestasi &amp; Pelanggaran</h3>
+        <button class="btn btn-primary" id="btnNewPrestasi">+ Catatan Baru</button>
+      </div>
+      <form class="card row gap-4" id="prestasiForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="pSiswa">Siswa</label>
+          <select class="input" id="pSiswa" required></select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="pTipe">Tipe</label>
+          <select class="input" id="pTipe" required>
+            <option value="prestasi">Prestasi</option>
+            <option value="pelanggaran">Pelanggaran</option>
+          </select>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="pJudul">Judul</label>
+          <input class="input" id="pJudul" type="text" required>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="pTanggal">Tanggal</label>
+          <input class="input" id="pTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1" style="flex:3; min-width:220px;">
+          <label class="text-sm text-muted" for="pDeskripsi">Deskripsi</label>
+          <input class="input" id="pDeskripsi" type="text">
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+      <div class="stack gap-3" id="prestasiList"></div>
+    </div>
+
+    <!-- TAB: Komunikasi Ortu -->
+    <div class="tab-panel" id="panel-komunikasi">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Komunikasi Orang Tua</h3>
+        <button class="btn btn-primary" id="btnNewKomunikasi">+ Catat Komunikasi</button>
+      </div>
+      <form class="card row gap-4" id="komunikasiForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="kSiswa">Siswa</label>
+          <select class="input" id="kSiswa" required></select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="kMetode">Metode</label>
+          <select class="input" id="kMetode">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="telepon">Telepon</option>
+            <option value="tatap muka">Tatap Muka</option>
+          </select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="kTanggal">Tanggal</label>
+          <input class="input" id="kTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1" style="flex:3; min-width:220px;">
+          <label class="text-sm text-muted" for="kRingkasan">Ringkasan</label>
+          <input class="input" id="kRingkasan" type="text" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+      <div class="stack gap-3" id="komunikasiList"></div>
+    </div>
+
+    <!-- TAB: Administrasi -->
+    <div class="tab-panel" id="panel-administrasi">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Administrasi Wali Kelas</h3>
+        <button class="btn btn-primary" id="btnNewAdminDoc">+ Dokumen Baru</button>
+      </div>
+      <form class="card row gap-4" id="adminDocForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="hdJudul">Judul</label>
+          <input class="input" id="hdJudul" type="text" placeholder="Misal: Buku Induk Kelas" required>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="hdKategori">Kategori</label>
+          <input class="input" id="hdKategori" type="text" placeholder="bebas, misal: buku_induk">
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="hdUrl">Link</label>
+          <input class="input" id="hdUrl" type="url" placeholder="https://...">
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+      <div class="stack gap-3" id="adminDocList"></div>
+    </div>
+
+  </main>
+</div>
+
+<script type="module" src="js/wali-kelas.js"></script>
+</body>
+</html>
