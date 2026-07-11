@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Style Guide — Teacher Planner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { font-family: 'Inter', var(--font-sans); padding: var(--space-8); }
+  .swatch { width: 100%; height: 64px; border-radius: var(--radius-md); margin-bottom: var(--space-2); border: 1px solid var(--color-line); }
+  section { margin-bottom: var(--space-12); }
+  .grid-6 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <strong>Teacher Planner — Style Guide</strong>
+  <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+    <svg class="icon"><use href="../assets/icons/icons.svg#icon-sun"/></svg>
+  </button>
+</div>
+
+<div class="container">
+
+  <section>
+    <h2>Warna</h2>
+    <div class="grid-6">
+      <div><div class="swatch" style="background:var(--color-canvas)"></div><small>canvas</small></div>
+      <div><div class="swatch" style="background:var(--color-surface)"></div><small>surface</small></div>
+      <div><div class="swatch" style="background:var(--color-accent-blue)"></div><small>accent-blue</small></div>
+      <div><div class="swatch" style="background:var(--color-accent-green)"></div><small>accent-green</small></div>
+      <div><div class="swatch" style="background:var(--color-warning)"></div><small>warning</small></div>
+      <div><div class="swatch" style="background:var(--color-danger)"></div><small>danger</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tipografi</h2>
+    <p style="font-size:var(--text-2xl); font-weight:var(--weight-bold)">Angka statistik — 2xl bold</p>
+    <p style="font-size:var(--text-xl); font-weight:var(--weight-bold)">Judul halaman — xl bold</p>
+    <p style="font-size:var(--text-lg); font-weight:var(--weight-semibold)">Subjudul — lg semibold</p>
+    <p style="font-size:var(--text-base)">Body teks utama — base regular</p>
+    <p class="text-sm text-muted">Meta / caption — sm muted</p>
+  </section>
+
+  <section>
+    <h2>Button</h2>
+    <div class="row gap-3">
+      <button class="btn btn-primary">Simpan Perubahan</button>
+      <button class="btn btn-secondary">Batal</button>
+      <button class="btn btn-ghost">Hapus</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Badge (status kehadiran/nilai)</h2>
+    <div class="row gap-3">
+      <span class="badge badge-success">Hadir</span>
+      <span class="badge badge-info">Izin</span>
+      <span class="badge badge-warning">Sakit</span>
+      <span class="badge badge-danger">Alpa</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Card + Progress Ring (signature element)</h2>
+    <div class="grid-cards">
+      <div class="card card-interactive card-stat">
+        <div class="progress-ring" id="ring1" style="align-self:center; margin-bottom:var(--space-3)"></div>
+        <div class="stat-label">Tingkat Kelengkapan</div>
+      </div>
+      <div class="card card-stat">
+        <div class="stat-value">48</div>
+        <div class="stat-label">Dokumen Administrasi</div>
+      </div>
+      <div class="card card-stat">
+        <div class="stat-value">322</div>
+        <div class="stat-label">Total Siswa</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Toggle dark/light — logic sesungguhnya (simpan preferensi) ada di js/settings.js Phase 6-7
+  const toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  });
+
+  // Render progress ring — dipakai ulang di dashboard.js nanti
+  function renderProgressRing(el, percent, size = 96) {
+    const stroke = 8;
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    const offset = c - (percent / 100) * c;
+    el.innerHTML = `
+      <svg width="${size}" height="${size}">
+        <circle class="ring-track" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}"/>
+        <circle class="ring-value ${percent >= 100 ? 'is-complete' : ''}" cx="${size/2}" cy="${size/2}" r="${r}"
+          stroke-width="${stroke}" stroke-dasharray="${c}" stroke-dashoffset="${offset}"/>
+      </svg>
+      <span class="ring-label">${percent}%</span>`;
+  }
+  renderProgressRing(document.getElementById('ring1'), 0);
+</script>
+
+</body>
+</html>

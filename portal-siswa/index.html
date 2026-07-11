@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Siswa — Teacher Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  /* Layout khusus portal siswa: satu kolom, terpusat, tanpa sidebar/topnav */
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:520px; }
+  .name-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+  .name-btn { justify-content:flex-start; }
+  .step { display:none; }
+  .step.is-active { display:block; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+
+  <div class="row gap-3" style="justify-content:center;">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-book"/></svg>
+    <div>
+      <strong>Portal Siswa</strong>
+      <div class="text-sm text-muted">SMPN 8 Kota Tangerang</div>
+    </div>
+  </div>
+
+  <!-- Step 1: pilih kelas -->
+  <section class="card step is-active" id="step1">
+    <h3>Pilih Kelas Kamu</h3>
+    <select class="input" id="selectKelas">
+      <option value="">-- Pilih Kelas --</option>
+    </select>
+    <button class="btn btn-primary" id="btnLanjutKelas" style="margin-top: var(--space-4); width:100%;">Lanjut</button>
+  </section>
+
+  <!-- Step 2: pilih nama -->
+  <section class="card step" id="step2">
+    <div class="row gap-3" style="justify-content:space-between;">
+      <h3>Pilih Nama Kamu</h3>
+      <button class="btn btn-ghost" id="btnGantiKelas">Ganti Kelas</button>
+    </div>
+    <p class="text-sm text-muted">Kelas <strong id="kelasTerpilih"></strong></p>
+    <div class="name-grid" id="nameGrid">
+      <!-- Data dummy — diganti query `students_public` (filter class_id) di Phase 6 -->
+    </div>
+  </section>
+
+  <!-- Step 3: menu aksi -->
+  <section class="stack gap-3 step" id="step3">
+    <div class="card row gap-3" style="justify-content:space-between;">
+      <div>
+        <strong id="namaTerpilih"></strong>
+        <div class="text-sm text-muted">Kelas <span id="kelasTerpilih2"></span></div>
+      </div>
+      <button class="btn btn-ghost" id="btnGantiSiswa">Bukan Saya</button>
+    </div>
+
+    <a class="card card-interactive row gap-3" href="kehadiran.html">
+      <svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-calendar"/></svg>
+      <div>
+        <strong>Kehadiran Saya</strong>
+        <div class="text-sm text-muted">Lihat rekap hadir, izin, sakit, alpa</div>
+      </div>
+    </a>
+
+    <a class="card card-interactive row gap-3" href="nilai.html">
+      <svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-award"/></svg>
+      <div>
+        <strong>Nilai Saya</strong>
+        <div class="text-sm text-muted">Lihat nilai yang masih di bawah KKM</div>
+      </div>
+    </a>
+
+    <a class="card card-interactive row gap-3" href="remedial.html">
+      <svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-check"/></svg>
+      <div>
+        <strong>Kerjakan Remedial</strong>
+        <div class="text-sm text-muted">Isi jawaban perbaikan langsung di sini</div>
+      </div>
+    </a>
+  </section>
+
+</div>
+
+<script type="module" src="../js/portal-siswa.js"></script>
+</body>
+</html>

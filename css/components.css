@@ -1,0 +1,171 @@
+/* ============================================================
+   Teacher Planner — Components
+   ============================================================ */
+
+/* --- Button --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+              transform var(--duration-fast) var(--ease-standard),
+              box-shadow var(--duration-fast) var(--ease-standard);
+}
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--color-accent-blue);
+  color: #ffffff;
+}
+.btn-primary:hover { box-shadow: var(--shadow-soft); filter: brightness(1.06); }
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-line);
+}
+.btn-secondary:hover { background: var(--color-surface-alt); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink-muted);
+}
+.btn-ghost:hover { background: var(--color-surface-alt); color: var(--color-ink); }
+
+/* --- Card --- */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-6);
+  transition: box-shadow var(--duration-base) var(--ease-standard),
+              transform var(--duration-base) var(--ease-standard);
+}
+.card-interactive:hover {
+  box-shadow: var(--shadow-soft-hover);
+  transform: translateY(-2px);
+}
+
+.card-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.card-stat .stat-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+.card-stat .stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+
+/* --- Badge / status pill (kehadiran, status tugas, dll) --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+.badge-success { background: var(--color-success-soft); color: var(--color-success); }
+.badge-warning { background: var(--color-warning-soft); color: var(--color-warning); }
+.badge-danger  { background: var(--color-danger-soft);  color: var(--color-danger); }
+.badge-info    { background: var(--color-info-soft);    color: var(--color-info); }
+
+/* --- Input --- */
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+.input:focus {
+  border-color: var(--color-accent-blue);
+  outline: none;
+}
+
+/* --- Top nav: satu-satunya tempat glassmorphism dipakai --- */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* --- Icon sederhana (dipakai dari assets/icons/icons.svg via <use>) --- */
+.icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon-sm { width: 16px; height: 16px; }
+.icon-lg { width: 28px; height: 28px; }
+
+/* --- Signature component: Progress Ring ---
+   Dipakai untuk: kelengkapan dokumen administrasi, rekap kehadiran,
+   progress tugas. Selalu SVG, warna dari token, animasi ringan saat masuk. */
+.progress-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-ring svg { transform: rotate(-90deg); }
+.progress-ring .ring-track {
+  fill: none;
+  stroke: var(--color-line);
+}
+.progress-ring .ring-value {
+  fill: none;
+  stroke: var(--color-accent-blue);
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--duration-base) var(--ease-standard);
+}
+.progress-ring .ring-value.is-complete {
+  stroke: var(--color-accent-green);
+}
+.progress-ring .ring-label {
+  position: absolute;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+}
+
+/* --- Toggle dark/light sederhana --- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.theme-toggle:hover { background: var(--color-surface-alt); }

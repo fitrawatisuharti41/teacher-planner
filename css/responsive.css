@@ -1,0 +1,54 @@
+/* ============================================================
+   Teacher Planner — Responsive
+   Breakpoint: mobile (default) -> tablet/iPad -> laptop/desktop
+   ============================================================ */
+
+/* Grid dasar untuk kartu dashboard, mobile-first (1 kolom) */
+.grid-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+/* --- Tablet / iPad portrait & landscape (>= 641px) --- */
+@media (min-width: 641px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .container {
+    padding-inline: var(--space-8);
+  }
+}
+
+/* --- Laptop / desktop (>= 1025px) --- */
+@media (min-width: 1025px) {
+  .grid-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* --- iPad spesifik: pastikan target sentuh cukup besar --- */
+@media (pointer: coarse) {
+  .btn, .theme-toggle, .input {
+    min-height: 44px; /* standar target sentuh Apple HIG */
+  }
+}
+
+/* Layout 2 kolom (sidebar + konten) hanya muncul di layar lebar */
+.layout-with-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 1025px) {
+  .layout-with-sidebar {
+    flex-direction: row;
+  }
+  .layout-with-sidebar .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+  }
+  .layout-with-sidebar .content {
+    flex: 1;
+    min-width: 0;
+  }
+}
