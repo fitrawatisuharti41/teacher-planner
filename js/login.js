@@ -16,7 +16,7 @@ function showError(message) {
 document.getElementById('btnLogin').addEventListener('click', async () => {
   errorEl.style.display = 'none';
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: emailEl.value,
     password: passwordEl.value,
   });
@@ -25,6 +25,25 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
     showError('Login gagal: ' + error.message);
     return;
   }
+
+  // Jaga-jaga: kalau row `teachers` belum ada (misal proses Daftar
+  // sebelumnya terputus karena harus konfirmasi email dulu), buat sekarang.
+  const { data: existing } = await supabase
+    .from('teachers')
+    .select('id')
+    .eq('auth_user_id', data.user.id)
+    .maybeSingle();
+
+  if (!existing) {
+    await supabase.from('teachers').insert({
+      auth_user_id: data.user.id,
+      nama_lengkap: 'Fitrawati Suharti, S.Tr.T',
+      nama_panggilan: 'Fita',
+      sekolah_nama: 'SMPN 8 Kota Tangerang',
+      jabatan: 'Guru IPA & Prakarya',
+    });
+  }
+
   window.location.href = 'dashboard.html';
 });
 
