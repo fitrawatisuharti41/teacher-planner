@@ -12,10 +12,15 @@
   --color-ink-muted: #5b5f6a;
   --color-line: #e4e6eb;
 
-  --color-accent-blue: #2f6fed;
-  --color-accent-blue-soft: #e8f0fe;
+  --color-accent-blue: #3b6fed;
+  --color-accent-blue-hover: #2a5ce0;
+  --color-accent-blue-soft: #eaf1ff;
   --color-accent-green: #1faa59;
   --color-accent-green-soft: #e6f6ec;
+
+  /* Sidebar */
+  --sidebar-width: 232px;
+  --sidebar-width-collapsed: 72px;
 
   /* Status semantik (kehadiran, nilai) */
   --color-success: var(--color-accent-green);

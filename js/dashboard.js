@@ -3,9 +3,10 @@
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
-import { renderProgressRing, initThemeToggle, formatTanggalIndo, getGreeting } from './utils.js';
+import { renderProgressRing, initThemeToggle, formatTanggalIndo, getGreeting, initSidebarToggle} from './utils.js';
 
 initThemeToggle('themeToggle');
+initSidebarToggle();
 
 const session = await requireAuth('login.html');
 if (session) {

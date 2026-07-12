@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arsip Materi — Portal Siswa &amp; Orang Tua</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+  .thumb { width:56px; height:56px; border-radius: var(--radius-sm); background: var(--color-accent-blue-soft);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <section class="card">
+    <h3>📄 File (PDF/PPT/Word)</h3>
+    <div class="stack gap-3" id="fileList" style="margin-top:var(--space-4);"></div>
+  </section>
+
+  <section class="card">
+    <h3>🎬 Video Pembelajaran</h3>
+    <div class="stack gap-3" id="videoList" style="margin-top:var(--space-4);"></div>
+  </section>
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  } else {
+    document.getElementById('namaSiswa').textContent = nama;
+    document.getElementById('kelasSiswa').textContent = kelasNama;
+
+    const { data, error } = await supabase
+      .from('resources')
+      .select('judul, tipe, url')
+      .is('kategori', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error(error.message);
+    } else {
+      const files = data.filter((r) => ['pdf', 'word', 'ppt'].includes(r.tipe));
+      const videos = data.filter((r) => r.tipe === 'video');
+
+      document.getElementById('fileList').innerHTML = files.length
+        ? files
+            .map(
+              (r) => `
+          <a class="row gap-3" href="${r.url || '#'}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
+            <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-archive"/></svg></div>
+            <div>
+              <strong class="text-sm">${r.judul}</strong>
+              <div class="text-xs text-muted">${r.tipe.toUpperCase()}</div>
+            </div>
+          </a>`
+            )
+            .join('')
+        : '<p class="text-sm text-muted">Belum ada file diupload.</p>';
+
+      document.getElementById('videoList').innerHTML = videos.length
+        ? videos
+            .map(
+              (r) => `
+          <a class="row gap-3" href="${r.url || '#'}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
+            <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-book"/></svg></div>
+            <div>
+              <strong class="text-sm">${r.judul}</strong>
+              <div class="text-xs text-muted">Video</div>
+            </div>
+          </a>`
+            )
+            .join('')
+        : '<p class="text-sm text-muted">Belum ada video diupload.</p>';
+    }
+  }
+</script>
+</body>
+</html>

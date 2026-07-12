@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bank Soal Latihan — Portal Siswa &amp; Orang Tua</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <div id="setListContainer" class="stack gap-3"></div>
+  <div id="questionContainer" class="stack gap-6"></div>
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+  let classId = sessionStorage.getItem('portalClassId');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  }
+  document.getElementById('namaSiswa').textContent = nama;
+  document.getElementById('kelasSiswa').textContent = kelasNama;
+
+  const setListEl = document.getElementById('setListContainer');
+  const questionEl = document.getElementById('questionContainer');
+
+  // Ambil class_id siswa langsung dari tabel students (lebih pasti daripada sessionStorage)
+  const { data: studentRow } = await supabase.from('students_public').select('class_id').eq('id', studentId).maybeSingle();
+  classId = studentRow?.class_id;
+
+  const { data: sets, error } = await supabase
+    .from('practice_sets')
+    .select('id, judul, mapel')
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error.message);
+    setListEl.innerHTML = '<p class="text-sm text-muted">Gagal memuat bank soal.</p>';
+  } else if (!sets || sets.length === 0) {
+    setListEl.innerHTML = '<div class="card"><p class="text-sm text-muted">Belum ada latihan soal untuk kelas ini.</p></div>';
+  } else {
+    setListEl.innerHTML = sets
+      .map(
+        (s) => `
+      <button class="card card-interactive row gap-3 btn-open-set" data-id="${s.id}" data-judul="${s.judul}" style="justify-content:space-between; text-align:left; border:none; cursor:pointer;">
+        <div>
+          <strong>${s.judul}</strong>
+          <div class="text-sm text-muted">${s.mapel}</div>
+        </div>
+        <span>→</span>
+      </button>`
+      )
+      .join('');
+
+    setListEl.querySelectorAll('.btn-open-set').forEach((btn) =>
+      btn.addEventListener('click', () => openSet(btn.dataset.id, btn.dataset.judul))
+    );
+  }
+
+  async function openSet(setId, judul) {
+    setListEl.style.display = 'none';
+
+    const { data: questions, error: qError } = await supabase
+      .from('practice_questions')
+      .select('id, nomor, soal')
+      .eq('practice_set_id', setId)
+      .order('nomor');
+
+    if (qError || !questions || questions.length === 0) {
+      questionEl.innerHTML = '<div class="card"><p class="text-sm text-muted">Belum ada soal di set ini.</p></div>';
+      return;
+    }
+
+    questionEl.innerHTML = `
+      <div class="card">
+        <h3>${judul}</h3>
+        <form class="stack gap-4" id="answerForm">
+          ${questions
+            .map(
+              (q) => `
+            <div class="stack gap-1">
+              <label class="text-sm" style="font-weight:var(--weight-semibold);">Soal ${q.nomor}. ${q.soal}</label>
+              <textarea class="input" rows="3" data-question-id="${q.id}" required></textarea>
+            </div>`
+            )
+            .join('')}
+          <button type="submit" class="btn btn-primary">Kirim Jawaban</button>
+        </form>
+      </div>`;
+
+    document.getElementById('answerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rows = Array.from(e.target.querySelectorAll('textarea')).map((ta) => ({
+        question_id: ta.dataset.questionId,
+        student_id: studentId,
+        jawaban: ta.value,
+      }));
+      const { error: submitError } = await supabase.from('practice_answers').insert(rows);
+      if (submitError) {
+        alert('Gagal mengirim: ' + submitError.message);
+        return;
+      }
+      questionEl.innerHTML = '<div class="card"><p class="text-sm" style="color:var(--color-accent-green);">✓ Jawaban terkirim. Terima kasih!</p></div>';
+    });
+  }
+</script>
+</body>
+</html>

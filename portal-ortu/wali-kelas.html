@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hubungi Wali Kelas — Portal Siswa &amp; Orang Tua</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:480px; }
+  .avatar { width:96px; height:96px; border-radius:50%; background: var(--color-accent-blue-soft);
+    display:flex; align-items:center; justify-content:center; margin-inline:auto; overflow:hidden; }
+  .avatar img { width:100%; height:100%; object-fit:cover; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+  <div class="row gap-3" style="justify-content:space-between;">
+    <strong>Wali Kelas</strong>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <section class="card stack gap-4" style="text-align:center;" id="profileCard">
+    <div class="avatar" id="avatar">
+      <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-user"/></svg>
+    </div>
+    <div>
+      <h2 id="namaGuru" style="margin-bottom:2px;">–</h2>
+      <p class="text-sm text-muted" id="jabatanGuru" style="margin:0;">–</p>
+      <p class="text-sm text-muted" id="sekolahGuru" style="margin:0;">–</p>
+    </div>
+    <a class="btn btn-primary" id="btnWhatsapp" href="#" target="_blank" rel="noopener" style="display:none;">
+      💬 Hubungi via WhatsApp
+    </a>
+  </section>
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  if (!studentId) window.location.href = 'index.html';
+
+  const { data: studentRow } = await supabase.from('students_public').select('class_id').eq('id', studentId).maybeSingle();
+
+  const { data: kelas } = await supabase.from('classes').select('wali_kelas_id').eq('id', studentRow?.class_id).maybeSingle();
+
+  if (!kelas?.wali_kelas_id) {
+    document.getElementById('namaGuru').textContent = 'Belum ada wali kelas terdaftar';
+  } else {
+    const { data: guru, error } = await supabase
+      .from('teachers_public')
+      .select('nama_lengkap, jabatan, sekolah_nama, kontak_whatsapp, foto_url')
+      .eq('id', kelas.wali_kelas_id)
+      .maybeSingle();
+
+    if (error || !guru) {
+      console.error(error?.message);
+    } else {
+      document.getElementById('namaGuru').textContent = guru.nama_lengkap;
+      document.getElementById('jabatanGuru').textContent = guru.jabatan || '';
+      document.getElementById('sekolahGuru').textContent = guru.sekolah_nama || '';
+
+      if (guru.foto_url) {
+        document.getElementById('avatar').innerHTML = `<img src="${guru.foto_url}" alt="${guru.nama_lengkap}">`;
+      }
+
+      if (guru.kontak_whatsapp) {
+        const nomor = guru.kontak_whatsapp.replace(/[^0-9]/g, '').replace(/^0/, '62');
+        const btn = document.getElementById('btnWhatsapp');
+        btn.href = `https://wa.me/${nomor}`;
+        btn.style.display = 'inline-flex';
+      }
+    }
+  }
+</script>
+</body>
+</html>

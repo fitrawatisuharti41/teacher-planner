@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penilaian — Portal Siswa &amp; Orang Tua</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+  .bar-track { background: var(--color-line); border-radius: var(--radius-full); height:10px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius: var(--radius-full); background: var(--color-accent-blue); }
+  .bar-fill.below { background: var(--color-danger); }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <section class="card">
+    <h3>Ringkasan per Mata Pelajaran</h3>
+    <div class="stack gap-4" id="summaryByMapel"></div>
+  </section>
+
+  <section class="card">
+    <h3>Rincian Semua Nilai</h3>
+    <div class="stack gap-2" id="detailList"></div>
+  </section>
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  } else {
+    document.getElementById('namaSiswa').textContent = nama;
+    document.getElementById('kelasSiswa').textContent = kelasNama;
+
+    const { data, error } = await supabase
+      .from('assessment_items')
+      .select('nilai, assessments(judul, mapel, kkm, tanggal)')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error(error.message);
+    } else {
+      // Ringkasan per mapel
+      const byMapel = {};
+      data.forEach((item) => {
+        const mapel = item.assessments?.mapel || 'Lainnya';
+        if (!byMapel[mapel]) byMapel[mapel] = [];
+        byMapel[mapel].push(item.nilai);
+      });
+
+      const summaryEl = document.getElementById('summaryByMapel');
+      summaryEl.innerHTML = Object.entries(byMapel).length
+        ? Object.entries(byMapel)
+            .map(([mapel, nilaiList]) => {
+              const rata = (nilaiList.reduce((a, b) => a + b, 0) / nilaiList.length).toFixed(1);
+              const belowKkm = rata < 75;
+              return `
+            <div class="stack gap-1">
+              <div class="row gap-2" style="justify-content:space-between;">
+                <span class="text-sm" style="font-weight:var(--weight-semibold);">${mapel}</span>
+                <span class="text-sm">${rata}</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill ${belowKkm ? 'below' : ''}" style="width:${Math.min(rata, 100)}%"></div></div>
+            </div>`;
+            })
+            .join('')
+        : '<p class="text-sm text-muted">Belum ada nilai.</p>';
+
+      // Rincian
+      const detailEl = document.getElementById('detailList');
+      detailEl.innerHTML = data.length
+        ? data
+            .map(
+              (item) => `
+          <div class="row gap-3" style="justify-content:space-between;">
+            <span class="text-sm">${item.assessments?.judul} (${item.assessments?.mapel})</span>
+            <span class="badge ${item.nilai >= (item.assessments?.kkm || 75) ? 'badge-success' : 'badge-danger'}">${item.nilai}</span>
+          </div>`
+            )
+            .join('')
+        : '<p class="text-sm text-muted">Belum ada nilai.</p>';
+    }
+  }
+</script>
+</body>
+</html>

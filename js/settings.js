@@ -3,9 +3,10 @@
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
-import { initThemeToggle, qs } from './utils.js';
+import { initThemeToggle, initSidebarToggle, qs } from './utils.js';
 
 initThemeToggle('themeToggle');
+initSidebarToggle();
 document.getElementById('btnLogout')?.addEventListener('click', () => logout('login.html'));
 
 let teacher = null;

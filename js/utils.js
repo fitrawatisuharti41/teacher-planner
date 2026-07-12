@@ -60,6 +60,25 @@ export function formatTanggalIndo(date = new Date()) {
   }).format(date);
 }
 
+/**
+ * Pasang toggle collapse/expand ke sidebar. Preferensi disimpan di
+ * localStorage (per-device, wajar karena ini soal tampilan bukan data).
+ */
+export function initSidebarToggle() {
+  const sidebar = document.querySelector('.sidebar');
+  const btn = document.getElementById('sidebarToggle');
+  if (!sidebar || !btn) return;
+
+  if (localStorage.getItem('sidebarCollapsed') === 'true') {
+    sidebar.classList.add('is-collapsed');
+  }
+
+  btn.addEventListener('click', () => {
+    sidebar.classList.toggle('is-collapsed');
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('is-collapsed'));
+  });
+}
+
 /** Greeting sesuai jam saat ini */
 export function getGreeting(date = new Date()) {
   const hour = date.getHours();
