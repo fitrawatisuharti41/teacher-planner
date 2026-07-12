@@ -1,1 +1,135 @@
-<!-- portal-siswa/remedial.html -- konten dibuat di Phase 5 -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remedial — Teacher Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <div id="remedialContainer" class="stack gap-6"></div>
+
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  }
+  document.getElementById('namaSiswa').textContent = nama;
+  document.getElementById('kelasSiswa').textContent = kelasNama;
+
+  const container = document.getElementById('remedialContainer');
+
+  // 1. Cari asesmen mana yang nilainya di bawah KKM untuk siswa ini
+  const { data: items, error: itemsError } = await supabase
+    .from('assessment_items')
+    .select('nilai, assessment_id, assessments(judul, mapel, kkm)')
+    .eq('student_id', studentId);
+
+  if (itemsError) {
+    console.error(itemsError.message);
+    container.innerHTML = '<p class="text-sm text-muted">Gagal memuat data.</p>';
+  } else {
+    const belowKkm = items.filter((i) => i.nilai < (i.assessments?.kkm || 75));
+
+    if (belowKkm.length === 0) {
+      container.innerHTML = '<div class="card"><p class="text-sm text-muted">Tidak ada remedial yang perlu dikerjakan. 🎉</p></div>';
+    } else {
+      for (const item of belowKkm) {
+        await renderRemedialCard(item);
+      }
+    }
+  }
+
+  async function renderRemedialCard(item) {
+    const { data: questions, error } = await supabase
+      .from('remedial_questions')
+      .select('id, nomor, soal')
+      .eq('assessment_id', item.assessment_id)
+      .order('nomor');
+
+    if (error) {
+      console.error(error.message);
+      return;
+    }
+
+    const card = document.createElement('section');
+    card.className = 'card';
+
+    if (!questions || questions.length === 0) {
+      card.innerHTML = `
+        <h3>${item.assessments?.judul} (${item.assessments?.mapel})</h3>
+        <p class="text-sm text-muted">Nilai kamu: ${item.nilai} / KKM ${item.assessments?.kkm}</p>
+        <p class="text-sm text-muted">Soal remedial belum disiapkan guru. Coba cek lagi nanti.</p>`;
+      container.appendChild(card);
+      return;
+    }
+
+    card.innerHTML = `
+      <h3>${item.assessments?.judul} (${item.assessments?.mapel})</h3>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-4);">Nilai kamu: ${item.nilai} / KKM ${item.assessments?.kkm}</p>
+      <form class="stack gap-4" data-assessment-id="${item.assessment_id}">
+        ${questions
+          .map(
+            (q) => `
+          <div class="stack gap-1">
+            <label class="text-sm" style="font-weight:var(--weight-semibold);">Soal ${q.nomor}. ${q.soal}</label>
+            <textarea class="input" rows="3" data-question-id="${q.id}" required></textarea>
+          </div>`
+          )
+          .join('')}
+        <button type="submit" class="btn btn-primary">Kirim Jawaban</button>
+        <p class="text-sm" style="display:none; color:var(--color-accent-green);" class="submit-success"></p>
+      </form>`;
+
+    container.appendChild(card);
+
+    card.querySelector('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const textareas = form.querySelectorAll('textarea');
+
+      const rows = Array.from(textareas).map((ta) => ({
+        question_id: ta.dataset.questionId,
+        student_id: studentId,
+        jawaban: ta.value,
+      }));
+
+      const { error: submitError } = await supabase.from('remedial_answers').insert(rows);
+
+      if (submitError) {
+        alert('Gagal mengirim jawaban: ' + submitError.message);
+        return;
+      }
+
+      form.innerHTML = '<p class="text-sm" style="color:var(--color-accent-green);">✓ Jawaban berhasil dikirim. Terima kasih!</p>';
+    });
+  }
+</script>
+</body>
+</html>

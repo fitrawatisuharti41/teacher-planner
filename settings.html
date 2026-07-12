@@ -1,1 +1,126 @@
-<!-- settings.html -- konten dibuat di Phase 5 (Prototype HTML/CSS) -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pengaturan — Teacher Planner</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<div class="topnav">
+  <div class="row gap-3">
+    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
+    <strong>Teacher Planner</strong>
+  </div>
+  <div class="row gap-3">
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
+    </button>
+    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
+  </div>
+</div>
+
+<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
+
+  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
+    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> Dashboard
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="calendar.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> Kalender
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> Lesson Planner
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="todo.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> To-do
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="classes.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> Kelas
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="students.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Siswa
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="assessment.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> Penilaian
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="resources.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> Arsip &amp; Administrasi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="reflection.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> Refleksi
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="wali-kelas.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Wali Kelas
+    </a>
+    <a class="row gap-2 btn btn-primary" href="settings.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> Pengaturan
+    </a>
+  </nav>
+
+  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
+
+    <h1>Pengaturan</h1>
+
+    <section class="card stack gap-4">
+      <h3>Profil</h3>
+      <form class="stack gap-4" id="profileForm">
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:200px;">
+            <label class="text-sm text-muted" for="pfNama">Nama Lengkap</label>
+            <input class="input" id="pfNama" type="text" required>
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="pfPanggilan">Nama Panggilan</label>
+            <input class="input" id="pfPanggilan" type="text">
+          </div>
+        </div>
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:200px;">
+            <label class="text-sm text-muted" for="pfSekolah">Sekolah</label>
+            <input class="input" id="pfSekolah" type="text">
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="pfJabatan">Jabatan</label>
+            <input class="input" id="pfJabatan" type="text">
+          </div>
+        </div>
+        <div class="row gap-4" style="flex-wrap:wrap;">
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="pfWhatsapp">Kontak WhatsApp</label>
+            <input class="input" id="pfWhatsapp" type="text">
+          </div>
+          <div class="stack gap-1" style="flex:1; min-width:160px;">
+            <label class="text-sm text-muted" for="pfWilayah">Wilayah</label>
+            <input class="input" id="pfWilayah" type="text">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Simpan Profil</button>
+      </form>
+    </section>
+
+    <section class="card stack gap-4">
+      <h3>Preferensi</h3>
+      <label class="row gap-3" style="justify-content:space-between;">
+        <span>Mode Gelap</span>
+        <input type="checkbox" id="prefDarkMode">
+      </label>
+      <label class="row gap-3" style="justify-content:space-between;">
+        <span>Notifikasi</span>
+        <input type="checkbox" id="prefNotification">
+      </label>
+      <button class="btn btn-primary" id="btnSavePref" style="align-self:flex-start;">Simpan Preferensi</button>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/settings.js"></script>
+</body>
+</html>

@@ -1,1 +1,95 @@
-<!-- portal-siswa/nilai.html -- konten dibuat di Phase 5 -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nilai Saya — Teacher Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <section class="card">
+    <h3>Semua Nilai</h3>
+    <div class="stack gap-2" id="allGradesList"></div>
+  </section>
+
+  <section class="card">
+    <h3>⚠️ Perlu Remedial (di bawah KKM)</h3>
+    <div class="stack gap-2" id="belowKkmList"></div>
+    <a class="btn btn-primary" href="remedial.html" style="margin-top:var(--space-4);">Kerjakan Remedial →</a>
+  </section>
+
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  } else {
+    document.getElementById('namaSiswa').textContent = nama;
+    document.getElementById('kelasSiswa').textContent = kelasNama;
+
+    const { data, error } = await supabase
+      .from('assessment_items')
+      .select('nilai, assessments(judul, mapel, kkm, tanggal)')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Gagal ambil nilai:', error.message);
+    } else {
+      const allEl = document.getElementById('allGradesList');
+      const belowEl = document.getElementById('belowKkmList');
+
+      allEl.innerHTML = data.length
+        ? data
+            .map(
+              (item) => `
+          <div class="row gap-3" style="justify-content:space-between;">
+            <span class="text-sm">${item.assessments?.judul || '-'} (${item.assessments?.mapel || '-'})</span>
+            <span class="badge ${item.nilai >= (item.assessments?.kkm || 75) ? 'badge-success' : 'badge-danger'}">${item.nilai}</span>
+          </div>`
+            )
+            .join('')
+        : '<p class="text-sm text-muted">Belum ada nilai.</p>';
+
+      const belowKkm = data.filter((item) => item.nilai < (item.assessments?.kkm || 75));
+      belowEl.innerHTML = belowKkm.length
+        ? belowKkm
+            .map(
+              (item) => `
+          <div class="row gap-3" style="justify-content:space-between;">
+            <span class="text-sm">${item.assessments?.judul || '-'} (${item.assessments?.mapel || '-'})</span>
+            <span class="badge badge-danger">${item.nilai} / KKM ${item.assessments?.kkm}</span>
+          </div>`
+            )
+            .join('')
+        : '<p class="text-sm text-muted">Tidak ada nilai di bawah KKM. 🎉</p>';
+    }
+  }
+</script>
+</body>
+</html>

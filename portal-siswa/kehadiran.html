@@ -1,1 +1,97 @@
-<!-- portal-siswa/kehadiran.html -- konten dibuat di Phase 5 -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kehadiran Saya — Teacher Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+</style>
+</head>
+<body>
+
+<div class="portal-shell stack gap-6">
+
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
+    </div>
+    <a class="btn btn-ghost" href="index.html">← Menu</a>
+  </div>
+
+  <div class="grid-cards">
+    <div class="card stack" style="align-items:center; text-align:center;">
+      <div id="ringHadir"></div>
+      <div class="stat-label">Persentase Hadir</div>
+    </div>
+    <div class="card card-stat"><div class="stat-value" id="statHadir">–</div><div class="stat-label">Hadir</div></div>
+    <div class="card card-stat"><div class="stat-value" id="statIzinSakit">–</div><div class="stat-label">Izin/Sakit</div></div>
+    <div class="card card-stat"><div class="stat-value" id="statAlpa">–</div><div class="stat-label">Alpa</div></div>
+  </div>
+
+  <section class="card">
+    <h3>Riwayat Kehadiran</h3>
+    <div class="stack gap-2" id="attendanceList"></div>
+  </section>
+
+</div>
+
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+  import { renderProgressRing } from '../js/utils.js';
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  } else {
+    document.getElementById('namaSiswa').textContent = nama;
+    document.getElementById('kelasSiswa').textContent = kelasNama;
+
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('tanggal, status')
+      .eq('student_id', studentId)
+      .order('tanggal', { ascending: false });
+
+    if (error) {
+      console.error('Gagal ambil kehadiran:', error.message);
+    } else {
+      const total = data.length;
+      const hadir = data.filter((a) => a.status === 'hadir').length;
+      const izinSakit = data.filter((a) => a.status === 'izin' || a.status === 'sakit').length;
+      const alpa = data.filter((a) => a.status === 'alpa').length;
+      const persen = total > 0 ? Math.round((hadir / total) * 100) : 0;
+
+      renderProgressRing(document.getElementById('ringHadir'), persen);
+      document.getElementById('statHadir').textContent = hadir;
+      document.getElementById('statIzinSakit').textContent = izinSakit;
+      document.getElementById('statAlpa').textContent = alpa;
+
+      const badgeClass = { hadir: 'badge-success', izin: 'badge-info', sakit: 'badge-warning', alpa: 'badge-danger' };
+      const listEl = document.getElementById('attendanceList');
+      listEl.innerHTML = total
+        ? data
+            .map(
+              (a) => `
+          <div class="row gap-3" style="justify-content:space-between;">
+            <span class="text-sm">${a.tanggal}</span>
+            <span class="badge ${badgeClass[a.status] || 'badge-info'}">${a.status}</span>
+          </div>`
+            )
+            .join('')
+        : '<p class="text-sm text-muted">Belum ada data kehadiran.</p>';
+    }
+  }
+</script>
+</body>
+</html>
