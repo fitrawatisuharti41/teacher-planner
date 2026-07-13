@@ -23,7 +23,7 @@
       <strong id="namaSiswa"></strong>
       <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
     </div>
-    <a class="btn btn-ghost" href="index.html">← Menu</a>
+    <button class="btn btn-ghost" id="btnBackToMenu">← Menu</button>
   </div>
 
   <div id="remedialContainer" class="stack gap-6"></div>
@@ -32,6 +32,11 @@
 
 <script type="module">
   import { supabase } from '../js/config/supabase.js';
+
+  document.getElementById('btnBackToMenu')?.addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  });
 
   const studentId = sessionStorage.getItem('portalStudentId');
   const nama = sessionStorage.getItem('portalNama');

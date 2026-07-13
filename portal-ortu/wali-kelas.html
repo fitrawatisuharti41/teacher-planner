@@ -22,7 +22,7 @@
 <div class="portal-shell stack gap-6">
   <div class="row gap-3" style="justify-content:space-between;">
     <strong>Wali Kelas</strong>
-    <a class="btn btn-ghost" href="index.html">← Menu</a>
+    <button class="btn btn-ghost" id="btnBackToMenu">← Menu</button>
   </div>
 
   <section class="card stack gap-4" style="text-align:center;" id="profileCard">
@@ -42,6 +42,11 @@
 
 <script type="module">
   import { supabase } from '../js/config/supabase.js';
+
+  document.getElementById('btnBackToMenu')?.addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  });
 
   const studentId = sessionStorage.getItem('portalStudentId');
   if (!studentId) window.location.href = 'index.html';
