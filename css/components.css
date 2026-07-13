@@ -176,7 +176,6 @@
   width: var(--sidebar-width);
   flex-shrink: 0;
   transition: width var(--duration-base) var(--ease-standard);
-  position: relative;
 }
 .sidebar.is-collapsed {
   width: var(--sidebar-width-collapsed);
@@ -186,23 +185,24 @@
 }
 .sidebar.is-collapsed .btn {
   justify-content: center;
+  padding-inline: 0;
 }
+
+/* Tombol lipat sidebar — tinggal di topnav, sama gaya dengan theme-toggle */
 .sidebar-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
   border: 1px solid var(--color-line);
   background: var(--color-surface);
+  color: var(--color-ink-muted);
   cursor: pointer;
-  align-self: flex-end;
-  margin-bottom: var(--space-2);
   transition: background-color var(--duration-fast) var(--ease-standard);
 }
-.sidebar-toggle:hover { background: var(--color-surface-alt); }
-.sidebar.is-collapsed .sidebar-toggle svg { transform: rotate(180deg); }
+.sidebar-toggle:hover { background: var(--color-surface-alt); color: var(--color-ink); }
 
 /* --- Toggle dark/light sederhana --- */
 .theme-toggle {
