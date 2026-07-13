@@ -13,8 +13,7 @@
   body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
   .portal-shell { width:100%; max-width:560px; }
   .bar-track { background: var(--color-line); border-radius: var(--radius-full); height:10px; overflow:hidden; }
-  .bar-fill { height:100%; border-radius: var(--radius-full); background: var(--color-accent-blue); }
-  .bar-fill.below { background: var(--color-danger); }
+  .bar-fill { height:100%; border-radius: var(--radius-full); }
 </style>
 </head>
 <body>
@@ -70,18 +69,21 @@
       });
 
       const summaryEl = document.getElementById('summaryByMapel');
+      const palet = ['#3b6fed', '#1faa59', '#c9860a', '#8b5cf6', '#e5484d'];
+
       summaryEl.innerHTML = Object.entries(byMapel).length
         ? Object.entries(byMapel)
-            .map(([mapel, nilaiList]) => {
+            .map(([mapel, nilaiList], index) => {
               const rata = (nilaiList.reduce((a, b) => a + b, 0) / nilaiList.length).toFixed(1);
               const belowKkm = rata < 75;
+              const warna = palet[index % palet.length];
               return `
             <div class="stack gap-1">
               <div class="row gap-2" style="justify-content:space-between;">
                 <span class="text-sm" style="font-weight:var(--weight-semibold);">${mapel}</span>
-                <span class="text-sm">${rata}</span>
+                <span class="text-sm">${rata} ${belowKkm ? '⚠️' : ''}</span>
               </div>
-              <div class="bar-track"><div class="bar-fill ${belowKkm ? 'below' : ''}" style="width:${Math.min(rata, 100)}%"></div></div>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.min(rata, 100)}%; background:${warna};"></div></div>
             </div>`;
             })
             .join('')

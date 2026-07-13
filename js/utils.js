@@ -15,7 +15,7 @@ export function qsa(selector, scope = document) {
  * Render progress ring SVG ke dalam elemen `el`.
  * Dipakai untuk: kelengkapan administrasi, rekap kehadiran, progress tugas.
  */
-export function renderProgressRing(el, percent, size = 96) {
+export function renderProgressRing(el, percent, size = 96, color = null) {
   const stroke = 8;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -30,7 +30,8 @@ export function renderProgressRing(el, percent, size = 96) {
         cx="${size / 2}" cy="${size / 2}" r="${r}"
         stroke-width="${stroke}"
         stroke-dasharray="${c}"
-        stroke-dashoffset="${offset}"/>
+        stroke-dashoffset="${offset}"
+        ${color ? `style="stroke:${color}"` : ''}/>
     </svg>
     <span class="ring-label">${clamped}%</span>`;
 }

@@ -155,6 +155,22 @@
   font-weight: var(--weight-bold);
 }
 
+/* --- Badge ikon berwarna untuk kartu statistik (aksen, tetap minimalis) --- */
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+.stat-icon.c-blue   { background: var(--color-accent-blue-soft);   color: var(--color-accent-blue); }
+.stat-icon.c-green  { background: var(--color-accent-green-soft);  color: var(--color-accent-green); }
+.stat-icon.c-amber  { background: var(--color-warning-soft);       color: var(--color-warning); }
+.stat-icon.c-purple { background: var(--color-accent-purple-soft); color: var(--color-accent-purple); }
+.stat-icon.c-danger { background: var(--color-danger-soft);        color: var(--color-danger); }
+
 /* --- Sidebar collapsible --- */
 .sidebar {
   width: var(--sidebar-width);

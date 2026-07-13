@@ -65,13 +65,14 @@ async function loadCategorySummary() {
     })
     .join('');
 
-  Object.entries(KATEGORI_LABEL).forEach(([key]) => {
+  Object.entries(KATEGORI_LABEL).forEach(([key], index) => {
     const s = summaryMap[key];
     const terisi = s?.kelas_terisi || 0;
     const total = s?.total_kelas || totalKelas || 0;
     const percent = total > 0 ? Math.round((terisi / total) * 100) : 0;
+    const palet = ['#3b6fed', '#1faa59', '#c9860a', '#8b5cf6', '#e5484d', '#0ea5e9', '#f472b6'];
     const el = grid.querySelector(`.ring-${key}`);
-    if (el) renderProgressRing(el, percent, 72);
+    if (el) renderProgressRing(el, percent, 72, palet[index % palet.length]);
   });
 }
 

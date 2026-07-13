@@ -17,6 +17,8 @@
   --color-accent-blue-soft: #eaf1ff;
   --color-accent-green: #1faa59;
   --color-accent-green-soft: #e6f6ec;
+  --color-accent-purple: #8b5cf6;
+  --color-accent-purple-soft: #f1ebfd;
 
   /* Sidebar */
   --sidebar-width: 232px;
@@ -99,6 +101,8 @@
   --color-accent-blue-soft: #1c2a4a;
   --color-accent-green: #3fcb7e;
   --color-accent-green-soft: #163826;
+  --color-accent-purple: #a78bfa;
+  --color-accent-purple-soft: #2e2650;
 
   --color-success: var(--color-accent-green);
   --color-success-soft: var(--color-accent-green-soft);
