@@ -4,7 +4,6 @@
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
 import { renderProgressRing, ringColorByPercent, initThemeToggle, formatTanggalIndo, getGreeting, initSidebarToggle} from './utils.js';
-import { getAdminGroups, findGroupForClassId } from './admin-groups.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -67,28 +66,43 @@ async function initDashboard(teacher) {
   const draftCount = (plans || []).filter((p) => p.status === 'draft').length;
   document.querySelector('#statDraft .stat-value').textContent = draftCount;
 
-  // --- Kelengkapan administrasi, dihitung per KELOMPOK MAPEL+TINGKAT ---
-  // (bukan per section kelas — konsisten dengan logika di resources.js)
-  const groups = await getAdminGroups(supabase, teacher.id);
-  const { data: docs, error: docsError } = await supabase
+  // --- Kelengkapan administrasi: dihitung per kelompok (mapel + tingkat)
+  //     yang benar-benar diajar guru ini, bukan per section kelas mentah.
+  const { data: assignments, error: assignError } = await supabase
+    .from('teaching_assignments')
+    .select('mapel, kelas_id, classes(tingkat)')
+    .eq('teacher_id', teacher.id);
+  if (assignError) console.error('Gagal ambil penugasan mengajar:', assignError.message);
+
+  const kelompokSet = new Set();
+  const classIdToKelompokKey = {};
+  (assignments || []).forEach((a) => {
+    const tingkat = a.classes?.tingkat;
+    if (!tingkat) return;
+    const key = `${a.mapel}|${tingkat}`;
+    kelompokSet.add(key);
+    classIdToKelompokKey[a.kelas_id] = key;
+  });
+
+  const { data: adminDocs, error: docsError } = await supabase
     .from('resources')
     .select('kategori, class_id')
     .eq('owner_id', teacher.id)
     .not('kategori', 'is', null);
-
   if (docsError) console.error('Gagal ambil dokumen administrasi:', docsError.message);
 
-  let percent = 0;
-  if (groups.length > 0) {
-    const KATEGORI_COUNT = 7;
-    const filled = new Set();
-    (docs || []).forEach((r) => {
-      const group = findGroupForClassId(groups, r.class_id);
-      if (group) filled.add(`${r.kategori}|${group.key}`);
-    });
-    const totalMaks = groups.length * KATEGORI_COUNT;
-    percent = totalMaks > 0 ? Math.round((filled.size / totalMaks) * 100) : 0;
-  }
+  const filledMap = {}; // kategori -> Set(kelompokKey)
+  (adminDocs || []).forEach((r) => {
+    const key = classIdToKelompokKey[r.class_id];
+    if (!key) return;
+    if (!filledMap[r.kategori]) filledMap[r.kategori] = new Set();
+    filledMap[r.kategori].add(key);
+  });
+
+  const totalKelompok = kelompokSet.size;
+  const totalTerisi = Object.values(filledMap).reduce((sum, set) => sum + set.size, 0);
+  const totalMaks = totalKelompok * 7; // 7 kategori dokumen
+  const percent = totalMaks > 0 ? Math.round((totalTerisi / totalMaks) * 100) : 0;
   renderProgressRing(document.getElementById('ringKelengkapan'), percent, 96, ringColorByPercent(percent));
 }
 

@@ -1,12 +1,10 @@
 // js/resources.js
-// Terintegrasi Supabase: `resources` (kategori administrasi + arsip umum).
-// Kelengkapan dihitung per KELOMPOK MAPEL+TINGKAT (lihat admin-groups.js),
-// bukan per section kelas — sesuai cara kerja guru yang sebenarnya.
+// Terintegrasi Supabase: `resources` (kategori administrasi + arsip umum),
+// dikelompokkan per (mapel + tingkat) dari `teaching_assignments`.
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
 import { initThemeToggle, initSidebarToggle, qs, qsa } from './utils.js';
-import { getAdminGroups, findGroupForClassId } from './admin-groups.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -41,24 +39,51 @@ const TIPE_META = {
 };
 
 let teacher = null;
-let groups = []; // [{ key, mapel, tingkat, label, classIds }]
+let kelompokList = [];       // [{ key, mapel, tingkat, classIds, label }]
+let classIdToKelompok = {};  // classId -> kelompok entry
 
 const session = await requireAuth('login.html');
 if (session) {
   teacher = await getCurrentTeacher();
   if (teacher) {
-    groups = await getAdminGroups(supabase, teacher.id);
-    fillGroupDropdown();
+    await loadKelompokDropdown();
     await loadCategorySummary();
     await loadAdminDocs();
     await loadGeneralResources();
   }
 }
 
-function fillGroupDropdown() {
-  qs('#duKelas').innerHTML = groups
+// Dokumen administrasi dikelompokkan per (mapel + tingkat) yang benar-benar
+// diajar guru ini — misal "IPA — Kelas 7" mewakili semua section (7A/7B/7C),
+// bukan 1 folder per section kelas.
+async function loadKelompokDropdown() {
+  const { data, error } = await supabase
+    .from('teaching_assignments')
+    .select('mapel, kelas_id, classes(nama_kelas, tingkat)')
+    .eq('teacher_id', teacher.id);
+
+  if (error) console.error('Gagal ambil penugasan mengajar:', error.message);
+
+  const groups = {};
+  (data || []).forEach((a) => {
+    const tingkat = a.classes?.tingkat;
+    if (!tingkat) return;
+    const key = `${a.mapel}|${tingkat}`;
+    if (!groups[key]) {
+      groups[key] = { key, mapel: a.mapel, tingkat, classIds: [], label: `${a.mapel} — Kelas ${tingkat}` };
+    }
+    groups[key].classIds.push(a.kelas_id);
+  });
+
+  kelompokList = Object.values(groups).sort(
+    (a, b) => a.tingkat.localeCompare(b.tingkat, 'id', { numeric: true }) || a.mapel.localeCompare(b.mapel)
+  );
+  classIdToKelompok = {};
+  kelompokList.forEach((g) => g.classIds.forEach((id) => (classIdToKelompok[id] = g)));
+
+  qs('#duKelas').innerHTML = kelompokList
     .map((g) => `<option value="${g.key}">${g.label}</option>`)
-    .join('') || '<option value="">Belum ada penugasan mengajar</option>';
+    .join('');
 }
 
 async function loadCategorySummary() {
@@ -68,38 +93,41 @@ async function loadCategorySummary() {
     .eq('owner_id', teacher.id)
     .not('kategori', 'is', null);
 
-  if (error) console.error('Gagal ambil dokumen administrasi:', error.message);
+  if (error) console.error('Gagal ambil ringkasan administrasi:', error.message);
 
-  // Hitung berapa KELOMPOK (bukan kelas) yang sudah punya dokumen per kategori
-  const filledGroupsByKategori = {};
+  // Untuk tiap kategori, hitung berapa kelompok (mapel+tingkat) yang sudah
+  // punya minimal 1 dokumen — bukan berapa class_id mentah yang terisi.
+  const filledMap = {}; // kategori -> Set(kelompokKey)
   (data || []).forEach((r) => {
-    const group = findGroupForClassId(groups, r.class_id);
-    if (!group) return;
-    if (!filledGroupsByKategori[r.kategori]) filledGroupsByKategori[r.kategori] = new Set();
-    filledGroupsByKategori[r.kategori].add(group.key);
+    const kelompok = classIdToKelompok[r.class_id];
+    if (!kelompok) return;
+    if (!filledMap[r.kategori]) filledMap[r.kategori] = new Set();
+    filledMap[r.kategori].add(kelompok.key);
   });
 
-  const totalGroups = groups.length || 1;
-  const grid = document.getElementById('adminCategoryGrid');
-  grid.className = 'grid-cards grid-cards-admin';
+  const total = kelompokList.length;
 
+  const grid = document.getElementById('adminCategoryGrid');
+  grid.style.gridTemplateColumns = '';
+  grid.className = 'grid-cards grid-cards-admin';
   grid.innerHTML = Object.entries(KATEGORI_LABEL)
     .map(([key, label]) => {
-      const terisi = filledGroupsByKategori[key]?.size || 0;
+      const terisi = filledMap[key]?.size || 0;
       const meta = KATEGORI_META[key];
+      const daftarKelompok = kelompokList.map((g) => g.label).join(', ') || 'belum ada penugasan mengajar';
       return `
       <div class="admin-cat-card" data-kategori="${key}" role="button" tabindex="0">
         <div class="admin-cat-banner" style="background:${meta.gradient};">
-          <span class="admin-cat-badge">${terisi}/${totalGroups} LENGKAP</span>
+          <span class="admin-cat-badge">${terisi}/${total} LENGKAP</span>
           <svg class="icon"><use href="assets/icons/icons.svg#${meta.icon}"/></svg>
         </div>
         <div class="admin-cat-body">
           <span class="admin-cat-eyebrow">Kategori Dokumen</span>
           <strong class="admin-cat-title">${label}</strong>
-          <p class="admin-cat-desc">Klik untuk upload dokumen per mapel &amp; tingkat.</p>
+          <p class="admin-cat-desc">Klik untuk membuka folder ${daftarKelompok}.</p>
           <div class="admin-cat-footer">
             <svg class="icon"><use href="assets/icons/icons.svg#icon-folder"/></svg>
-            <span>${totalGroups} Kelompok Mapel</span>
+            <span>${total} Folder Kelas</span>
           </div>
         </div>
       </div>`;
@@ -127,7 +155,7 @@ function openAdminUploadFor(kategori) {
 async function loadAdminDocs() {
   const { data, error } = await supabase
     .from('resources')
-    .select('id, judul, kategori, url, class_id')
+    .select('id, judul, kategori, url, class_id, classes(nama_kelas)')
     .eq('owner_id', teacher.id)
     .not('kategori', 'is', null)
     .order('created_at', { ascending: false });
@@ -145,13 +173,14 @@ async function loadAdminDocs() {
   el.innerHTML = data
     .map((r) => {
       const meta = KATEGORI_META[r.kategori];
-      const groupLabel = findGroupForClassId(groups, r.class_id)?.label || '-';
+      const kelompok = classIdToKelompok[r.class_id];
+      const kelasText = kelompok ? `${kelompok.mapel} — Kelas ${kelompok.tingkat}` : r.classes?.nama_kelas || '-';
       return `
     <div class="doc-row" style="--doc-color:${meta?.color || 'var(--color-info)'}">
       <div class="row gap-2">
         <span class="badge">${KATEGORI_LABEL[r.kategori] || r.kategori}</span>
         <span>${r.judul}</span>
-        <span class="text-sm text-muted">${groupLabel}</span>
+        <span class="text-sm text-muted">${kelasText}</span>
       </div>
       <div class="row gap-2">
         ${r.url ? `<a class="btn btn-ghost" href="${r.url}" target="_blank" rel="noopener">Buka</a>` : ''}
@@ -228,14 +257,11 @@ document.getElementById('btnToggleGeneralUpload').addEventListener('click', () =
 
 document.getElementById('adminUploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const group = groups.find((g) => g.key === qs('#duKelas').value);
-  if (!group) {
-    alert('Pilih kelompok mapel+tingkat dulu (atau tambah penugasan mengajar di halaman Kelas).');
-    return;
-  }
+  const kelompok = kelompokList.find((g) => g.key === qs('#duKelas').value);
+  if (!kelompok) return alert('Pilih kelompok mengajar (mapel + kelas) dulu.');
   const { error } = await supabase.from('resources').insert({
     owner_id: teacher.id,
-    class_id: group.classIds[0], // representatif dari kelompok, bukan section spesifik
+    class_id: kelompok.classIds[0],
     kategori: qs('#duKategori').value,
     judul: qs('#duJudul').value,
     tipe: 'link',

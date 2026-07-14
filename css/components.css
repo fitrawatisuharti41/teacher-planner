@@ -171,84 +171,6 @@
 .stat-icon.c-purple { background: var(--color-accent-purple-soft); color: var(--color-accent-purple); }
 .stat-icon.c-danger { background: var(--color-danger-soft);        color: var(--color-danger); }
 
-/* --- Kartu kategori administrasi (banner gradient + badge) --- */
-.grid-cards-admin {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
-.admin-cat-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-  overflow: hidden;
-  cursor: pointer;
-  transition: box-shadow var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
-}
-.admin-cat-card:hover {
-  box-shadow: var(--shadow-soft-hover);
-  transform: translateY(-2px);
-}
-.admin-cat-banner {
-  position: relative;
-  height: 96px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-.admin-cat-banner .icon { width: 32px; height: 32px; color: #fff; }
-.admin-cat-badge {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-full);
-}
-.admin-cat-body {
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.admin-cat-eyebrow {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  color: var(--color-warning);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.admin-cat-title { font-size: var(--text-lg); }
-.admin-cat-desc {
-  font-size: var(--text-sm);
-  color: var(--color-ink-muted);
-  margin: var(--space-1) 0 var(--space-2);
-}
-.admin-cat-footer {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--color-ink-muted);
-  border-top: 1px solid var(--color-line);
-  padding-top: var(--space-2);
-}
-.admin-cat-footer .icon { width: 14px; height: 14px; }
-
-/* --- Baris dokumen dengan aksen warna kiri sesuai kategori/tipe --- */
-.doc-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-left: 3px solid var(--doc-color, var(--color-line));
-  background: var(--color-surface-alt);
-  border-radius: var(--radius-sm);
-}
-
 /* --- Sidebar collapsible --- */
 .sidebar {
   width: var(--sidebar-width);
@@ -296,3 +218,112 @@
   transition: background-color var(--duration-fast) var(--ease-standard);
 }
 .theme-toggle:hover { background: var(--color-surface-alt); }
+
+/* --- Kartu kategori administrasi (gradien) --- */
+.admin-cat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+}
+.admin-cat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-hover);
+}
+.admin-cat-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 128px;
+  color: #fff;
+}
+.admin-cat-banner .icon {
+  width: 40px;
+  height: 40px;
+  color: rgba(255, 255, 255, 0.92);
+}
+.admin-cat-badge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+.admin-cat-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  flex: 1;
+}
+.admin-cat-eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-warning);
+}
+.admin-cat-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+.admin-cat-desc {
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+  margin: 0 0 var(--space-2);
+}
+.admin-cat-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  margin-top: auto;
+  border-top: 1px solid var(--color-line);
+  font-size: var(--text-sm);
+  color: var(--color-ink-muted);
+}
+.admin-cat-footer .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* --- Bar warna di atas kartu statistik, ikut warna ikon di dalamnya --- */
+.card-stat {
+  border-top: 4px solid transparent;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+.card-stat:has(.stat-icon.c-blue)   { border-top-color: var(--color-accent-blue); }
+.card-stat:has(.stat-icon.c-green)  { border-top-color: var(--color-accent-green); }
+.card-stat:has(.stat-icon.c-amber)  { border-top-color: var(--color-warning); }
+.card-stat:has(.stat-icon.c-purple) { border-top-color: var(--color-accent-purple); }
+.card-stat:has(.stat-icon.c-danger) { border-top-color: var(--color-danger); }
+
+/* --- Baris dokumen administrasi & arsip umum: bar warna kiri sesuai kategori/tipe --- */
+.doc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--doc-color, var(--color-line));
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+}
+.doc-row .badge {
+  background: color-mix(in srgb, var(--doc-color, var(--color-info)) 18%, transparent);
+  color: var(--doc-color, var(--color-info));
+}

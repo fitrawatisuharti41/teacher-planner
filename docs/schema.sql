@@ -462,7 +462,13 @@ create policy "remedial_answers_public_insert" on remedial_answers
 
 -- ============================================================
 -- VIEW: ringkasan kelengkapan Administrasi Pembelajaran
--- Dipakai buat kartu "0/6 LENGKAP" & "Tingkat Kelengkapan" di dashboard
+-- (SUDAH TIDAK DIPAKAI aplikasi — dulu dipakai kartu "0/6 LENGKAP" &
+--  ring "Tingkat Kelengkapan", tapi total_kelas di sini menghitung
+--  SEMUA baris `classes`, bukan per (mapel + tingkat) yang benar-benar
+--  diajar guru. Sekarang dashboard.js & resources.js menghitungnya
+--  sendiri lewat `teaching_assignments`. View ini boleh di-drop kalau
+--  mau (drop view administrasi_summary;), dibiarkan di sini cuma
+--  sebagai riwayat.)
 -- ============================================================
 create view administrasi_summary as
 select
