@@ -1,9 +1,12 @@
 // js/resources.js
-// Terintegrasi Supabase: `resources` (kategori administrasi + arsip umum) + view `administrasi_summary`.
+// Terintegrasi Supabase: `resources` (kategori administrasi + arsip umum).
+// Kelengkapan dihitung per KELOMPOK MAPEL+TINGKAT (lihat admin-groups.js),
+// bukan per section kelas — sesuai cara kerja guru yang sebenarnya.
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
 import { initThemeToggle, initSidebarToggle, qs, qsa } from './utils.js';
+import { getAdminGroups, findGroupForClassId } from './admin-groups.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -38,57 +41,65 @@ const TIPE_META = {
 };
 
 let teacher = null;
-let totalKelas = 0;
+let groups = []; // [{ key, mapel, tingkat, label, classIds }]
 
 const session = await requireAuth('login.html');
 if (session) {
   teacher = await getCurrentTeacher();
   if (teacher) {
-    await loadClassDropdown();
+    groups = await getAdminGroups(supabase, teacher.id);
+    fillGroupDropdown();
     await loadCategorySummary();
     await loadAdminDocs();
     await loadGeneralResources();
   }
 }
 
-async function loadClassDropdown() {
-  const { data } = await supabase.from('classes').select('id, nama_kelas').eq('owner_id', teacher.id).order('nama_kelas');
-  totalKelas = (data || []).length;
-  qs('#duKelas').innerHTML = (data || []).map((c) => `<option value="${c.id}">${c.nama_kelas}</option>`).join('');
+function fillGroupDropdown() {
+  qs('#duKelas').innerHTML = groups
+    .map((g) => `<option value="${g.key}">${g.label}</option>`)
+    .join('') || '<option value="">Belum ada penugasan mengajar</option>';
 }
 
 async function loadCategorySummary() {
   const { data, error } = await supabase
-    .from('administrasi_summary')
-    .select('kategori, kelas_terisi, total_kelas')
-    .eq('owner_id', teacher.id);
+    .from('resources')
+    .select('kategori, class_id')
+    .eq('owner_id', teacher.id)
+    .not('kategori', 'is', null);
 
-  if (error) console.error('Gagal ambil ringkasan administrasi:', error.message);
+  if (error) console.error('Gagal ambil dokumen administrasi:', error.message);
 
-  const summaryMap = Object.fromEntries((data || []).map((s) => [s.kategori, s]));
+  // Hitung berapa KELOMPOK (bukan kelas) yang sudah punya dokumen per kategori
+  const filledGroupsByKategori = {};
+  (data || []).forEach((r) => {
+    const group = findGroupForClassId(groups, r.class_id);
+    if (!group) return;
+    if (!filledGroupsByKategori[r.kategori]) filledGroupsByKategori[r.kategori] = new Set();
+    filledGroupsByKategori[r.kategori].add(group.key);
+  });
 
+  const totalGroups = groups.length || 1;
   const grid = document.getElementById('adminCategoryGrid');
-  grid.style.gridTemplateColumns = '';
   grid.className = 'grid-cards grid-cards-admin';
+
   grid.innerHTML = Object.entries(KATEGORI_LABEL)
     .map(([key, label]) => {
-      const s = summaryMap[key];
-      const terisi = s?.kelas_terisi || 0;
-      const total = s?.total_kelas || totalKelas || 0;
+      const terisi = filledGroupsByKategori[key]?.size || 0;
       const meta = KATEGORI_META[key];
       return `
       <div class="admin-cat-card" data-kategori="${key}" role="button" tabindex="0">
         <div class="admin-cat-banner" style="background:${meta.gradient};">
-          <span class="admin-cat-badge">${terisi}/${total} LENGKAP</span>
+          <span class="admin-cat-badge">${terisi}/${totalGroups} LENGKAP</span>
           <svg class="icon"><use href="assets/icons/icons.svg#${meta.icon}"/></svg>
         </div>
         <div class="admin-cat-body">
           <span class="admin-cat-eyebrow">Kategori Dokumen</span>
           <strong class="admin-cat-title">${label}</strong>
-          <p class="admin-cat-desc">Klik untuk membuka folder Kelas 1 sampai Kelas ${total || 6}.</p>
+          <p class="admin-cat-desc">Klik untuk upload dokumen per mapel &amp; tingkat.</p>
           <div class="admin-cat-footer">
             <svg class="icon"><use href="assets/icons/icons.svg#icon-folder"/></svg>
-            <span>${total || 6} Folder Kelas</span>
+            <span>${totalGroups} Kelompok Mapel</span>
           </div>
         </div>
       </div>`;
@@ -116,7 +127,7 @@ function openAdminUploadFor(kategori) {
 async function loadAdminDocs() {
   const { data, error } = await supabase
     .from('resources')
-    .select('id, judul, kategori, url, classes(nama_kelas)')
+    .select('id, judul, kategori, url, class_id')
     .eq('owner_id', teacher.id)
     .not('kategori', 'is', null)
     .order('created_at', { ascending: false });
@@ -134,12 +145,13 @@ async function loadAdminDocs() {
   el.innerHTML = data
     .map((r) => {
       const meta = KATEGORI_META[r.kategori];
+      const groupLabel = findGroupForClassId(groups, r.class_id)?.label || '-';
       return `
     <div class="doc-row" style="--doc-color:${meta?.color || 'var(--color-info)'}">
       <div class="row gap-2">
         <span class="badge">${KATEGORI_LABEL[r.kategori] || r.kategori}</span>
         <span>${r.judul}</span>
-        <span class="text-sm text-muted">Kelas ${r.classes?.nama_kelas || '-'}</span>
+        <span class="text-sm text-muted">${groupLabel}</span>
       </div>
       <div class="row gap-2">
         ${r.url ? `<a class="btn btn-ghost" href="${r.url}" target="_blank" rel="noopener">Buka</a>` : ''}
@@ -216,9 +228,14 @@ document.getElementById('btnToggleGeneralUpload').addEventListener('click', () =
 
 document.getElementById('adminUploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const group = groups.find((g) => g.key === qs('#duKelas').value);
+  if (!group) {
+    alert('Pilih kelompok mapel+tingkat dulu (atau tambah penugasan mengajar di halaman Kelas).');
+    return;
+  }
   const { error } = await supabase.from('resources').insert({
     owner_id: teacher.id,
-    class_id: qs('#duKelas').value,
+    class_id: group.classIds[0], // representatif dari kelompok, bukan section spesifik
     kategori: qs('#duKategori').value,
     judul: qs('#duJudul').value,
     tipe: 'link',

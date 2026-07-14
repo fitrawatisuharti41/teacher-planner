@@ -4,6 +4,7 @@
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
 import { renderProgressRing, ringColorByPercent, initThemeToggle, formatTanggalIndo, getGreeting, initSidebarToggle} from './utils.js';
+import { getAdminGroups, findGroupForClassId } from './admin-groups.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -66,19 +67,27 @@ async function initDashboard(teacher) {
   const draftCount = (plans || []).filter((p) => p.status === 'draft').length;
   document.querySelector('#statDraft .stat-value').textContent = draftCount;
 
-  // --- Kelengkapan administrasi (view administrasi_summary) ---
-  const { data: summary, error: summaryError } = await supabase
-    .from('administrasi_summary')
-    .select('kelas_terisi, total_kelas')
-    .eq('owner_id', teacher.id);
+  // --- Kelengkapan administrasi, dihitung per KELOMPOK MAPEL+TINGKAT ---
+  // (bukan per section kelas — konsisten dengan logika di resources.js)
+  const groups = await getAdminGroups(supabase, teacher.id);
+  const { data: docs, error: docsError } = await supabase
+    .from('resources')
+    .select('kategori, class_id')
+    .eq('owner_id', teacher.id)
+    .not('kategori', 'is', null);
 
-  if (summaryError) console.error('Gagal ambil ringkasan administrasi:', summaryError.message);
+  if (docsError) console.error('Gagal ambil dokumen administrasi:', docsError.message);
 
   let percent = 0;
-  if (summary && summary.length > 0) {
-    const totalTerisi = summary.reduce((sum, s) => sum + s.kelas_terisi, 0);
-    const totalMaks = summary.reduce((sum, s) => sum + s.total_kelas, 0) * 7; // 7 kategori dokumen
-    percent = totalMaks > 0 ? Math.round((totalTerisi / totalMaks) * 100) : 0;
+  if (groups.length > 0) {
+    const KATEGORI_COUNT = 7;
+    const filled = new Set();
+    (docs || []).forEach((r) => {
+      const group = findGroupForClassId(groups, r.class_id);
+      if (group) filled.add(`${r.kategori}|${group.key}`);
+    });
+    const totalMaks = groups.length * KATEGORI_COUNT;
+    percent = totalMaks > 0 ? Math.round((filled.size / totalMaks) * 100) : 0;
   }
   renderProgressRing(document.getElementById('ringKelengkapan'), percent, 96, ringColorByPercent(percent));
 }

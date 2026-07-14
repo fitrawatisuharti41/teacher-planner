@@ -5,7 +5,7 @@
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
-import { initThemeToggle, initSidebarToggle, renderProgressRing, ringColorByPercent, qs, qsa } from './utils.js';
+import { initThemeToggle, initSidebarToggle, renderProgressRing, qs, qsa } from './utils.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -127,8 +127,7 @@ async function loadDashboard() {
     return;
   }
 
-  const persentaseKehadiran = Math.round(data?.persentase_kehadiran || 0);
-  renderProgressRing(document.getElementById('ringKehadiran'), persentaseKehadiran, 96, ringColorByPercent(persentaseKehadiran));
+  renderProgressRing(document.getElementById('ringKehadiran'), Math.round(data?.persentase_kehadiran || 0));
   qs('#statRataNilai').textContent = data?.rata_rata_nilai ?? '–';
   qs('#statPrestasi').textContent = data?.jumlah_prestasi ?? 0;
   qs('#statPelanggaran').textContent = data?.jumlah_pelanggaran ?? 0;

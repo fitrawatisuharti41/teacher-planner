@@ -3,25 +3,29 @@
    Breakpoint: mobile (default) -> tablet/iPad -> laptop/desktop
    ============================================================ */
 
-/* Grid dasar untuk kartu dashboard, mobile-first (1 kolom) */
-.grid-cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-4);
+/* Sidebar + konten selalu berdampingan (row), bukan numpuk (column) */
+.layout-with-sidebar {
+  display: flex;
+  flex-direction: row;
 }
 
-/* Grid kartu kategori administrasi (gradien) — sedikit lebih lebar per kartu */
-.grid-cards-admin {
-  grid-template-columns: 1fr;
-}
-@media (min-width: 481px) {
-  .grid-cards-admin {
-    grid-template-columns: repeat(2, 1fr);
+/* Mobile & tablet portrait: sidebar selalu icon-only, gak ada ruang buat label teks */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: var(--sidebar-width-collapsed) !important;
+  }
+  .sidebar .nav-label {
+    display: none !important;
+  }
+  .sidebar-toggle {
+    display: none; /* di HP/tablet gak perlu toggle, udah otomatis ringkas */
   }
 }
-@media (min-width: 1025px) {
-  .grid-cards-admin {
-    grid-template-columns: repeat(4, 1fr);
+
+/* Layar sangat sempit: sembunyikan nama app di top bar biar gak wrap 2 baris */
+@media (max-width: 480px) {
+  .topnav strong {
+    display: none;
   }
 }
 
@@ -49,56 +53,21 @@
   }
 }
 
-/* Layout 2 kolom (sidebar + konten). Di layar kecil/menengah, sidebar SELALU
-   jadi kolom ikon tipis di samping (bukan numpuk di atas konten) supaya
-   konten utama langsung terlihat tanpa perlu scroll lewat menu raksasa. */
+/* Layout 2 kolom (sidebar + konten) hanya muncul di layar lebar */
 .layout-with-sidebar {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+  flex-direction: column;
 }
-.layout-with-sidebar .sidebar {
-  width: var(--sidebar-width-collapsed);
-  flex-shrink: 0;
-  position: sticky;
-  top: var(--space-4);
-}
-/* Paksa mode icon-only di layar < 1025px, apapun status toggle/localStorage-nya */
-.layout-with-sidebar .sidebar .nav-label {
-  display: none;
-}
-.layout-with-sidebar .sidebar .btn {
-  justify-content: center;
-  padding-inline: 0;
-}
-.layout-with-sidebar .content {
-  flex: 1;
-  min-width: 0;
-}
-/* Tombol lipat sidebar tidak relevan di mobile karena sidebar selalu ringkas */
-.sidebar-toggle {
-  display: none;
-}
-
 @media (min-width: 1025px) {
+  .layout-with-sidebar {
+    flex-direction: row;
+  }
   .layout-with-sidebar .sidebar {
-    width: var(--sidebar-width);
+    width: 240px;
+    flex-shrink: 0;
   }
-  .layout-with-sidebar .sidebar .nav-label {
-    display: inline;
-  }
-  .layout-with-sidebar .sidebar .btn {
-    justify-content: flex-start;
-    padding-inline: var(--space-4);
-  }
-  .layout-with-sidebar .sidebar.is-collapsed .nav-label {
-    display: none;
-  }
-  .layout-with-sidebar .sidebar.is-collapsed .btn {
-    justify-content: center;
-    padding-inline: 0;
-  }
-  .sidebar-toggle {
-    display: flex;
+  .layout-with-sidebar .content {
+    flex: 1;
+    min-width: 0;
   }
 }

@@ -20,18 +20,18 @@
   --color-accent-purple: #8b5cf6;
   --color-accent-purple-soft: #f1ebfd;
 
+  /* Gradient per kategori administrasi (kartu warna-warni) */
+  --grad-modul-ajar: linear-gradient(135deg, #2f6fed, #1e4fb8);
+  --grad-kktp:       linear-gradient(135deg, #17a866, #0d7a48);
+  --grad-cp:         linear-gradient(135deg, #f0723a, #c4451a);
+  --grad-atp:        linear-gradient(135deg, #8b5cf6, #6425d0);
+  --grad-prota:      linear-gradient(135deg, #e0356b, #ab1c4a);
+  --grad-promes:     linear-gradient(135deg, #3b82f6, #1d4ed8);
+  --grad-kaldik:     linear-gradient(135deg, #f0961a, #c96f06);
+
   /* Sidebar */
   --sidebar-width: 232px;
   --sidebar-width-collapsed: 72px;
-
-  /* Gradien kartu kategori administrasi — tetap sama di light/dark */
-  --grad-modul-ajar: linear-gradient(135deg, #1c3d5f 0%, #3b6fed 100%);
-  --grad-kktp:       linear-gradient(135deg, #0b5c40 0%, #1faa59 100%);
-  --grad-cp:         linear-gradient(135deg, #7c2d12 0%, #ea580c 100%);
-  --grad-atp:        linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%);
-  --grad-prota:      linear-gradient(135deg, #7f1d3d 0%, #d3234f 100%);
-  --grad-promes:     linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-  --grad-kaldik:     linear-gradient(135deg, #9a5b0a 0%, #f0961a 100%);
 
   /* Status semantik (kehadiran, nilai) */
   --color-success: var(--color-accent-green);
