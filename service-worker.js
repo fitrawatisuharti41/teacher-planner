@@ -2,7 +2,10 @@
 // Strategi: cache app-shell (HTML/CSS/JS statis) saat install,
 // network-first untuk data (biar selalu ambil data terbaru dari Supabase).
 
-const CACHE_NAME = 'teacher-planner-shell-v1';
+// PENTING: setiap kali css/js di APP_SHELL diubah, naikkan angka versi ini
+// (v2, v3, dst). Kalau nama file tetap sama tapi versi tidak dinaikkan,
+// browser akan terus pakai file lama dari cache walau sudah deploy ulang.
+const CACHE_NAME = 'teacher-planner-shell-v2';
 
 // File statis yang di-cache saat install (app shell)
 const APP_SHELL = [
