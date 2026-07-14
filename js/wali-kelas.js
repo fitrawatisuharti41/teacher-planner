@@ -57,6 +57,7 @@ async function init() {
   const studentOptions = studentsCache.map((s) => `<option value="${s.id}">${s.nama}</option>`).join('');
   qs('#pSiswa').innerHTML = studentOptions;
   qs('#kSiswa').innerHTML = studentOptions;
+  qs('#cpSiswa').innerHTML = studentOptions;
 
   await Promise.all([
     loadDashboard(),
@@ -64,9 +65,54 @@ async function init() {
     loadJurnal(),
     loadPrestasi(),
     loadKomunikasi(),
+    loadCatatanPribadi(),
     loadAdminDocs(),
   ]);
 }
+
+// ------- TAB: Catatan Pribadi Siswa -------
+async function loadCatatanPribadi() {
+  const { data, error } = await supabase
+    .from('student_private_notes')
+    .select('id, tanggal, catatan, students(nama)')
+    .in('student_id', studentsCache.map((s) => s.id).length ? studentsCache.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000'])
+    .order('tanggal', { ascending: false });
+
+  if (error) return console.error(error.message);
+
+  qs('#catatanPribadiList').innerHTML = (data || []).length
+    ? data
+        .map(
+          (n) => `
+      <div class="card row gap-3" style="justify-content:space-between;">
+        <div>
+          <strong>${n.students?.nama || '-'}</strong>
+          <div class="text-sm text-muted">${n.tanggal}</div>
+          <p class="text-sm" style="margin:var(--space-1) 0 0;">${n.catatan}</p>
+        </div>
+        <button class="btn btn-ghost btn-del" data-table="student_private_notes" data-id="${n.id}">Hapus</button>
+      </div>`
+        )
+        .join('')
+    : '<p class="text-sm text-muted">Belum ada catatan pribadi.</p>';
+
+  bindDeleteButtons('#catatanPribadiList', loadCatatanPribadi);
+}
+
+document.getElementById('btnNewCatatanPribadi').addEventListener('click', () => toggleForm('#catatanPribadiForm'));
+document.getElementById('catatanPribadiForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await supabase.from('student_private_notes').insert({
+    owner_id: teacher.id,
+    student_id: qs('#cpSiswa').value,
+    tanggal: qs('#cpTanggal').value,
+    catatan: qs('#cpCatatan').value,
+  });
+  if (error) return alert('Gagal menyimpan: ' + error.message);
+  e.target.reset();
+  qs('#catatanPribadiForm').style.display = 'none';
+  await loadCatatanPribadi();
+});
 
 // ------- TAB: Dashboard Kelas -------
 async function loadDashboard() {

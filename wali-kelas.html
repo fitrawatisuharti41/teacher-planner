@@ -88,6 +88,7 @@
       <button class="tab-btn" data-tab="jurnal">Jurnal</button>
       <button class="tab-btn" data-tab="prestasi">Prestasi &amp; Pelanggaran</button>
       <button class="tab-btn" data-tab="komunikasi">Komunikasi Ortu</button>
+      <button class="tab-btn" data-tab="catatan-pribadi">Catatan Pribadi Siswa</button>
       <button class="tab-btn" data-tab="administrasi">Administrasi</button>
     </div>
 
@@ -224,6 +225,31 @@
         <button type="submit" class="btn btn-primary">Simpan</button>
       </form>
       <div class="stack gap-3" id="komunikasiList"></div>
+    </div>
+
+    <!-- TAB: Catatan Pribadi Siswa -->
+    <div class="tab-panel" id="panel-catatan-pribadi">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Catatan Pribadi Siswa</h3>
+        <button class="btn btn-primary" id="btnNewCatatanPribadi">+ Catatan Baru</button>
+      </div>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-4);">Khusus terlihat oleh siswa/orang tua yang bersangkutan saja di Portal Ortu.</p>
+      <form class="card row gap-4" id="catatanPribadiForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="cpSiswa">Siswa</label>
+          <select class="input" id="cpSiswa" required></select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:140px;">
+          <label class="text-sm text-muted" for="cpTanggal">Tanggal</label>
+          <input class="input" id="cpTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1" style="flex:3; min-width:220px;">
+          <label class="text-sm text-muted" for="cpCatatan">Catatan</label>
+          <input class="input" id="cpCatatan" type="text" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+      <div class="stack gap-3" id="catatanPribadiList"></div>
     </div>
 
     <!-- TAB: Administrasi -->
