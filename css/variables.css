@@ -24,6 +24,15 @@
   --sidebar-width: 232px;
   --sidebar-width-collapsed: 72px;
 
+  /* Gradien kartu kategori administrasi — tetap sama di light/dark */
+  --grad-modul-ajar: linear-gradient(135deg, #1c3d5f 0%, #3b6fed 100%);
+  --grad-kktp:       linear-gradient(135deg, #0b5c40 0%, #1faa59 100%);
+  --grad-cp:         linear-gradient(135deg, #7c2d12 0%, #ea580c 100%);
+  --grad-atp:        linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%);
+  --grad-prota:      linear-gradient(135deg, #7f1d3d 0%, #d3234f 100%);
+  --grad-promes:     linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+  --grad-kaldik:     linear-gradient(135deg, #9a5b0a 0%, #f0961a 100%);
+
   /* Status semantik (kehadiran, nilai) */
   --color-success: var(--color-accent-green);
   --color-success-soft: var(--color-accent-green-soft);

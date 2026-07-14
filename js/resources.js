@@ -3,7 +3,7 @@
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
-import { initThemeToggle, initSidebarToggle, renderProgressRing, qs, qsa } from './utils.js';
+import { initThemeToggle, initSidebarToggle, qs, qsa } from './utils.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -17,6 +17,16 @@ const KATEGORI_LABEL = {
   prota: 'Prota',
   promes: 'Promes',
   kaldik: 'KalDik',
+};
+
+const KATEGORI_META = {
+  modul_ajar: { gradient: 'var(--grad-modul-ajar)', icon: 'icon-book' },
+  kktp:       { gradient: 'var(--grad-kktp)',       icon: 'icon-badge-check' },
+  cp:         { gradient: 'var(--grad-cp)',         icon: 'icon-graduation-cap' },
+  atp:        { gradient: 'var(--grad-atp)',        icon: 'icon-hierarchy' },
+  prota:      { gradient: 'var(--grad-prota)',      icon: 'icon-grid' },
+  promes:     { gradient: 'var(--grad-promes)',     icon: 'icon-calendar' },
+  kaldik:     { gradient: 'var(--grad-kaldik)',     icon: 'icon-calendar' },
 };
 
 let teacher = null;
@@ -50,30 +60,49 @@ async function loadCategorySummary() {
   const summaryMap = Object.fromEntries((data || []).map((s) => [s.kategori, s]));
 
   const grid = document.getElementById('adminCategoryGrid');
+  grid.style.gridTemplateColumns = '';
+  grid.className = 'grid-cards grid-cards-admin';
   grid.innerHTML = Object.entries(KATEGORI_LABEL)
     .map(([key, label]) => {
       const s = summaryMap[key];
       const terisi = s?.kelas_terisi || 0;
       const total = s?.total_kelas || totalKelas || 0;
-      const percent = total > 0 ? Math.round((terisi / total) * 100) : 0;
+      const meta = KATEGORI_META[key];
       return `
-      <div class="card stack" style="align-items:center; text-align:center;">
-        <div class="ring-${key}" style="margin-bottom:var(--space-2);"></div>
-        <strong class="text-sm">${label}</strong>
-        <span class="text-xs text-muted">${terisi}/${total} kelas</span>
+      <div class="admin-cat-card" data-kategori="${key}" role="button" tabindex="0">
+        <div class="admin-cat-banner" style="background:${meta.gradient};">
+          <span class="admin-cat-badge">${terisi}/${total} LENGKAP</span>
+          <svg class="icon"><use href="assets/icons/icons.svg#${meta.icon}"/></svg>
+        </div>
+        <div class="admin-cat-body">
+          <span class="admin-cat-eyebrow">Kategori Dokumen</span>
+          <strong class="admin-cat-title">${label}</strong>
+          <p class="admin-cat-desc">Klik untuk membuka folder Kelas 1 sampai Kelas ${total || 6}.</p>
+          <div class="admin-cat-footer">
+            <svg class="icon"><use href="assets/icons/icons.svg#icon-folder"/></svg>
+            <span>${total || 6} Folder Kelas</span>
+          </div>
+        </div>
       </div>`;
     })
     .join('');
 
-  Object.entries(KATEGORI_LABEL).forEach(([key], index) => {
-    const s = summaryMap[key];
-    const terisi = s?.kelas_terisi || 0;
-    const total = s?.total_kelas || totalKelas || 0;
-    const percent = total > 0 ? Math.round((terisi / total) * 100) : 0;
-    const palet = ['#3b6fed', '#1faa59', '#c9860a', '#8b5cf6', '#e5484d', '#0ea5e9', '#f472b6'];
-    const el = grid.querySelector(`.ring-${key}`);
-    if (el) renderProgressRing(el, percent, 72, palet[index % palet.length]);
+  qsa('.admin-cat-card', grid).forEach((card) => {
+    card.addEventListener('click', () => openAdminUploadFor(card.dataset.kategori));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openAdminUploadFor(card.dataset.kategori);
+      }
+    });
   });
+}
+
+function openAdminUploadFor(kategori) {
+  const form = document.getElementById('adminUploadForm');
+  form.style.display = 'flex';
+  document.getElementById('duKategori').value = kategori;
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function loadAdminDocs() {

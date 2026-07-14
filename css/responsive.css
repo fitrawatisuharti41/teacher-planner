@@ -10,6 +10,21 @@
   gap: var(--space-4);
 }
 
+/* Grid kartu kategori administrasi (gradien) — sedikit lebih lebar per kartu */
+.grid-cards-admin {
+  grid-template-columns: 1fr;
+}
+@media (min-width: 481px) {
+  .grid-cards-admin {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1025px) {
+  .grid-cards-admin {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 /* --- Tablet / iPad portrait & landscape (>= 641px) --- */
 @media (min-width: 641px) {
   .grid-cards {
@@ -34,21 +49,56 @@
   }
 }
 
-/* Layout 2 kolom (sidebar + konten) hanya muncul di layar lebar */
+/* Layout 2 kolom (sidebar + konten). Di layar kecil/menengah, sidebar SELALU
+   jadi kolom ikon tipis di samping (bukan numpuk di atas konten) supaya
+   konten utama langsung terlihat tanpa perlu scroll lewat menu raksasa. */
 .layout-with-sidebar {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-start;
 }
+.layout-with-sidebar .sidebar {
+  width: var(--sidebar-width-collapsed);
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--space-4);
+}
+/* Paksa mode icon-only di layar < 1025px, apapun status toggle/localStorage-nya */
+.layout-with-sidebar .sidebar .nav-label {
+  display: none;
+}
+.layout-with-sidebar .sidebar .btn {
+  justify-content: center;
+  padding-inline: 0;
+}
+.layout-with-sidebar .content {
+  flex: 1;
+  min-width: 0;
+}
+/* Tombol lipat sidebar tidak relevan di mobile karena sidebar selalu ringkas */
+.sidebar-toggle {
+  display: none;
+}
+
 @media (min-width: 1025px) {
-  .layout-with-sidebar {
-    flex-direction: row;
-  }
   .layout-with-sidebar .sidebar {
-    width: 240px;
-    flex-shrink: 0;
+    width: var(--sidebar-width);
   }
-  .layout-with-sidebar .content {
-    flex: 1;
-    min-width: 0;
+  .layout-with-sidebar .sidebar .nav-label {
+    display: inline;
+  }
+  .layout-with-sidebar .sidebar .btn {
+    justify-content: flex-start;
+    padding-inline: var(--space-4);
+  }
+  .layout-with-sidebar .sidebar.is-collapsed .nav-label {
+    display: none;
+  }
+  .layout-with-sidebar .sidebar.is-collapsed .btn {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .sidebar-toggle {
+    display: flex;
   }
 }
