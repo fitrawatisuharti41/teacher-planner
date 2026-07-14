@@ -3,7 +3,7 @@
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
-import { renderProgressRing, initThemeToggle, formatTanggalIndo, getGreeting, initSidebarToggle} from './utils.js';
+import { renderProgressRing, ringColorByPercent, initThemeToggle, formatTanggalIndo, getGreeting, initSidebarToggle} from './utils.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -80,7 +80,7 @@ async function initDashboard(teacher) {
     const totalMaks = summary.reduce((sum, s) => sum + s.total_kelas, 0) * 7; // 7 kategori dokumen
     percent = totalMaks > 0 ? Math.round((totalTerisi / totalMaks) * 100) : 0;
   }
-  renderProgressRing(document.getElementById('ringKelengkapan'), percent);
+  renderProgressRing(document.getElementById('ringKelengkapan'), percent, 96, ringColorByPercent(percent));
 }
 
 function renderSchedule(events) {

@@ -298,3 +298,32 @@
   width: 16px;
   height: 16px;
 }
+
+/* --- Bar warna di atas kartu statistik, ikut warna ikon di dalamnya --- */
+.card-stat {
+  border-top: 4px solid transparent;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+.card-stat:has(.stat-icon.c-blue)   { border-top-color: var(--color-accent-blue); }
+.card-stat:has(.stat-icon.c-green)  { border-top-color: var(--color-accent-green); }
+.card-stat:has(.stat-icon.c-amber)  { border-top-color: var(--color-warning); }
+.card-stat:has(.stat-icon.c-purple) { border-top-color: var(--color-accent-purple); }
+.card-stat:has(.stat-icon.c-danger) { border-top-color: var(--color-danger); }
+
+/* --- Baris dokumen administrasi & arsip umum: bar warna kiri sesuai kategori/tipe --- */
+.doc-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--doc-color, var(--color-line));
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-alt);
+}
+.doc-row .badge {
+  background: color-mix(in srgb, var(--doc-color, var(--color-info)) 18%, transparent);
+  color: var(--doc-color, var(--color-info));
+}

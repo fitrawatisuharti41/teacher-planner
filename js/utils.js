@@ -15,6 +15,16 @@ export function qsa(selector, scope = document) {
  * Render progress ring SVG ke dalam elemen `el`.
  * Dipakai untuk: kelengkapan administrasi, rekap kehadiran, progress tugas.
  */
+/**
+ * Warna ring progress berdasarkan persentase — merah (rendah), kuning
+ * (sedang), hijau (tinggi/lengkap). Dipakai di dashboard & wali-kelas.
+ */
+export function ringColorByPercent(percent) {
+  if (percent >= 75) return 'var(--color-success)';
+  if (percent >= 40) return 'var(--color-warning)';
+  return 'var(--color-danger)';
+}
+
 export function renderProgressRing(el, percent, size = 96, color = null) {
   const stroke = 8;
   const r = (size - stroke) / 2;

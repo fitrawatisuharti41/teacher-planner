@@ -20,13 +20,21 @@ const KATEGORI_LABEL = {
 };
 
 const KATEGORI_META = {
-  modul_ajar: { gradient: 'var(--grad-modul-ajar)', icon: 'icon-book' },
-  kktp:       { gradient: 'var(--grad-kktp)',       icon: 'icon-badge-check' },
-  cp:         { gradient: 'var(--grad-cp)',         icon: 'icon-graduation-cap' },
-  atp:        { gradient: 'var(--grad-atp)',        icon: 'icon-hierarchy' },
-  prota:      { gradient: 'var(--grad-prota)',      icon: 'icon-grid' },
-  promes:     { gradient: 'var(--grad-promes)',     icon: 'icon-calendar' },
-  kaldik:     { gradient: 'var(--grad-kaldik)',     icon: 'icon-calendar' },
+  modul_ajar: { gradient: 'var(--grad-modul-ajar)', icon: 'icon-book',           color: '#3b6fed' },
+  kktp:       { gradient: 'var(--grad-kktp)',       icon: 'icon-badge-check',    color: '#1faa59' },
+  cp:         { gradient: 'var(--grad-cp)',         icon: 'icon-graduation-cap', color: '#ea580c' },
+  atp:        { gradient: 'var(--grad-atp)',        icon: 'icon-hierarchy',      color: '#8b5cf6' },
+  prota:      { gradient: 'var(--grad-prota)',      icon: 'icon-grid',           color: '#d3234f' },
+  promes:     { gradient: 'var(--grad-promes)',     icon: 'icon-calendar',       color: '#3b82f6' },
+  kaldik:     { gradient: 'var(--grad-kaldik)',     icon: 'icon-calendar',       color: '#f0961a' },
+};
+
+const TIPE_META = {
+  pdf:   { label: 'PDF',   color: '#d33d3d' },
+  word:  { label: 'Word',  color: '#2b579a' },
+  ppt:   { label: 'PPT',   color: '#d24726' },
+  video: { label: 'Video', color: '#8b5cf6' },
+  link:  { label: 'Link',  color: '#0ea5e9' },
 };
 
 let teacher = null;
@@ -124,11 +132,12 @@ async function loadAdminDocs() {
     return;
   }
   el.innerHTML = data
-    .map(
-      (r) => `
-    <div class="row gap-3" style="justify-content:space-between;">
+    .map((r) => {
+      const meta = KATEGORI_META[r.kategori];
+      return `
+    <div class="doc-row" style="--doc-color:${meta?.color || 'var(--color-info)'}">
       <div class="row gap-2">
-        <span class="badge badge-info">${KATEGORI_LABEL[r.kategori] || r.kategori}</span>
+        <span class="badge">${KATEGORI_LABEL[r.kategori] || r.kategori}</span>
         <span>${r.judul}</span>
         <span class="text-sm text-muted">Kelas ${r.classes?.nama_kelas || '-'}</span>
       </div>
@@ -136,8 +145,8 @@ async function loadAdminDocs() {
         ${r.url ? `<a class="btn btn-ghost" href="${r.url}" target="_blank" rel="noopener">Buka</a>` : ''}
         <button class="btn btn-ghost btn-delete-doc" data-id="${r.id}">Hapus</button>
       </div>
-    </div>`
-    )
+    </div>`;
+    })
     .join('');
 
   qsa('.btn-delete-doc', el).forEach((btn) =>
@@ -169,19 +178,20 @@ async function loadGeneralResources() {
     return;
   }
   el.innerHTML = data
-    .map(
-      (r) => `
-    <div class="row gap-3" style="justify-content:space-between;">
+    .map((r) => {
+      const meta = TIPE_META[r.tipe];
+      return `
+    <div class="doc-row" style="--doc-color:${meta?.color || 'var(--color-info)'}">
       <div class="row gap-2">
-        <span class="badge badge-info">${r.tipe}</span>
+        <span class="badge">${meta?.label || r.tipe}</span>
         <span>${r.judul}</span>
       </div>
       <div class="row gap-2">
         ${r.url ? `<a class="btn btn-ghost" href="${r.url}" target="_blank" rel="noopener">Buka</a>` : ''}
         <button class="btn btn-ghost btn-delete-general" data-id="${r.id}">Hapus</button>
       </div>
-    </div>`
-    )
+    </div>`;
+    })
     .join('');
 
   qsa('.btn-delete-general', el).forEach((btn) =>
