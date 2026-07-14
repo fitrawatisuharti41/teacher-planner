@@ -1,13 +1,13 @@
 // service-worker.js
-// Strategi: cache app-shell (HTML/CSS/JS statis) saat install,
-// network-first untuk data (biar selalu ambil data terbaru dari Supabase).
+// Strategi: network-first untuk app-shell (HTML/CSS/JS) DAN data —
+// selalu coba ambil versi terbaru dulu; cache cuma dipakai kalau
+// benar-benar offline. Ini supaya update (CSS/JS) langsung kepakai
+// tanpa perlu hard-refresh berkali-kali.
 
-// PENTING: setiap kali css/js di APP_SHELL diubah, naikkan angka versi ini
-// (v2, v3, dst). Kalau nama file tetap sama tapi versi tidak dinaikkan,
-// browser akan terus pakai file lama dari cache walau sudah deploy ulang.
-const CACHE_NAME = 'teacher-planner-shell-v4';
+const CACHE_NAME = 'teacher-planner-shell-v5';
 
-// File statis yang di-cache saat install (app shell)
+// File statis yang di-cache saat install (app shell) — hanya dipakai
+// sebagai fallback offline, BUKAN sumber utama saat online.
 const APP_SHELL = [
   '/index.html',
   '/login.html',
@@ -56,23 +56,28 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Jangan cache request ke Supabase (data harus selalu fresh)
+  // Jangan sentuh request ke Supabase sama sekali (data harus selalu fresh)
   if (url.hostname.endsWith('.supabase.co')) {
-    return; // biarkan lewat langsung ke network
+    return;
   }
 
-  // App shell: cache-first
+  // Network-first: coba ambil versi terbaru dari server dulu. Kalau berhasil,
+  // simpan salinannya ke cache (buat fallback offline nanti). Kalau gagal
+  // (offline/no signal), baru pakai versi cache terakhir yang ada.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return (
-        cached ||
-        fetch(event.request).catch(() => {
-          // fallback offline sederhana untuk halaman HTML
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => {
+          if (cached) return cached;
           if (event.request.mode === 'navigate') {
             return caches.match('/index.html');
           }
         })
-      );
-    })
+      )
   );
 });
