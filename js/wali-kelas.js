@@ -62,6 +62,7 @@ async function init() {
   await Promise.all([
     loadDashboard(),
     loadAgenda(),
+    loadGaleri(),
     loadJurnal(),
     loadPrestasi(),
     loadKomunikasi(),
@@ -173,6 +174,100 @@ document.getElementById('agendaForm').addEventListener('submit', async (e) => {
   e.target.reset();
   qs('#agendaForm').style.display = 'none';
   await loadAgenda();
+});
+
+// ------- TAB: Galeri & Info -------
+async function loadGaleri() {
+  const { data, error } = await supabase
+    .from('class_gallery')
+    .select('id, tanggal, judul, catatan, foto_url')
+    .eq('class_id', waliClass.id)
+    .order('tanggal', { ascending: false });
+
+  if (error) return console.error(error.message);
+
+  qs('#galeriList').innerHTML = (data || []).length
+    ? data
+        .map(
+          (g) => `
+      <div class="card gallery-item" data-id="${g.id}">
+        ${
+          g.foto_url
+            ? `<img class="gallery-photo" src="${g.foto_url}" alt="${g.judul || 'Foto kegiatan'}" loading="lazy">`
+            : `<div class="gallery-photo-placeholder"><svg class="icon icon-lg"><use href="assets/icons/icons.svg#icon-folder"/></svg></div>`
+        }
+        <div class="gallery-body">
+          <span class="gallery-date">${g.tanggal}</span>
+          ${g.judul ? `<strong>${g.judul}</strong>` : ''}
+          ${g.catatan ? `<p class="text-sm text-muted" style="margin:0;">${g.catatan}</p>` : ''}
+          <button class="btn btn-ghost btn-del-galeri" data-id="${g.id}" data-foto="${g.foto_url || ''}" style="align-self:flex-start; margin-top:var(--space-1);">Hapus</button>
+        </div>
+      </div>`
+        )
+        .join('')
+    : '<p class="text-sm text-muted">Belum ada foto/info kegiatan.</p>';
+
+  qsa('.btn-del-galeri', qs('#galeriList')).forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      if (!confirm('Hapus foto/info ini?')) return;
+      if (btn.dataset.foto) {
+        const marker = '/galeri-kelas/';
+        const idx = btn.dataset.foto.indexOf(marker);
+        if (idx !== -1) {
+          const path = btn.dataset.foto.slice(idx + marker.length);
+          await supabase.storage.from('galeri-kelas').remove([path]);
+        }
+      }
+      const { error } = await supabase.from('class_gallery').delete().eq('id', btn.dataset.id);
+      if (error) return alert('Gagal menghapus: ' + error.message);
+      await loadGaleri();
+    })
+  );
+}
+
+document.getElementById('btnNewGaleri').addEventListener('click', () => toggleForm('#galeriForm'));
+document.getElementById('galeriForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = qs('#gSubmitBtn');
+  const statusEl = qs('#gUploadStatus');
+  const file = qs('#gFotoFile').files[0];
+
+  if (file && file.size > 5 * 1024 * 1024) {
+    return alert('Ukuran foto maksimal 5MB. Pilih foto lain atau kompres dulu.');
+  }
+
+  submitBtn.disabled = true;
+  let fotoUrl = null;
+
+  if (file) {
+    statusEl.textContent = 'Mengupload foto...';
+    const ext = file.name.split('.').pop();
+    const path = `${waliClass.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('galeri-kelas').upload(path, file);
+    if (uploadError) {
+      statusEl.textContent = '';
+      submitBtn.disabled = false;
+      return alert('Gagal upload foto: ' + uploadError.message);
+    }
+    fotoUrl = supabase.storage.from('galeri-kelas').getPublicUrl(path).data.publicUrl;
+  }
+
+  statusEl.textContent = 'Menyimpan...';
+  const { error } = await supabase.from('class_gallery').insert({
+    owner_id: teacher.id,
+    class_id: waliClass.id,
+    tanggal: qs('#gTanggal').value,
+    judul: qs('#gJudul').value || null,
+    catatan: qs('#gCatatan').value || null,
+    foto_url: fotoUrl,
+  });
+
+  submitBtn.disabled = false;
+  statusEl.textContent = '';
+  if (error) return alert('Gagal menyimpan: ' + error.message);
+  e.target.reset();
+  qs('#galeriForm').style.display = 'none';
+  await loadGaleri();
 });
 
 // ------- TAB: Jurnal -------

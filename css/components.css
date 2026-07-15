@@ -327,3 +327,42 @@
   background: color-mix(in srgb, var(--doc-color, var(--color-info)) 18%, transparent);
   color: var(--doc-color, var(--color-info));
 }
+
+/* --- Galeri kelas (wali kelas): grid foto + catatan --- */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+.gallery-item {
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.gallery-item .gallery-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--color-surface-alt);
+  display: block;
+}
+.gallery-item .gallery-photo-placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-muted);
+}
+.gallery-item .gallery-body {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.gallery-item .gallery-date {
+  font-size: var(--text-xs);
+  color: var(--color-ink-muted);
+}

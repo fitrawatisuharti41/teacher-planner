@@ -85,6 +85,7 @@
     <div class="tab-bar">
       <button class="tab-btn is-active" data-tab="dashboard">Dashboard Kelas</button>
       <button class="tab-btn" data-tab="agenda">Agenda Kelas</button>
+      <button class="tab-btn" data-tab="galeri">Galeri &amp; Info</button>
       <button class="tab-btn" data-tab="jurnal">Jurnal</button>
       <button class="tab-btn" data-tab="prestasi">Prestasi &amp; Pelanggaran</button>
       <button class="tab-btn" data-tab="komunikasi">Komunikasi Ortu</button>
@@ -136,6 +137,36 @@
         <button type="submit" class="btn btn-primary">Simpan</button>
       </form>
       <div class="stack gap-3" id="agendaList"></div>
+    </div>
+
+    <!-- TAB: Galeri & Info -->
+    <div class="tab-panel" id="panel-galeri">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Galeri &amp; Info Kelas</h3>
+        <button class="btn btn-primary" id="btnNewGaleri">+ Foto / Info Baru</button>
+      </div>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-4);">Foto kegiatan &amp; pembelajaran di sini bisa dilihat orang tua lewat Portal Ortu.</p>
+      <form class="card row gap-4" id="galeriForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="gTanggal">Tanggal</label>
+          <input class="input" id="gTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="gJudul">Judul</label>
+          <input class="input" id="gJudul" type="text" placeholder="Misal: Kunjungan Museum">
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:220px;">
+          <label class="text-sm text-muted" for="gFotoFile">Foto</label>
+          <input class="input" id="gFotoFile" type="file" accept="image/*">
+        </div>
+        <div class="stack gap-1" style="flex:3; min-width:220px;">
+          <label class="text-sm text-muted" for="gCatatan">Catatan / Info</label>
+          <input class="input" id="gCatatan" type="text" placeholder="Ceritakan kegiatannya...">
+        </div>
+        <span class="text-sm text-muted" id="gUploadStatus"></span>
+        <button type="submit" class="btn btn-primary" id="gSubmitBtn">Simpan</button>
+      </form>
+      <div class="gallery-grid" id="galeriList"></div>
     </div>
 
     <!-- TAB: Jurnal -->

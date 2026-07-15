@@ -45,6 +45,7 @@
       <button class="tab-btn is-active" data-tab="kontak">Kontak</button>
       <button class="tab-btn" data-tab="dashboard">Dashboard Kelas</button>
       <button class="tab-btn" data-tab="agenda">Agenda Kelas</button>
+      <button class="tab-btn" data-tab="galeri">Galeri &amp; Info</button>
       <button class="tab-btn" data-tab="prestasi">Prestasi &amp; Pelanggaran</button>
       <button class="tab-btn" data-tab="komunikasi">Komunikasi Ortu</button>
       <button class="tab-btn" data-tab="catatan">Catatan Pribadi</button>
@@ -90,6 +91,13 @@
       <section class="card">
         <h3>Agenda Kelas</h3>
         <div class="stack gap-3" id="agendaList" style="margin-top:var(--space-4);"></div>
+      </section>
+    </div>
+
+    <div class="tab-panel" id="panel-galeri">
+      <section class="card">
+        <h3>Galeri &amp; Info Kelas</h3>
+        <div class="gallery-grid" id="galeriList" style="margin-top:var(--space-4);"></div>
       </section>
     </div>
 
@@ -207,6 +215,29 @@
             <span class="text-sm text-muted">${a.tanggal}</span>
           </div>`).join('')
       : '<p class="text-sm text-muted">Belum ada agenda.</p>';
+
+    // --- Galeri & Info Kelas (kelas-wide) ---
+    const { data: galeri } = await supabase
+      .from('class_gallery')
+      .select('tanggal, judul, catatan, foto_url')
+      .eq('class_id', classId)
+      .order('tanggal', { ascending: false });
+
+    document.getElementById('galeriList').innerHTML = (galeri || []).length
+      ? galeri.map((g) => `
+          <div class="card gallery-item">
+            ${
+              g.foto_url
+                ? `<img class="gallery-photo" src="${g.foto_url}" alt="${g.judul || 'Foto kegiatan'}" loading="lazy">`
+                : `<div class="gallery-photo-placeholder"><svg class="icon icon-lg"><use href="../assets/icons/icons.svg#icon-folder"/></svg></div>`
+            }
+            <div class="gallery-body">
+              <span class="gallery-date">${g.tanggal}</span>
+              ${g.judul ? `<strong>${g.judul}</strong>` : ''}
+              ${g.catatan ? `<p class="text-sm text-muted" style="margin:0;">${g.catatan}</p>` : ''}
+            </div>
+          </div>`).join('')
+      : '<p class="text-sm text-muted">Belum ada foto/info kegiatan.</p>';
 
     // --- Prestasi & Pelanggaran: HANYA anak ini ---
     const { data: prestasi } = await supabase
