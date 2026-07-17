@@ -27,23 +27,53 @@ function fillProfileForm(t) {
   qs('#pfJabatan').value = t.jabatan || '';
   qs('#pfWhatsapp').value = t.kontak_whatsapp || '';
   qs('#pfWilayah').value = t.wilayah || '';
+  qs('#pfPendidikan').value = (t.pendidikan || []).join('\n');
+  if (t.foto_url) qs('#pfAvatar').innerHTML = `<img src="${t.foto_url}" alt="${t.nama_lengkap || 'Foto profil'}" style="width:100%;height:100%;object-fit:cover;">`;
 }
 
 document.getElementById('profileForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const { error } = await supabase
-    .from('teachers')
-    .update({
-      nama_lengkap: qs('#pfNama').value,
-      nama_panggilan: qs('#pfPanggilan').value,
-      sekolah_nama: qs('#pfSekolah').value,
-      jabatan: qs('#pfJabatan').value,
-      kontak_whatsapp: qs('#pfWhatsapp').value,
-      wilayah: qs('#pfWilayah').value,
-    })
-    .eq('id', teacher.id);
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const fotoFile = qs('#pfFoto').files[0];
+  const statusEl = qs('#pfFotoStatus');
 
+  submitBtn.disabled = true;
+  let fotoUrl = undefined; // undefined = jangan ubah kolom foto_url kalau tidak upload baru
+
+  if (fotoFile) {
+    if (fotoFile.size > 5 * 1024 * 1024) {
+      submitBtn.disabled = false;
+      return alert('Ukuran foto maksimal 5MB.');
+    }
+    statusEl.textContent = 'Mengupload foto...';
+    const ext = fotoFile.name.split('.').pop();
+    const path = `${teacher.id}/foto.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('profil-guru').upload(path, fotoFile, { upsert: true });
+    if (uploadError) {
+      statusEl.textContent = '';
+      submitBtn.disabled = false;
+      return alert('Gagal upload foto: ' + uploadError.message);
+    }
+    fotoUrl = supabase.storage.from('profil-guru').getPublicUrl(path).data.publicUrl + `?t=${Date.now()}`;
+    statusEl.textContent = '';
+  }
+
+  const payload = {
+    nama_lengkap: qs('#pfNama').value,
+    nama_panggilan: qs('#pfPanggilan').value,
+    sekolah_nama: qs('#pfSekolah').value,
+    jabatan: qs('#pfJabatan').value,
+    kontak_whatsapp: qs('#pfWhatsapp').value,
+    wilayah: qs('#pfWilayah').value,
+    pendidikan: qs('#pfPendidikan').value.split('\n').map((s) => s.trim()).filter(Boolean),
+  };
+  if (fotoUrl !== undefined) payload.foto_url = fotoUrl;
+
+  const { error } = await supabase.from('teachers').update(payload).eq('id', teacher.id);
+
+  submitBtn.disabled = false;
   if (error) return alert('Gagal menyimpan profil: ' + error.message);
+  if (fotoUrl) qs('#pfAvatar').innerHTML = `<img src="${fotoUrl}" alt="Foto profil" style="width:100%;height:100%;object-fit:cover;">`;
   alert('Profil tersimpan.');
 });
 

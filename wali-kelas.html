@@ -86,6 +86,7 @@
       <button class="tab-btn is-active" data-tab="dashboard">Dashboard Kelas</button>
       <button class="tab-btn" data-tab="agenda">Agenda Kelas</button>
       <button class="tab-btn" data-tab="galeri">Galeri &amp; Info</button>
+      <button class="tab-btn" data-tab="pengumuman">Pengumuman</button>
       <button class="tab-btn" data-tab="jurnal">Jurnal</button>
       <button class="tab-btn" data-tab="prestasi">Prestasi &amp; Pelanggaran</button>
       <button class="tab-btn" data-tab="komunikasi">Komunikasi Ortu</button>
@@ -167,6 +168,31 @@
         <button type="submit" class="btn btn-primary" id="gSubmitBtn">Simpan</button>
       </form>
       <div class="gallery-grid" id="galeriList"></div>
+    </div>
+
+    <!-- TAB: Pengumuman -->
+    <div class="tab-panel" id="panel-pengumuman">
+      <div class="row gap-3" style="justify-content:space-between; margin-bottom:var(--space-4);">
+        <h3>Pengumuman Kelas</h3>
+        <button class="btn btn-primary" id="btnNewPengumuman">+ Pengumuman Baru</button>
+      </div>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-4);">Muncul di Portal Ortu untuk semua orang tua di kelas ini.</p>
+      <form class="card row gap-4" id="pengumumanForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-bottom:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="pTanggal">Tanggal</label>
+          <input class="input" id="pTanggal" type="date" required>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="pJudul">Judul</label>
+          <input class="input" id="pJudul" type="text" placeholder="Misal: Libur Sekolah" required>
+        </div>
+        <div class="stack gap-1" style="flex:3; min-width:220px;">
+          <label class="text-sm text-muted" for="pIsi">Isi Pengumuman</label>
+          <input class="input" id="pIsi" type="text" placeholder="Detail pengumuman...">
+        </div>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </form>
+      <div class="stack gap-3" id="pengumumanList"></div>
     </div>
 
     <!-- TAB: Jurnal -->

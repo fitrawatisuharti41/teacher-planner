@@ -42,18 +42,18 @@
   <div id="waliContent" class="stack gap-6" style="display:none;">
 
     <div class="tab-bar">
-      <button class="tab-btn is-active" data-tab="kontak">Kontak</button>
-      <button class="tab-btn" data-tab="dashboard">Dashboard Kelas</button>
+      <button class="tab-btn is-active" data-tab="dashboard">Dashboard Wali Kelas <span id="tabDashboardLabel"></span></button>
       <button class="tab-btn" data-tab="agenda">Agenda Kelas</button>
       <button class="tab-btn" data-tab="galeri">Galeri &amp; Info</button>
+      <button class="tab-btn" data-tab="pengumuman">Pengumuman</button>
       <button class="tab-btn" data-tab="prestasi">Prestasi &amp; Pelanggaran</button>
       <button class="tab-btn" data-tab="komunikasi">Komunikasi Ortu</button>
       <button class="tab-btn" data-tab="catatan">Catatan Pribadi</button>
       <button class="tab-btn" data-tab="administrasi">Administrasi</button>
     </div>
 
-    <div class="tab-panel is-active" id="panel-kontak">
-      <section class="card stack gap-4" style="text-align:center;">
+    <div class="tab-panel is-active" id="panel-dashboard">
+      <section class="card stack gap-3" style="text-align:center; margin-bottom:var(--space-4);">
         <div class="avatar" id="avatar">
           <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-user"/></svg>
         </div>
@@ -62,11 +62,8 @@
           <p class="text-sm text-muted" id="jabatanGuru" style="margin:0;">–</p>
           <p class="text-sm text-muted" id="sekolahGuru" style="margin:0;">–</p>
         </div>
-        <a class="btn btn-primary" id="btnWhatsapp" href="#" target="_blank" rel="noopener" style="display:none;">💬 Hubungi via WhatsApp</a>
+        <p class="text-sm" id="pendidikanGuru" style="margin:0; display:none; white-space:pre-line;"></p>
       </section>
-    </div>
-
-    <div class="tab-panel" id="panel-dashboard">
       <div class="grid-cards" style="grid-template-columns: repeat(2, 1fr);">
         <div class="card stack" style="align-items:center; text-align:center;">
           <div id="ringKehadiran"></div>
@@ -98,6 +95,13 @@
       <section class="card">
         <h3>Galeri &amp; Info Kelas</h3>
         <div class="gallery-grid" id="galeriList" style="margin-top:var(--space-4);"></div>
+      </section>
+    </div>
+
+    <div class="tab-panel" id="panel-pengumuman">
+      <section class="card">
+        <h3>Pengumuman Kelas</h3>
+        <div class="stack gap-3" id="pengumumanList" style="margin-top:var(--space-4);"></div>
       </section>
     </div>
 
@@ -163,16 +167,17 @@
 
   const { data: kelas } = await supabase.from('classes').select('nama_kelas, wali_kelas_id').eq('id', classId).maybeSingle();
   document.getElementById('kelasLabel').textContent = kelas ? `Kelas ${kelas.nama_kelas}` : '';
+  document.getElementById('tabDashboardLabel').textContent = kelas ? kelas.nama_kelas : '';
 
   if (!kelas?.wali_kelas_id) {
     document.getElementById('noWaliMessage').style.display = 'block';
   } else {
     document.getElementById('waliContent').style.display = 'block';
 
-    // --- Kontak ---
+    // --- Profil Wali Kelas ---
     const { data: guru } = await supabase
       .from('teachers_public')
-      .select('nama_lengkap, jabatan, sekolah_nama, kontak_whatsapp, foto_url')
+      .select('nama_lengkap, jabatan, sekolah_nama, foto_url, pendidikan')
       .eq('id', kelas.wali_kelas_id)
       .maybeSingle();
 
@@ -181,11 +186,10 @@
       document.getElementById('jabatanGuru').textContent = guru.jabatan || '';
       document.getElementById('sekolahGuru').textContent = guru.sekolah_nama || '';
       if (guru.foto_url) document.getElementById('avatar').innerHTML = `<img src="${guru.foto_url}" alt="${guru.nama_lengkap}">`;
-      if (guru.kontak_whatsapp) {
-        const nomor = guru.kontak_whatsapp.replace(/[^0-9]/g, '').replace(/^0/, '62');
-        const btn = document.getElementById('btnWhatsapp');
-        btn.href = `https://wa.me/${nomor}`;
-        btn.style.display = 'inline-flex';
+      if (guru.pendidikan && guru.pendidikan.length > 0) {
+        const el = document.getElementById('pendidikanGuru');
+        el.textContent = guru.pendidikan.join('\n');
+        el.style.display = 'block';
       }
     }
 
@@ -238,6 +242,24 @@
             </div>
           </div>`).join('')
       : '<p class="text-sm text-muted">Belum ada foto/info kegiatan.</p>';
+
+    // --- Pengumuman Kelas (kelas-wide) ---
+    const { data: pengumuman } = await supabase
+      .from('class_announcements')
+      .select('tanggal, judul, isi')
+      .eq('class_id', classId)
+      .order('tanggal', { ascending: false });
+
+    document.getElementById('pengumumanList').innerHTML = (pengumuman || []).length
+      ? pengumuman.map((p) => `
+          <div class="card stack gap-1">
+            <div class="row gap-3" style="justify-content:space-between;">
+              <strong>${p.judul}</strong>
+              <span class="text-sm text-muted">${p.tanggal}</span>
+            </div>
+            ${p.isi ? `<p class="text-sm text-muted" style="margin:0;">${p.isi}</p>` : ''}
+          </div>`).join('')
+      : '<p class="text-sm text-muted">Belum ada pengumuman.</p>';
 
     // --- Prestasi & Pelanggaran: HANYA anak ini ---
     const { data: prestasi } = await supabase

@@ -63,6 +63,7 @@ async function init() {
     loadDashboard(),
     loadAgenda(),
     loadGaleri(),
+    loadPengumuman(),
     loadJurnal(),
     loadPrestasi(),
     loadKomunikasi(),
@@ -268,6 +269,51 @@ document.getElementById('galeriForm').addEventListener('submit', async (e) => {
   e.target.reset();
   qs('#galeriForm').style.display = 'none';
   await loadGaleri();
+});
+
+// ------- TAB: Pengumuman -------
+async function loadPengumuman() {
+  const { data, error } = await supabase
+    .from('class_announcements')
+    .select('id, tanggal, judul, isi')
+    .eq('class_id', waliClass.id)
+    .order('tanggal', { ascending: false });
+
+  if (error) return console.error(error.message);
+
+  qs('#pengumumanList').innerHTML = (data || []).length
+    ? data
+        .map(
+          (p) => `
+      <div class="card stack gap-1" data-id="${p.id}">
+        <div class="row gap-3" style="justify-content:space-between;">
+          <strong>${p.judul}</strong>
+          <span class="text-sm text-muted">${p.tanggal}</span>
+        </div>
+        ${p.isi ? `<p class="text-sm text-muted" style="margin:0;">${p.isi}</p>` : ''}
+        <button class="btn btn-ghost btn-del" data-table="class_announcements" data-id="${p.id}" style="align-self:flex-start;">Hapus</button>
+      </div>`
+        )
+        .join('')
+    : '<p class="text-sm text-muted">Belum ada pengumuman.</p>';
+
+  bindDeleteButtons('#pengumumanList', loadPengumuman);
+}
+
+document.getElementById('btnNewPengumuman').addEventListener('click', () => toggleForm('#pengumumanForm'));
+document.getElementById('pengumumanForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await supabase.from('class_announcements').insert({
+    owner_id: teacher.id,
+    class_id: waliClass.id,
+    tanggal: qs('#pTanggal').value,
+    judul: qs('#pJudul').value,
+    isi: qs('#pIsi').value || null,
+  });
+  if (error) return alert('Gagal menyimpan: ' + error.message);
+  e.target.reset();
+  qs('#pengumumanForm').style.display = 'none';
+  await loadPengumuman();
 });
 
 // ------- TAB: Jurnal -------

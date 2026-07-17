@@ -75,6 +75,16 @@
     <section class="card stack gap-4">
       <h3>Profil</h3>
       <form class="stack gap-4" id="profileForm">
+        <div class="row gap-4" style="align-items:center;">
+          <div class="avatar" id="pfAvatar" style="width:72px; height:72px; border-radius:50%; background:var(--color-accent-blue-soft); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+            <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-user"/></svg>
+          </div>
+          <div class="stack gap-1">
+            <label class="text-sm text-muted" for="pfFoto">Foto Profil</label>
+            <input class="input" id="pfFoto" type="file" accept="image/*">
+            <span class="text-sm text-muted" id="pfFotoStatus"></span>
+          </div>
+        </div>
         <div class="row gap-4" style="flex-wrap:wrap;">
           <div class="stack gap-1" style="flex:1; min-width:200px;">
             <label class="text-sm text-muted" for="pfNama">Nama Lengkap</label>
@@ -104,6 +114,11 @@
             <label class="text-sm text-muted" for="pfWilayah">Wilayah</label>
             <input class="input" id="pfWilayah" type="text">
           </div>
+        </div>
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="pfPendidikan">Latar Belakang Pendidikan</label>
+          <textarea class="input" id="pfPendidikan" rows="3" placeholder="1 baris = 1 jenjang, misal:&#10;S1 Pendidikan IPA — Universitas ABC&#10;S2 Manajemen Pendidikan — Universitas XYZ"></textarea>
+          <span class="text-sm text-muted">Ditampilkan sebagai deskripsi singkat di Portal Ortu.</span>
         </div>
         <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Simpan Profil</button>
       </form>
