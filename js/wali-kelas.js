@@ -25,6 +25,14 @@ qsa('.tab-btn').forEach((btn) => {
   });
 });
 
+const STATUS_ABSENSI = {
+  hadir: 'Hadir',
+  izin: 'Izin',
+  sakit: 'Sakit',
+  terlambat: 'Terlambat',
+  alpa: 'Alpa',
+};
+
 const session = await requireAuth('login.html');
 if (session) {
   teacher = await getCurrentTeacher();
@@ -180,13 +188,6 @@ qsa('#quickActions [data-goto]').forEach((btn) =>
 );
 
 // ------- TAB: Absensi -------
-const STATUS_ABSENSI = {
-  hadir: 'Hadir',
-  izin: 'Izin',
-  sakit: 'Sakit',
-  terlambat: 'Terlambat',
-  alpa: 'Alpa',
-};
 
 document.getElementById('absTanggal').value = new Date().toISOString().slice(0, 10);
 document.getElementById('absTanggal').addEventListener('change', loadAbsensi);
