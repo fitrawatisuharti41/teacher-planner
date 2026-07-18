@@ -96,10 +96,30 @@
 
     <!-- TAB: Dashboard Kelas -->
     <div class="tab-panel is-active" id="panel-dashboard">
+      <div class="row gap-3" style="flex-wrap:wrap; margin-bottom:var(--space-4);" id="quickActions">
+        <button class="btn btn-primary" data-goto="agenda">+ Agenda</button>
+        <button class="btn btn-secondary" data-goto="pengumuman">+ Pengumuman</button>
+        <button class="btn btn-secondary" data-goto="prestasi">+ Prestasi/Pelanggaran</button>
+        <button class="btn btn-secondary" data-goto="komunikasi">+ Komunikasi Ortu</button>
+        <button class="btn btn-secondary" data-goto="galeri">+ Foto Kegiatan</button>
+      </div>
+
       <div class="grid-cards">
         <div class="card stack" style="align-items:center; text-align:center;">
           <div id="ringKehadiran"></div>
           <div class="stat-label">Persentase Kehadiran</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-blue"><svg class="icon"><use href="assets/icons/icons.svg#icon-user"/></svg></div>
+          <div class="stat-value" id="statJumlahSiswa">–</div><div class="stat-label">Jumlah Siswa</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-blue"><svg class="icon"><use href="assets/icons/icons.svg#icon-user"/></svg></div>
+          <div class="stat-value" id="statPutra">–</div><div class="stat-label">Putra</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-blue"><svg class="icon"><use href="assets/icons/icons.svg#icon-user"/></svg></div>
+          <div class="stat-value" id="statPutri">–</div><div class="stat-label">Putri</div>
         </div>
         <div class="card card-stat">
           <div class="stat-icon c-purple"><svg class="icon"><use href="assets/icons/icons.svg#icon-chart"/></svg></div>
@@ -112,6 +132,44 @@
         <div class="card card-stat">
           <div class="stat-icon c-danger"><svg class="icon"><use href="assets/icons/icons.svg#icon-note"/></svg></div>
           <div class="stat-value" id="statPelanggaran">–</div><div class="stat-label">Jumlah Pelanggaran</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-amber"><svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg></div>
+          <div class="stat-value" id="statUlangTahun">–</div><div class="stat-label">Ulang Tahun Bulan Ini</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-amber"><svg class="icon"><use href="assets/icons/icons.svg#icon-check"/></svg></div>
+          <div class="stat-value" id="statIzin">–</div><div class="stat-label">Izin Hari Ini</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-amber"><svg class="icon"><use href="assets/icons/icons.svg#icon-clock"/></svg></div>
+          <div class="stat-value" id="statTerlambat">–</div><div class="stat-label">Siswa Terlambat</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-purple"><svg class="icon"><use href="assets/icons/icons.svg#icon-note"/></svg></div>
+          <div class="stat-value" id="statPengumumanAktif">–</div><div class="stat-label">Pengumuman Aktif</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-purple"><svg class="icon"><use href="assets/icons/icons.svg#icon-calendar"/></svg></div>
+          <div class="stat-value" id="statAgendaHariIni">–</div><div class="stat-label">Agenda Hari Ini</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-danger"><svg class="icon"><use href="assets/icons/icons.svg#icon-user"/></svg></div>
+          <div class="stat-value" id="statOrtuFollowUp">–</div><div class="stat-label">Orang Tua Perlu Dihubungi</div>
+        </div>
+        <div class="card card-stat">
+          <div class="stat-icon c-green"><svg class="icon"><use href="assets/icons/icons.svg#icon-folder"/></svg></div>
+          <div class="stat-value" id="statAdminDoc">–</div><div class="stat-label">Progress Administrasi (dokumen)</div>
+        </div>
+        <div class="card stack gap-2">
+          <div class="stat-label">Mood Kelas Hari Ini</div>
+          <div class="row gap-2" id="moodPicker" style="font-size:1.5rem;">
+            <button type="button" class="btn btn-ghost" data-mood="senang" title="Senang">😊</button>
+            <button type="button" class="btn btn-ghost" data-mood="biasa" title="Biasa">😐</button>
+            <button type="button" class="btn btn-ghost" data-mood="lelah" title="Lelah">😔</button>
+            <button type="button" class="btn btn-ghost" data-mood="sedih" title="Sedih">😢</button>
+            <button type="button" class="btn btn-ghost" data-mood="marah" title="Marah">😡</button>
+          </div>
         </div>
       </div>
     </div>
@@ -188,8 +246,7 @@
         </div>
         <div class="stack gap-1" style="flex:3; min-width:220px;">
           <label class="text-sm text-muted" for="pIsi">Isi Pengumuman</label>
-          <input class="input" id="pIsi" type="text" placeholder="Detail pengumuman...">
-        </div>
+          <textarea class="input" id="pIsi" rows="3" placeholder="Detail pengumuman... (Enter untuk baris baru)"></textarea>        </div>
         <button type="submit" class="btn btn-primary">Simpan</button>
       </form>
       <div class="stack gap-3" id="pengumumanList"></div>
@@ -279,6 +336,9 @@
           <label class="text-sm text-muted" for="kRingkasan">Ringkasan</label>
           <input class="input" id="kRingkasan" type="text" required>
         </div>
+        <label class="row gap-2 text-sm" style="align-items:center;">
+          <input type="checkbox" id="kFollowUp"> Perlu ditindaklanjuti
+        </label>
         <button type="submit" class="btn btn-primary">Simpan</button>
       </form>
       <div class="stack gap-3" id="komunikasiList"></div>

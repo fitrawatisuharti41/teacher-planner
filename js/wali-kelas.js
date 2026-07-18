@@ -120,7 +120,7 @@ document.getElementById('catatanPribadiForm').addEventListener('submit', async (
 async function loadDashboard() {
   const { data, error } = await supabase
     .from('class_development_summary')
-    .select('persentase_kehadiran, rata_rata_nilai, jumlah_prestasi, jumlah_pelanggaran')
+    .select('*')
     .eq('class_id', waliClass.id)
     .maybeSingle();
 
@@ -134,7 +134,41 @@ async function loadDashboard() {
   qs('#statRataNilai').textContent = data?.rata_rata_nilai ?? '–';
   qs('#statPrestasi').textContent = data?.jumlah_prestasi ?? 0;
   qs('#statPelanggaran').textContent = data?.jumlah_pelanggaran ?? 0;
+  qs('#statJumlahSiswa').textContent = data?.jumlah_siswa ?? 0;
+  qs('#statPutra').textContent = data?.jumlah_putra ?? 0;
+  qs('#statPutri').textContent = data?.jumlah_putri ?? 0;
+  qs('#statUlangTahun').textContent = data?.ulang_tahun_bulan_ini ?? 0;
+  qs('#statIzin').textContent = data?.izin_hari_ini ?? 0;
+  qs('#statTerlambat').textContent = data?.terlambat_hari_ini ?? 0;
+  qs('#statPengumumanAktif').textContent = data?.pengumuman_aktif ?? 0;
+  qs('#statAgendaHariIni').textContent = data?.agenda_hari_ini ?? 0;
+  qs('#statOrtuFollowUp').textContent = data?.ortu_perlu_dihubungi ?? 0;
+  qs('#statAdminDoc').textContent = data?.dokumen_administrasi ?? 0;
+
+  qsa('#moodPicker button').forEach((btn) => btn.classList.toggle('is-active', btn.dataset.mood === data?.mood_hari_ini));
 }
+
+qsa('#moodPicker button').forEach((btn) =>
+  btn.addEventListener('click', async () => {
+    const { error } = await supabase
+      .from('class_mood')
+      .upsert(
+        { owner_id: teacher.id, class_id: waliClass.id, tanggal: new Date().toISOString().slice(0, 10), mood: btn.dataset.mood },
+        { onConflict: 'class_id,tanggal' }
+      );
+    if (error) return alert('Gagal menyimpan mood: ' + error.message);
+    await loadDashboard();
+  })
+);
+
+qsa('#quickActions [data-goto]').forEach((btn) =>
+  btn.addEventListener('click', () => {
+    const tabBtn = document.querySelector(`.tab-btn[data-tab="${btn.dataset.goto}"]`);
+    tabBtn?.click();
+    const formToggleId = { agenda: 'btnNewAgenda', pengumuman: 'btnNewPengumuman', prestasi: 'btnNewPrestasi', komunikasi: 'btnNewKomunikasi', galeri: 'btnNewGaleri' }[btn.dataset.goto];
+    if (formToggleId) document.getElementById(formToggleId)?.click();
+  })
+);
 
 // ------- TAB: Agenda Kelas -------
 async function loadAgenda() {
@@ -290,7 +324,7 @@ async function loadPengumuman() {
           <strong>${p.judul}</strong>
           <span class="text-sm text-muted">${p.tanggal}</span>
         </div>
-        ${p.isi ? `<p class="text-sm text-muted" style="margin:0;">${p.isi}</p>` : ''}
+        ${p.isi ? `<p class="text-sm text-muted" style="margin:0; white-space:pre-line;">${p.isi}</p>` : ''}
         <button class="btn btn-ghost btn-del" data-table="class_announcements" data-id="${p.id}" style="align-self:flex-start;">Hapus</button>
       </div>`
         )
@@ -410,7 +444,7 @@ document.getElementById('prestasiForm').addEventListener('submit', async (e) => 
 async function loadKomunikasi() {
   const { data, error } = await supabase
     .from('parent_communications')
-    .select('id, metode, ringkasan, tanggal, students(nama)')
+    .select('id, metode, ringkasan, tanggal, perlu_follow_up, students(nama)')
     .in('student_id', studentsCache.map((s) => s.id).length ? studentsCache.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000'])
     .order('tanggal', { ascending: false });
 
@@ -424,15 +458,26 @@ async function loadKomunikasi() {
         <div>
           <strong>${k.students?.nama || '-'}</strong>
           <span class="badge badge-info" style="margin-left:var(--space-2);">${k.metode || '-'}</span>
+          ${k.perlu_follow_up ? '<span class="badge badge-danger" style="margin-left:var(--space-2);">Perlu ditindaklanjuti</span>' : ''}
           <div class="text-sm text-muted">${k.tanggal} · ${k.ringkasan}</div>
         </div>
-        <button class="btn btn-ghost btn-del" data-table="parent_communications" data-id="${k.id}">Hapus</button>
+        <div class="row gap-2">
+          ${k.perlu_follow_up ? `<button class="btn btn-ghost btn-selesai-fu" data-id="${k.id}">Tandai Selesai</button>` : ''}
+          <button class="btn btn-ghost btn-del" data-table="parent_communications" data-id="${k.id}">Hapus</button>
+        </div>
       </div>`
         )
         .join('')
     : '<p class="text-sm text-muted">Belum ada catatan komunikasi.</p>';
 
   bindDeleteButtons('#komunikasiList', loadKomunikasi);
+  qsa('.btn-selesai-fu', qs('#komunikasiList')).forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      await supabase.from('parent_communications').update({ perlu_follow_up: false }).eq('id', btn.dataset.id);
+      await loadKomunikasi();
+      await loadDashboard();
+    })
+  );
 }
 
 document.getElementById('btnNewKomunikasi').addEventListener('click', () => toggleForm('#komunikasiForm'));
@@ -444,11 +489,13 @@ document.getElementById('komunikasiForm').addEventListener('submit', async (e) =
     metode: qs('#kMetode').value,
     tanggal: qs('#kTanggal').value,
     ringkasan: qs('#kRingkasan').value,
+    perlu_follow_up: qs('#kFollowUp').checked,
   });
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
   qs('#komunikasiForm').style.display = 'none';
   await loadKomunikasi();
+  await loadDashboard();
 });
 
 // ------- TAB: Administrasi Wali Kelas -------

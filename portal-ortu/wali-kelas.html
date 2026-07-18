@@ -257,7 +257,7 @@
               <strong>${p.judul}</strong>
               <span class="text-sm text-muted">${p.tanggal}</span>
             </div>
-            ${p.isi ? `<p class="text-sm text-muted" style="margin:0;">${p.isi}</p>` : ''}
+            ${p.isi ? `<p class="text-sm text-muted" style="margin:0; white-space:pre-line;">${p.isi}</p>` : ''}
           </div>`).join('')
       : '<p class="text-sm text-muted">Belum ada pengumuman.</p>';
 
