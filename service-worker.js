@@ -4,7 +4,7 @@
 // benar-benar offline. Ini supaya update (CSS/JS) langsung kepakai
 // tanpa perlu hard-refresh berkali-kali.
 
-const CACHE_NAME = 'teacher-planner-shell-v5';
+const CACHE_NAME = 'teacher-planner-shell-v6';
 
 // File statis yang di-cache saat install (app shell) — hanya dipakai
 // sebagai fallback offline, BUKAN sumber utama saat online.
@@ -65,7 +65,7 @@ self.addEventListener('fetch', (event) => {
   // simpan salinannya ke cache (buat fallback offline nanti). Kalau gagal
   // (offline/no signal), baru pakai versi cache terakhir yang ada.
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
