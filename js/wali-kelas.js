@@ -70,6 +70,7 @@ async function init() {
     loadCatatanPribadi(),
     loadAdminDocs(),
   ]);
+  await loadAbsensi();
 }
 
 // ------- TAB: Catatan Pribadi Siswa -------
@@ -169,6 +170,67 @@ qsa('#quickActions [data-goto]').forEach((btn) =>
     if (formToggleId) document.getElementById(formToggleId)?.click();
   })
 );
+
+// ------- TAB: Absensi -------
+const STATUS_ABSENSI = {
+  hadir: 'Hadir',
+  izin: 'Izin',
+  sakit: 'Sakit',
+  terlambat: 'Terlambat',
+  alpa: 'Alpa',
+};
+
+document.getElementById('absTanggal').value = new Date().toISOString().slice(0, 10);
+document.getElementById('absTanggal').addEventListener('change', loadAbsensi);
+document.getElementById('btnTandaiSemuaHadir').addEventListener('click', () => {
+  qsa('#absensiList select').forEach((sel) => (sel.value = 'hadir'));
+});
+document.getElementById('btnSimpanAbsensi').addEventListener('click', simpanAbsensi);
+
+async function loadAbsensi() {
+  const tanggal = qs('#absTanggal').value;
+  const { data: existing } = await supabase
+    .from('attendance')
+    .select('student_id, status')
+    .eq('tanggal', tanggal)
+    .in('student_id', studentsCache.map((s) => s.id).length ? studentsCache.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000']);
+
+  const statusMap = Object.fromEntries((existing || []).map((a) => [a.student_id, a.status]));
+
+  qs('#absensiList').innerHTML = studentsCache.length
+    ? studentsCache
+        .map(
+          (s) => `
+      <div class="card row gap-3" style="justify-content:space-between; align-items:center;" data-student-id="${s.id}">
+        <span>${s.nama}</span>
+        <select class="input" style="width:auto;">
+          ${Object.entries(STATUS_ABSENSI)
+            .map(([val, label]) => `<option value="${val}" ${statusMap[s.id] === val ? 'selected' : ''}>${label}</option>`)
+            .join('')}
+        </select>
+      </div>`
+        )
+        .join('')
+    : '<p class="text-sm text-muted">Belum ada siswa di kelas ini.</p>';
+}
+
+async function simpanAbsensi() {
+  const tanggal = qs('#absTanggal').value;
+  if (!tanggal) return alert('Pilih tanggal dulu.');
+
+  const rows = qsa('#absensiList [data-student-id]').map((row) => ({
+    owner_id: teacher.id,
+    student_id: row.dataset.studentId,
+    tanggal,
+    status: row.querySelector('select').value,
+  }));
+  if (rows.length === 0) return;
+
+  const { error } = await supabase.from('attendance').upsert(rows, { onConflict: 'student_id,tanggal' });
+  if (error) return alert('Gagal menyimpan absensi: ' + error.message);
+  alert('Absensi tersimpan.');
+  await loadDashboard();
+}
 
 // ------- TAB: Agenda Kelas -------
 async function loadAgenda() {
