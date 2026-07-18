@@ -43,7 +43,7 @@ async function loadStudents() {
 
   let query = supabase
     .from('students')
-    .select('id, nama, nis, jenis_kelamin, nama_orang_tua, kontak_orang_tua, catatan_perkembangan, class_id, classes(nama_kelas)')
+    .select('id, nama, nis, jenis_kelamin, tanggal_lahir, nama_orang_tua, kontak_orang_tua, catatan_perkembangan, class_id, classes(nama_kelas)')
     .eq('owner_id', teacher.id)
     .order('nama');
 
@@ -110,6 +110,7 @@ function openForm(id, students) {
     qs('#sNama').value = s.nama;
     qs('#sNis').value = s.nis || '';
     qs('#sJk').value = s.jenis_kelamin || 'L';
+    qs('#sTanggalLahir').value = s.tanggal_lahir || '';
     qs('#sOrtu').value = s.nama_orang_tua || '';
     qs('#sKontak').value = s.kontak_orang_tua || '';
     qs('#sCatatan').value = s.catatan_perkembangan || '';
@@ -135,6 +136,7 @@ form.addEventListener('submit', async (e) => {
     nama: qs('#sNama').value,
     nis: qs('#sNis').value,
     jenis_kelamin: qs('#sJk').value,
+    tanggal_lahir: qs('#sTanggalLahir').value || null,
     nama_orang_tua: qs('#sOrtu').value,
     kontak_orang_tua: qs('#sKontak').value,
     catatan_perkembangan: qs('#sCatatan').value,

@@ -561,6 +561,7 @@ document.getElementById('komunikasiForm').addEventListener('submit', async (e) =
     tanggal: qs('#kTanggal').value,
     ringkasan: qs('#kRingkasan').value,
     perlu_follow_up: qs('#kFollowUp').checked,
+    perlu_follow_up: qs('#kFollowUp').checked,
   });
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
