@@ -59,7 +59,7 @@ async function init() {
   qs('#kSiswa').innerHTML = studentOptions;
   qs('#cpSiswa').innerHTML = studentOptions;
 
-  await Promise.all([
+  const results = await Promise.allSettled([
     loadDashboard(),
     loadAgenda(),
     loadGaleri(),
@@ -70,7 +70,15 @@ async function init() {
     loadCatatanPribadi(),
     loadAdminDocs(),
   ]);
-  await loadAbsensi();
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') console.error(`Tab ke-${i} gagal load:`, r.reason);
+  });
+
+  try {
+    await loadAbsensi();
+  } catch (err) {
+    console.error('Gagal load absensi:', err);
+  }
 }
 
 // ------- TAB: Catatan Pribadi Siswa -------
