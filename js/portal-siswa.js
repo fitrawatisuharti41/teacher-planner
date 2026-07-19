@@ -75,7 +75,54 @@ function pilihSiswa(studentId, nama) {
   document.getElementById('namaTerpilih').textContent = nama;
   document.getElementById('kelasTerpilih2').textContent = kelasNama;
   loadPenilaianDesc(classId);
+  renderSpecialInfo(studentId, nama);
   showStep(step3);
+}
+
+/** Banner ulang tahun (kalau hari ini tanggalnya) + kartu catatan perkembangan */
+async function renderSpecialInfo(studentId, nama) {
+  const container = document.getElementById('specialInfoContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const { data, error } = await supabase
+    .from('students_public')
+    .select('tanggal_lahir, catatan_perkembangan')
+    .eq('id', studentId)
+    .maybeSingle();
+
+  if (error || !data) return;
+
+  // --- Banner ulang tahun ---
+  if (data.tanggal_lahir) {
+    const today = new Date();
+    const lahir = new Date(data.tanggal_lahir);
+    if (lahir.getMonth() === today.getMonth() && lahir.getDate() === today.getDate()) {
+      const banner = document.createElement('div');
+      banner.className = 'card';
+      banner.style.background = 'var(--color-accent-blue-soft)';
+      banner.innerHTML = `
+        <strong>💙 Doa untuk Ananda ${nama}</strong>
+        <p class="text-sm" style="margin-top:var(--space-2);">
+          Pada momen istimewa ini, kami mengirimkan doa terbaik untuk Ananda.
+          Semoga Allah senantiasa memberikan kesehatan, keberkahan dalam setiap langkah,
+          kemudahan dalam belajar, akhlak yang baik, dan membimbing setiap langkah Ananda
+          menjadi pribadi yang lebih baik. Semoga tumbuh menjadi anak yang saleh/salehah,
+          berilmu, berakhlak mulia, dan bermanfaat bagi sesama. Aamiin. 🤲
+        </p>`;
+      container.appendChild(banner);
+    }
+  }
+
+  // --- Catatan Perkembangan ---
+  if (data.catatan_perkembangan) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <strong>Catatan Perkembangan</strong>
+      <p class="text-sm" style="margin-top:var(--space-2);">${data.catatan_perkembangan}</p>`;
+    container.appendChild(card);
+  }
 }
 
 // Label "Penilaian" di kartu menu ikut mapel yang benar-benar diajarkan
@@ -116,6 +163,7 @@ if (savedNama && savedKelasNama) {
   document.getElementById('namaTerpilih').textContent = savedNama;
   document.getElementById('kelasTerpilih2').textContent = savedKelasNama;
   loadPenilaianDesc(savedKelasId);
+  renderSpecialInfo(sessionStorage.getItem('portalStudentId'), savedNama);
   showStep(step3);
 } else {
   loadClasses();
