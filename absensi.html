@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Data Siswa — Teacher Planner</title>
+<title>Absensi — Teacher Planner</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="css/variables.css">
@@ -39,7 +39,7 @@
     <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
       <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> <span class="nav-label">Lesson Planner</span>
     </a>
-    <a class="row gap-2 btn btn-ghost" href="absensi.html">
+    <a class="row gap-2 btn btn-primary" href="absensi.html">
       <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> <span class="nav-label">Absensi</span>
     </a>
     <a class="row gap-2 btn btn-ghost" href="todo.html">
@@ -48,7 +48,7 @@
     <a class="row gap-2 btn btn-ghost" href="classes.html">
       <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> <span class="nav-label">Kelas</span>
     </a>
-    <a class="row gap-2 btn btn-primary" href="students.html">
+    <a class="row gap-2 btn btn-ghost" href="students.html">
       <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> <span class="nav-label">Siswa</span>
     </a>
     <a class="row gap-2 btn btn-ghost" href="assessment.html">
@@ -73,74 +73,26 @@
 
   <main class="content stack gap-6" style="padding-inline: var(--space-6);">
 
-    <div class="row gap-3" style="justify-content:space-between;">
-      <h1>Data Siswa</h1>
-      <button class="btn btn-primary" id="btnNewStudent">
-        <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> Tambah Siswa
-      </button>
+    <h1>Absensi</h1>
+
+    <div class="card row gap-4" style="flex-wrap:wrap; align-items:flex-end;">
+      <div class="stack gap-1" style="flex:1; min-width:180px;">
+        <label class="text-sm text-muted" for="absKelas">Kelas</label>
+        <select class="input" id="absKelas"></select>
+      </div>
+      <div class="stack gap-1" style="flex:1; min-width:160px;">
+        <label class="text-sm text-muted" for="absTanggal">Tanggal</label>
+        <input class="input" id="absTanggal" type="date">
+      </div>
+      <button class="btn btn-secondary" id="btnTandaiHadirSemua">Tandai Semua Hadir</button>
+      <button class="btn btn-primary" id="btnSimpanAbsensi">Simpan Absensi</button>
     </div>
 
-    <div class="card row gap-3">
-      <select class="input" id="filterKelas" style="max-width:200px;">
-        <option value="">Semua Kelas</option>
-      </select>
-      <input class="input" type="search" id="filterSearch" placeholder="Cari nama siswa..." style="flex:1;">
-    </div>
-
-    <section class="card" id="studentFormPanel" style="display:none;">
-      <h3 id="studentFormTitle">Tambah Siswa</h3>
-      <form class="stack gap-4" id="studentForm">
-        <div class="row gap-4" style="flex-wrap:wrap;">
-          <div class="stack gap-1" style="flex:1; min-width:160px;">
-            <label class="text-sm text-muted" for="sKelas">Kelas</label>
-            <select class="input" id="sKelas" required></select>
-          </div>
-          <div class="stack gap-1" style="flex:2; min-width:200px;">
-            <label class="text-sm text-muted" for="sNama">Nama</label>
-            <input class="input" id="sNama" type="text" required>
-          </div>
-          <div class="stack gap-1" style="flex:1; min-width:140px;">
-            <label class="text-sm text-muted" for="sNis">NIS</label>
-            <input class="input" id="sNis" type="text">
-          </div>
-          <div class="stack gap-1" style="flex:1; min-width:120px;">
-            <label class="text-sm text-muted" for="sJk">Jenis Kelamin</label>
-            <select class="input" id="sJk">
-              <option value="L">Laki-laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-          </div>
-          <div class="stack gap-1" style="flex:1; min-width:140px;">
-            <label class="text-sm text-muted" for="sTanggalLahir">Tanggal Lahir</label>
-            <input class="input" id="sTanggalLahir" type="date">
-          </div>
-        </div>
-        <div class="row gap-4" style="flex-wrap:wrap;">
-          <div class="stack gap-1" style="flex:1; min-width:160px;">
-            <label class="text-sm text-muted" for="sOrtu">Nama Orang Tua</label>
-            <input class="input" id="sOrtu" type="text">
-          </div>
-          <div class="stack gap-1" style="flex:1; min-width:160px;">
-            <label class="text-sm text-muted" for="sKontak">Kontak Orang Tua</label>
-            <input class="input" id="sKontak" type="text">
-          </div>
-        </div>
-        <div class="stack gap-1">
-          <label class="text-sm text-muted" for="sCatatan">Catatan Perkembangan</label>
-          <textarea class="input" id="sCatatan" rows="2"></textarea>
-        </div>
-        <div class="row gap-2" style="justify-content:flex-end;">
-          <button type="button" class="btn btn-secondary" id="btnCancelStudent">Batal</button>
-          <button type="submit" class="btn btn-primary">Simpan</button>
-        </div>
-      </form>
-    </section>
-
-    <div class="stack gap-3" id="studentList"></div>
+    <div class="stack gap-2" id="absensiList"></div>
 
   </main>
 </div>
 
-<script type="module" src="js/students.js"></script>
+<script type="module" src="js/absensi.js"></script>
 </body>
 </html>

@@ -196,3 +196,82 @@ document.getElementById('btnSaveNilai').addEventListener('click', async () => {
   }
   alert('Nilai berhasil disimpan.');
 });
+
+// ------- Rekap Nilai (pivot: baris = siswa, kolom = tiap asesmen) + Export Excel -------
+
+async function loadClassDropdownRekap() {
+  const { data } = await supabase.from('classes').select('id, nama_kelas').eq('owner_id', teacher.id).order('nama_kelas');
+  qs('#rekapKelas').innerHTML = (data || []).map((c) => `<option value="${c.id}">${c.nama_kelas}</option>`).join('');
+}
+loadClassDropdownRekap();
+
+let rekapDataCache = null; // { headers: [...], rows: [[...]] }
+
+async function buildRekap() {
+  const classId = qs('#rekapKelas').value;
+  if (!classId) return;
+
+  const { data: students } = await supabase
+    .from('students')
+    .select('id, nama')
+    .eq('class_id', classId)
+    .order('nama');
+
+  const { data: assessments } = await supabase
+    .from('assessments')
+    .select('id, judul, mapel, kkm, tanggal')
+    .eq('class_id', classId)
+    .order('tanggal');
+
+  const { data: items } = await supabase
+    .from('assessment_items')
+    .select('assessment_id, student_id, nilai')
+    .in('assessment_id', (assessments || []).map((a) => a.id).length ? (assessments || []).map((a) => a.id) : ['00000000-0000-0000-0000-000000000000']);
+
+  const nilaiMap = {}; // `${assessment_id}|${student_id}` -> nilai
+  (items || []).forEach((i) => {
+    nilaiMap[`${i.assessment_id}|${i.student_id}`] = i.nilai;
+  });
+
+  const headers = ['Nama Siswa', ...(assessments || []).map((a) => `${a.judul} (${a.mapel})`), 'Rata-rata'];
+  const rows = (students || []).map((s) => {
+    const nilaiList = (assessments || []).map((a) => nilaiMap[`${a.id}|${s.id}`]);
+    const validNilai = nilaiList.filter((n) => n !== undefined && n !== null);
+    const rata = validNilai.length ? (validNilai.reduce((a, b) => a + b, 0) / validNilai.length).toFixed(1) : '';
+    return [s.nama, ...nilaiList.map((n) => (n === undefined || n === null ? '' : n)), rata];
+  });
+
+  rekapDataCache = { headers, rows };
+  renderRekapTable(headers, rows);
+}
+
+function renderRekapTable(headers, rows) {
+  const table = document.getElementById('rekapTable');
+  if (rows.length === 0) {
+    table.innerHTML = '<tr><td class="text-sm text-muted">Belum ada data untuk kelas ini.</td></tr>';
+    return;
+  }
+  const thead = `<tr>${headers.map((h) => `<th style="text-align:left; padding:var(--space-2); border-bottom:2px solid var(--color-line);">${h}</th>`).join('')}</tr>`;
+  const tbody = rows
+    .map(
+      (row) =>
+        `<tr>${row.map((cell) => `<td style="padding:var(--space-2); border-bottom:1px solid var(--color-line);">${cell}</td>`).join('')}</tr>`
+    )
+    .join('');
+  table.innerHTML = thead + tbody;
+}
+
+document.getElementById('btnMuatRekap').addEventListener('click', buildRekap);
+
+document.getElementById('btnExportExcel').addEventListener('click', async () => {
+  if (!rekapDataCache) await buildRekap();
+  if (!rekapDataCache || rekapDataCache.rows.length === 0) {
+    alert('Belum ada data buat di-download. Pilih kelas dan klik "Tampilkan" dulu.');
+    return;
+  }
+  const kelasNama = qs('#rekapKelas option:checked').textContent;
+  const ws = XLSX.utils.aoa_to_sheet([rekapDataCache.headers, ...rekapDataCache.rows]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Nilai');
+  XLSX.writeFile(wb, `Rekap-Nilai-${kelasNama}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+});

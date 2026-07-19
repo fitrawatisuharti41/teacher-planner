@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/responsive.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   .nilai-row input { max-width: 100px; }
   .nilai-row.below-kkm { background: var(--color-danger-soft); border-radius: var(--radius-sm); }
@@ -42,6 +43,9 @@
     </a>
     <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
       <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> <span class="nav-label">Lesson Planner</span>
+    </a>
+    <a class="row gap-2 btn btn-ghost" href="absensi.html">
+      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> <span class="nav-label">Absensi</span>
     </a>
     <a class="row gap-2 btn btn-ghost" href="todo.html">
       <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> <span class="nav-label">To-do</span>
@@ -147,6 +151,22 @@
 
       <div class="stack gap-2" id="nilaiInputList"></div>
       <button class="btn btn-primary" id="btnSaveNilai" style="margin-top:var(--space-4);">Simpan Semua Nilai</button>
+    </section>
+
+    <!-- Rekap Nilai (semua asesmen jadi 1 tabel) + download Excel -->
+    <section class="card">
+      <div class="row gap-3" style="justify-content:space-between; flex-wrap:wrap;">
+        <h3>Rekap Nilai</h3>
+        <div class="row gap-3" style="flex-wrap:wrap;">
+          <select class="input" id="rekapKelas" style="max-width:180px;"></select>
+          <button class="btn btn-secondary" id="btnMuatRekap">Tampilkan</button>
+          <button class="btn btn-primary" id="btnExportExcel">⬇ Download Excel</button>
+        </div>
+      </div>
+      <p class="text-sm text-muted">Pilih kelas, klik "Tampilkan" buat lihat semua nilai jadi 1 tabel, atau langsung download Excel-nya.</p>
+      <div style="overflow-x:auto; margin-top:var(--space-4);">
+        <table id="rekapTable" style="width:100%; border-collapse:collapse; font-size:var(--text-sm);"></table>
+      </div>
     </section>
 
   </main>
