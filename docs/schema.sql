@@ -209,6 +209,35 @@ create policy "tasks_owner_crud" on tasks
 
 
 -- ============================================================
+-- 6b. CALENDAR_EVENTS — guru saja
+-- ============================================================
+create table calendar_events (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references teachers(id) on delete cascade,
+  class_id uuid references classes(id) on delete set null,
+  judul text not null,
+  tanggal_mulai timestamptz not null,
+  tanggal_selesai timestamptz,
+  warna_label text,
+  reminder boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index idx_calendar_events_owner on calendar_events(owner_id);
+
+create trigger trg_calendar_events_updated_at
+before update on calendar_events
+for each row execute function set_updated_at();
+
+alter table calendar_events enable row level security;
+
+create policy "calendar_events_owner_crud" on calendar_events
+  for all
+  using (owner_id in (select id from teachers where auth_user_id = auth.uid()))
+  with check (owner_id in (select id from teachers where auth_user_id = auth.uid()));
+
+
+-- ============================================================
 -- 7. RESOURCES — guru saja (arsip materi)
 -- ============================================================
 create table resources (

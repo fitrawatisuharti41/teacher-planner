@@ -411,8 +411,8 @@ document.getElementById('pengumumanForm').addEventListener('submit', async (e) =
   const { error } = await supabase.from('class_announcements').insert({
     owner_id: teacher.id,
     class_id: waliClass.id,
-    tanggal: qs('#pTanggal').value,
-    judul: qs('#pJudul').value,
+    tanggal: qs('#pgTanggal').value,
+    judul: qs('#pgJudul').value,
     isi: qs('#pIsi').value || null,
   });
   if (error) return alert('Gagal menyimpan: ' + error.message);
