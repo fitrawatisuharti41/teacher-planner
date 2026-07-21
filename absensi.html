@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/responsive.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -89,6 +90,31 @@
     </div>
 
     <div class="stack gap-2" id="absensiList"></div>
+
+    <!-- Rekap Absensi (per rentang tanggal) + Download Excel -->
+    <section class="card">
+      <h3>Rekap Absensi</h3>
+      <div class="row gap-4" style="flex-wrap:wrap; align-items:flex-end; margin-top:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:160px;">
+          <label class="text-sm text-muted" for="rekapAbsKelas">Kelas</label>
+          <select class="input" id="rekapAbsKelas"></select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:150px;">
+          <label class="text-sm text-muted" for="rekapAbsDari">Dari Tanggal</label>
+          <input class="input" id="rekapAbsDari" type="date">
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:150px;">
+          <label class="text-sm text-muted" for="rekapAbsSampai">Sampai Tanggal</label>
+          <input class="input" id="rekapAbsSampai" type="date">
+        </div>
+        <button class="btn btn-secondary" id="btnMuatRekapAbsensi">Tampilkan</button>
+        <button class="btn btn-primary" id="btnExportAbsensiExcel">⬇ Download Excel</button>
+      </div>
+      <p class="text-sm text-muted" style="margin-top:var(--space-2);">Kolom = tiap tanggal dalam rentang, plus rekap total per status di kolom terakhir.</p>
+      <div style="overflow-x:auto; margin-top:var(--space-4);">
+        <table id="rekapAbsensiTable" style="width:100%; border-collapse:collapse; font-size:var(--text-sm);"></table>
+      </div>
+    </section>
 
   </main>
 </div>
