@@ -132,15 +132,56 @@ async function openNilaiPanel(assessmentId, classId, kkm, judul) {
 
   const nilaiMap = Object.fromEntries((existingItems || []).map((i) => [i.student_id, i.nilai]));
 
+  // Ambil jawaban tugas tambahan/remedial yang sudah masuk untuk asesmen ini,
+  // biar guru bisa baca jawaban & langsung isi nilai di satu tempat yang sama.
+  const { data: questions } = await supabase
+    .from('remedial_questions')
+    .select('id, nomor, soal')
+    .eq('assessment_id', assessmentId);
+
+  const questionIds = (questions || []).map((q) => q.id);
+  const soalMap = Object.fromEntries((questions || []).map((q) => [q.id, q]));
+
+  let answersByStudent = {};
+  if (questionIds.length > 0) {
+    const { data: answers } = await supabase
+      .from('remedial_answers')
+      .select('student_id, question_id, jawaban, submitted_at')
+      .in('question_id', questionIds)
+      .order('submitted_at', { ascending: false });
+
+    (answers || []).forEach((a) => {
+      if (!answersByStudent[a.student_id]) answersByStudent[a.student_id] = [];
+      answersByStudent[a.student_id].push(a);
+    });
+  }
+
   const listEl = document.getElementById('nilaiInputList');
   listEl.innerHTML = (students || [])
     .map((s) => {
       const nilai = nilaiMap[s.id] ?? '';
       const belowKkm = nilai !== '' && Number(nilai) < kkm;
+      const jawabanSiswa = answersByStudent[s.id];
+
+      const jawabanHtml = jawabanSiswa
+        ? `
+        <div class="stack gap-1" style="background:var(--color-accent-blue-soft); padding:var(--space-2); border-radius:var(--radius-sm); margin-top:var(--space-1);">
+          <span class="text-xs" style="font-weight:var(--weight-semibold);">📝 Jawaban tugas tambahan masuk:</span>
+          ${jawabanSiswa
+            .map(
+              (a) => `<div class="text-xs"><strong>${soalMap[a.question_id]?.soal || 'Soal'}:</strong> ${a.jawaban}</div>`
+            )
+            .join('')}
+        </div>`
+        : '';
+
       return `
-      <div class="row gap-3 nilai-row ${belowKkm ? 'below-kkm' : ''}" style="justify-content:space-between; padding: var(--space-2);" data-student-id="${s.id}">
-        <span>${s.nama}</span>
-        <input class="input nilai-input" type="number" min="0" max="100" step="0.5" value="${nilai}" data-student-id="${s.id}">
+      <div class="stack gap-1 nilai-row ${belowKkm ? 'below-kkm' : ''}" style="padding: var(--space-2);" data-student-id="${s.id}">
+        <div class="row gap-3" style="justify-content:space-between;">
+          <span>${s.nama}</span>
+          <input class="input nilai-input" type="number" min="0" max="100" step="0.5" value="${nilai}" data-student-id="${s.id}">
+        </div>
+        ${jawabanHtml}
       </div>`;
     })
     .join('');

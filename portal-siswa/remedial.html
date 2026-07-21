@@ -50,22 +50,35 @@
 
   const container = document.getElementById('remedialContainer');
 
-  // 1. Cari asesmen mana yang nilainya di bawah KKM untuk siswa ini
+  // 1. Ambil kelas siswa, lalu SEMUA asesmen di kelas itu (bukan cuma yang udah ada nilainya)
+  const { data: studentRow } = await supabase.from('students_public').select('class_id').eq('id', studentId).maybeSingle();
+  const classId = studentRow?.class_id;
+
+  const { data: assessments, error: assessmentsError } = await supabase
+    .from('assessments')
+    .select('id, judul, mapel, kkm')
+    .eq('class_id', classId);
+
   const { data: items, error: itemsError } = await supabase
     .from('assessment_items')
-    .select('nilai, assessment_id, assessments(judul, mapel, kkm)')
+    .select('nilai, assessment_id')
     .eq('student_id', studentId);
 
-  if (itemsError) {
-    console.error(itemsError.message);
+  if (assessmentsError || itemsError) {
+    console.error(assessmentsError?.message || itemsError?.message);
     container.innerHTML = '<p class="text-sm text-muted">Gagal memuat data.</p>';
   } else {
-    const belowKkm = items.filter((i) => i.nilai < (i.assessments?.kkm || 75));
+    const nilaiMap = Object.fromEntries((items || []).map((i) => [i.assessment_id, i.nilai]));
 
-    if (belowKkm.length === 0) {
-      container.innerHTML = '<div class="card"><p class="text-sm text-muted">Tidak ada remedial yang perlu dikerjakan. 🎉</p></div>';
+    // Butuh remedial kalau: nilai belum ada sama sekali (kosong) ATAU di bawah KKM
+    const perluRemedial = (assessments || [])
+      .map((a) => ({ assessments: a, assessment_id: a.id, nilai: nilaiMap[a.id] ?? null }))
+      .filter((x) => x.nilai === null || x.nilai < (x.assessments.kkm || 75));
+
+    if (perluRemedial.length === 0) {
+      container.innerHTML = '<div class="card"><p class="text-sm text-muted">Tidak ada remedial atau tugas tambahan yang perlu dikerjakan. 🎉</p></div>';
     } else {
-      for (const item of belowKkm) {
+      for (const item of perluRemedial) {
         await renderRemedialCard(item);
       }
     }
@@ -83,21 +96,25 @@
       return;
     }
 
+    const statusNilai = item.nilai === null
+      ? 'Nilai kamu: belum diisi guru'
+      : `Nilai kamu: ${item.nilai} / KKM ${item.assessments?.kkm}`;
+
     const card = document.createElement('section');
     card.className = 'card';
 
     if (!questions || questions.length === 0) {
       card.innerHTML = `
         <h3>${item.assessments?.judul} (${item.assessments?.mapel})</h3>
-        <p class="text-sm text-muted">Nilai kamu: ${item.nilai} / KKM ${item.assessments?.kkm}</p>
-        <p class="text-sm text-muted">Soal remedial belum disiapkan guru. Coba cek lagi nanti.</p>`;
+        <p class="text-sm text-muted">${statusNilai}</p>
+        <p class="text-sm text-muted">Soal tugas tambahan belum disiapkan guru. Coba cek lagi nanti.</p>`;
       container.appendChild(card);
       return;
     }
 
     card.innerHTML = `
       <h3>${item.assessments?.judul} (${item.assessments?.mapel})</h3>
-      <p class="text-sm text-muted" style="margin-bottom:var(--space-4);">Nilai kamu: ${item.nilai} / KKM ${item.assessments?.kkm}</p>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-4);">${statusNilai}</p>
       <form class="stack gap-4" data-assessment-id="${item.assessment_id}">
         ${questions
           .map(
