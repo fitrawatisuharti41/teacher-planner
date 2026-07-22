@@ -1,9 +1,13 @@
 // js/lesson-planner.js
-// Phase 6: terintegrasi penuh ke Supabase (tabel `lesson_plans` + `classes`).
+// Terintegrasi Supabase (tabel `lesson_plans` + `classes`).
+// Field detail RPP (tujuan/materi/metode/dst) DIHAPUS dari sini —
+// itu sudah diisi sekali di Arsip & Administrasi (Modul Ajar), tinggal
+// ditautkan lewat dropdown biar gak nulis dobel.
 
 import { supabase } from './config/supabase.js';
 import { requireAuth, getCurrentTeacher, logout } from './auth.js';
 import { initThemeToggle, initSidebarToggle, qs, qsa } from './utils.js';
+import { getAdminGroups, findGroupForClassId } from './admin-groups.js';
 
 initThemeToggle('themeToggle');
 initSidebarToggle();
@@ -16,12 +20,14 @@ const form = document.getElementById('lessonPlanForm');
 
 let teacher = null;
 let classesCache = []; // [{ id, nama_kelas }]
+let modulAjarCache = []; // [{ id, judul, mapel }]
 
 const session = await requireAuth('login.html');
 if (session) {
   teacher = await getCurrentTeacher();
   if (teacher) {
     await loadClasses();
+    await loadModulAjarOptions();
     await loadPlans();
   }
 }
@@ -47,6 +53,40 @@ async function loadClasses() {
   qs('#filterKelas').innerHTML = '<option value="">Semua Kelas</option>' + optionsHtml;
 }
 
+async function loadModulAjarOptions() {
+  const groups = await getAdminGroups(supabase, teacher.id);
+
+  const { data, error } = await supabase
+    .from('resources')
+    .select('id, judul, class_id')
+    .eq('owner_id', teacher.id)
+    .eq('kategori', 'modul_ajar');
+
+  if (error) {
+    console.error('Gagal ambil daftar Modul Ajar:', error.message);
+    return;
+  }
+
+  modulAjarCache = (data || []).map((r) => ({
+    id: r.id,
+    judul: r.judul,
+    mapel: findGroupForClassId(groups, r.class_id)?.mapel || '',
+  }));
+
+  renderModulAjarDropdown();
+}
+
+function renderModulAjarDropdown() {
+  const mapelDipilih = qs('#fMapel').value;
+  const filtered = modulAjarCache.filter((m) => !mapelDipilih || m.mapel === mapelDipilih);
+
+  qs('#fModulAjar').innerHTML =
+    '<option value="">— Belum ada / pilih dari Arsip &amp; Administrasi —</option>' +
+    filtered.map((m) => `<option value="${m.id}">${m.judul}</option>`).join('');
+}
+
+qs('#fMapel').addEventListener('change', renderModulAjarDropdown);
+
 async function loadPlans() {
   const kelasFilter = qs('#filterKelas').value;
   const mapelFilter = qs('#filterMapel').value;
@@ -54,7 +94,7 @@ async function loadPlans() {
 
   let query = supabase
     .from('lesson_plans')
-    .select('id, topik, mapel, status, tanggal, class_id, classes(nama_kelas)')
+    .select('id, topik, mapel, status, tanggal, class_id, catatan, modul_ajar_id, classes(nama_kelas), resources(judul, url)')
     .eq('owner_id', teacher.id)
     .order('updated_at', { ascending: false });
 
@@ -83,6 +123,7 @@ function renderList(plans) {
       <div>
         <strong>${p.topik}</strong>
         <div class="text-sm text-muted">${p.mapel} · Kelas ${p.classes?.nama_kelas || '-'} · ${p.tanggal || ''}</div>
+        ${p.resources ? `<a class="text-sm" href="${p.resources.url || '#'}" target="_blank" rel="noopener">📄 ${p.resources.judul}</a>` : ''}
       </div>
       <div class="row gap-3">
         <span class="badge ${p.status === 'final' ? 'badge-success' : 'badge-warning'}">
@@ -121,10 +162,14 @@ function openForm(id, plans) {
     qs('#fMapel').value = p.mapel;
     qs('#fTopik').value = p.topik;
     qs('#fStatus').value = p.status;
+    qs('#fCatatan').value = p.catatan || '';
+    renderModulAjarDropdown();
+    qs('#fModulAjar').value = p.modul_ajar_id || '';
     form.dataset.editId = id;
   } else {
     formTitle.textContent = 'RPP Baru';
     form.reset();
+    renderModulAjarDropdown();
     delete form.dataset.editId;
   }
   formPanel.scrollIntoView({ behavior: 'smooth' });
@@ -143,11 +188,7 @@ form.addEventListener('submit', async (e) => {
     class_id: qs('#fKelas').value,
     mapel: qs('#fMapel').value,
     topik: qs('#fTopik').value,
-    tujuan_pembelajaran: qs('#fTujuan').value,
-    materi: qs('#fMateri').value,
-    metode: qs('#fMetode').value,
-    media: qs('#fMedia').value,
-    asesmen: qs('#fAsesmen').value,
+    modul_ajar_id: qs('#fModulAjar').value || null,
     catatan: qs('#fCatatan').value,
     status: qs('#fStatus').value,
   };

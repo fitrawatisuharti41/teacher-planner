@@ -203,7 +203,7 @@ async function loadAdminDocs() {
 async function loadGeneralResources() {
   const { data, error } = await supabase
     .from('resources')
-    .select('id, judul, tipe, url')
+    .select('id, judul, tipe, url, mapel_umum')
     .eq('owner_id', teacher.id)
     .is('kategori', null)
     .order('created_at', { ascending: false });
@@ -218,10 +218,10 @@ async function loadGeneralResources() {
     el.innerHTML = '<p class="text-sm text-muted">Belum ada arsip materi umum.</p>';
     return;
   }
-  el.innerHTML = data
-    .map((r) => {
-      const meta = TIPE_META[r.tipe];
-      return `
+
+  const renderRow = (r) => {
+    const meta = TIPE_META[r.tipe];
+    return `
     <div class="doc-row" style="--doc-color:${meta?.color || 'var(--color-info)'}">
       <div class="row gap-2">
         <span class="badge">${meta?.label || r.tipe}</span>
@@ -232,8 +232,23 @@ async function loadGeneralResources() {
         <button class="btn btn-ghost btn-delete-general" data-id="${r.id}">Hapus</button>
       </div>
     </div>`;
-    })
-    .join('');
+  };
+
+  const ipa = data.filter((r) => r.mapel_umum === 'IPA');
+  const prakarya = data.filter((r) => r.mapel_umum === 'Prakarya');
+  const lainnya = data.filter((r) => r.mapel_umum !== 'IPA' && r.mapel_umum !== 'Prakarya');
+
+  el.innerHTML = `
+    <div class="stack gap-2">
+      <strong class="text-sm">📗 IPA</strong>
+      ${ipa.length ? ipa.map(renderRow).join('') : '<p class="text-sm text-muted">Belum ada.</p>'}
+    </div>
+    <div class="stack gap-2" style="margin-top:var(--space-4);">
+      <strong class="text-sm">🧵 Prakarya</strong>
+      ${prakarya.length ? prakarya.map(renderRow).join('') : '<p class="text-sm text-muted">Belum ada.</p>'}
+    </div>
+    ${lainnya.length ? `<div class="stack gap-2" style="margin-top:var(--space-4);"><strong class="text-sm">Lainnya</strong>${lainnya.map(renderRow).join('')}</div>` : ''}
+  `;
 
   qsa('.btn-delete-general', el).forEach((btn) =>
     btn.addEventListener('click', async () => {
@@ -281,6 +296,7 @@ document.getElementById('generalUploadForm').addEventListener('submit', async (e
     judul: qs('#guJudul').value,
     tipe: qs('#guTipe').value,
     url: qs('#guUrl').value || null,
+    mapel_umum: qs('#guMapel').value,
     kategori: null,
   });
   if (error) return alert('Gagal menyimpan: ' + error.message);

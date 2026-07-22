@@ -28,13 +28,19 @@
   </div>
 
   <section class="card">
-    <h3>📄 File (PDF/PPT/Word)</h3>
-    <div class="stack gap-3" id="fileList" style="margin-top:var(--space-4);"></div>
+    <h3>📗 IPA</h3>
+    <p class="text-xs text-muted" style="margin-top:-4px;">File</p>
+    <div class="stack gap-3" id="ipaFileList"></div>
+    <p class="text-xs text-muted" style="margin-top:var(--space-3);">Video</p>
+    <div class="stack gap-3" id="ipaVideoList"></div>
   </section>
 
   <section class="card">
-    <h3>🎬 Video Pembelajaran</h3>
-    <div class="stack gap-3" id="videoList" style="margin-top:var(--space-4);"></div>
+    <h3>🧵 Prakarya</h3>
+    <p class="text-xs text-muted" style="margin-top:-4px;">File</p>
+    <div class="stack gap-3" id="prakaryaFileList"></div>
+    <p class="text-xs text-muted" style="margin-top:var(--space-3);">Video</p>
+    <div class="stack gap-3" id="prakaryaVideoList"></div>
   </section>
 </div>
 
@@ -58,45 +64,36 @@
 
     const { data, error } = await supabase
       .from('resources')
-      .select('judul, tipe, url')
+      .select('judul, tipe, url, mapel_umum')
       .is('kategori', null)
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error(error.message);
     } else {
-      const files = data.filter((r) => ['pdf', 'word', 'ppt'].includes(r.tipe));
-      const videos = data.filter((r) => r.tipe === 'video');
-
-      document.getElementById('fileList').innerHTML = files.length
-        ? files
-            .map(
-              (r) => `
+      const renderItem = (r) => `
           <a class="row gap-3" href="${r.url || '#'}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
-            <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-archive"/></svg></div>
+            <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#${r.tipe === 'video' ? 'icon-book' : 'icon-archive'}"/></svg></div>
             <div>
               <strong class="text-sm">${r.judul}</strong>
               <div class="text-xs text-muted">${r.tipe.toUpperCase()}</div>
             </div>
-          </a>`
-            )
-            .join('')
-        : '<p class="text-sm text-muted">Belum ada file diupload.</p>';
+          </a>`;
 
-      document.getElementById('videoList').innerHTML = videos.length
-        ? videos
-            .map(
-              (r) => `
-          <a class="row gap-3" href="${r.url || '#'}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
-            <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#icon-book"/></svg></div>
-            <div>
-              <strong class="text-sm">${r.judul}</strong>
-              <div class="text-xs text-muted">Video</div>
-            </div>
-          </a>`
-            )
-            .join('')
-        : '<p class="text-sm text-muted">Belum ada video diupload.</p>';
+      const renderGroup = (elId, list) => {
+        document.getElementById(elId).innerHTML = list.length
+          ? list.map(renderItem).join('')
+          : '<p class="text-sm text-muted">Belum ada.</p>';
+      };
+
+      const byMapel = (mapel) => data.filter((r) => r.mapel_umum === mapel);
+      const ipa = byMapel('IPA');
+      const prakarya = byMapel('Prakarya');
+
+      renderGroup('ipaFileList', ipa.filter((r) => r.tipe !== 'video'));
+      renderGroup('ipaVideoList', ipa.filter((r) => r.tipe === 'video'));
+      renderGroup('prakaryaFileList', prakarya.filter((r) => r.tipe !== 'video'));
+      renderGroup('prakaryaVideoList', prakarya.filter((r) => r.tipe === 'video'));
     }
   }
 </script>

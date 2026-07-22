@@ -25,7 +25,18 @@ async function initDashboard(teacher) {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // --- Jadwal hari ini (calendar_events) ---
+  // --- Jadwal hari ini: gabungan jadwal tetap mingguan + event kalender satu-kali ---
+  const namaHari = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'][new Date().getDay()];
+
+  const { data: jadwalTetap, error: jadwalError } = await supabase
+    .from('weekly_schedule')
+    .select('mapel, jam_mulai, jam_selesai, classes(nama_kelas)')
+    .eq('owner_id', teacher.id)
+    .eq('hari', namaHari)
+    .order('jam_mulai', { ascending: true });
+
+  if (jadwalError) console.error('Gagal ambil jadwal tetap:', jadwalError.message);
+
   const { data: events, error: eventsError } = await supabase
     .from('calendar_events')
     .select('judul, tanggal_mulai, warna_label')
@@ -35,7 +46,7 @@ async function initDashboard(teacher) {
     .order('tanggal_mulai', { ascending: true });
 
   if (eventsError) console.error('Gagal ambil jadwal:', eventsError.message);
-  renderSchedule(events || []);
+  renderSchedule(jadwalTetap || [], events || []);
 
   // --- Tugas mendekati deadline (tasks) ---
   const { data: tasks, error: tasksError } = await supabase
@@ -61,7 +72,7 @@ async function initDashboard(teacher) {
   renderRecentPlans(plans || []);
 
   // --- Stat ringkas: jumlah jadwal hari ini, tugas pending, plan draft ---
-  document.querySelector('#statJadwal .stat-value').textContent = (events || []).length;
+  document.querySelector('#statJadwal .stat-value').textContent = (jadwalTetap || []).length + (events || []).length;
   document.querySelector('#statTugas .stat-value').textContent = (tasks || []).length;
   const draftCount = (plans || []).filter((p) => p.status === 'draft').length;
   document.querySelector('#statDraft .stat-value').textContent = draftCount;
@@ -106,27 +117,37 @@ async function initDashboard(teacher) {
   renderProgressRing(document.getElementById('ringKelengkapan'), percent, 96, ringColorByPercent(percent));
 }
 
-function renderSchedule(events) {
+function renderSchedule(jadwalTetap, events) {
   const el = document.getElementById('scheduleList');
-  if (events.length === 0) {
+
+  const jamTampil = (t) => t?.slice(0, 5) || '';
+
+  const itemsJadwal = jadwalTetap.map((j) => ({
+    label: `${j.mapel} — Kelas ${j.classes?.nama_kelas || '-'}`,
+    jam: jamTampil(j.jam_mulai),
+  }));
+  const itemsEvent = events.map((e) => ({
+    label: e.judul,
+    jam: new Date(e.tanggal_mulai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+  }));
+
+  const combined = [...itemsJadwal, ...itemsEvent].sort((a, b) => a.jam.localeCompare(b.jam));
+
+  if (combined.length === 0) {
     el.innerHTML = '<p class="text-sm text-muted">Tidak ada jadwal hari ini.</p>';
     return;
   }
-  el.innerHTML = events
-    .map((e) => {
-      const jam = new Date(e.tanggal_mulai).toLocaleTimeString('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-      return `
+  el.innerHTML = combined
+    .map(
+      (item) => `
       <div class="row gap-3" style="justify-content:space-between;">
         <div class="row gap-3">
           <svg class="icon" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-clock"/></svg>
-          <strong>${e.judul}</strong>
+          <strong>${item.label}</strong>
         </div>
-        <span class="badge badge-info">${jam}</span>
-      </div>`;
-    })
+        <span class="badge badge-info">${item.jam}</span>
+      </div>`
+    )
     .join('');
 }
 

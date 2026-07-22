@@ -118,30 +118,18 @@
         </div>
 
         <div class="stack gap-1">
-          <label class="text-sm text-muted" for="fTujuan">Tujuan Pembelajaran</label>
-          <textarea class="input" id="fTujuan" rows="2"></textarea>
+          <label class="text-sm text-muted" for="fModulAjar">Modul Ajar Terkait</label>
+          <select class="input" id="fModulAjar">
+            <option value="">— Belum ada / pilih dari Arsip &amp; Administrasi —</option>
+          </select>
+          <span class="text-xs text-muted">
+            Isi kontennya (tujuan, materi, metode, dst) di
+            <a href="resources.html">Arsip &amp; Administrasi</a>, biar gak nulis dobel di sini.
+          </span>
         </div>
         <div class="stack gap-1">
-          <label class="text-sm text-muted" for="fMateri">Materi</label>
-          <textarea class="input" id="fMateri" rows="2"></textarea>
-        </div>
-        <div class="row gap-4" style="flex-wrap:wrap;">
-          <div class="stack gap-1" style="flex:1; min-width:160px;">
-            <label class="text-sm text-muted" for="fMetode">Metode</label>
-            <input class="input" id="fMetode" type="text">
-          </div>
-          <div class="stack gap-1" style="flex:1; min-width:160px;">
-            <label class="text-sm text-muted" for="fMedia">Media</label>
-            <input class="input" id="fMedia" type="text">
-          </div>
-        </div>
-        <div class="stack gap-1">
-          <label class="text-sm text-muted" for="fAsesmen">Asesmen</label>
-          <textarea class="input" id="fAsesmen" rows="2"></textarea>
-        </div>
-        <div class="stack gap-1">
-          <label class="text-sm text-muted" for="fCatatan">Catatan</label>
-          <textarea class="input" id="fCatatan" rows="2"></textarea>
+          <label class="text-sm text-muted" for="fCatatan">Catatan Pertemuan Ini</label>
+          <textarea class="input" id="fCatatan" rows="2" placeholder="Catatan singkat khusus pertemuan ini (opsional)"></textarea>
         </div>
 
         <div class="row gap-4" style="justify-content:space-between;">
