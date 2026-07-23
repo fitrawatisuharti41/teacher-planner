@@ -19,8 +19,8 @@ const formTitle = document.getElementById('formTitle');
 const form = document.getElementById('lessonPlanForm');
 
 let teacher = null;
-let classesCache = []; // [{ id, nama_kelas }]
-let modulAjarCache = []; // [{ id, judul, mapel }]
+let classesCache = []; // [{ id, nama_kelas, tingkat }]
+let modulAjarCache = []; // [{ id, judul, mapel, tingkat }]
 
 const session = await requireAuth('login.html');
 if (session) {
@@ -35,7 +35,7 @@ if (session) {
 async function loadClasses() {
   const { data, error } = await supabase
     .from('classes')
-    .select('id, nama_kelas')
+    .select('id, nama_kelas, tingkat')
     .eq('owner_id', teacher.id)
     .order('nama_kelas');
 
@@ -67,18 +67,27 @@ async function loadModulAjarOptions() {
     return;
   }
 
-  modulAjarCache = (data || []).map((r) => ({
-    id: r.id,
-    judul: r.judul,
-    mapel: findGroupForClassId(groups, r.class_id)?.mapel || '',
-  }));
+  modulAjarCache = (data || []).map((r) => {
+    const g = findGroupForClassId(groups, r.class_id);
+    return {
+      id: r.id,
+      judul: r.judul,
+      mapel: g?.mapel || '',
+      tingkat: g?.tingkat || '',
+    };
+  });
 
   renderModulAjarDropdown();
 }
 
 function renderModulAjarDropdown() {
   const mapelDipilih = qs('#fMapel').value;
-  const filtered = modulAjarCache.filter((m) => !mapelDipilih || m.mapel === mapelDipilih);
+  const kelasDipilih = classesCache.find((c) => c.id === qs('#fKelas').value);
+  const tingkatDipilih = kelasDipilih?.tingkat || '';
+
+  const filtered = modulAjarCache.filter(
+    (m) => (!mapelDipilih || m.mapel === mapelDipilih) && (!tingkatDipilih || m.tingkat === tingkatDipilih)
+  );
 
   qs('#fModulAjar').innerHTML =
     '<option value="">— Belum ada / pilih dari Arsip &amp; Administrasi —</option>' +
@@ -86,6 +95,7 @@ function renderModulAjarDropdown() {
 }
 
 qs('#fMapel').addEventListener('change', renderModulAjarDropdown);
+qs('#fKelas').addEventListener('change', renderModulAjarDropdown);
 
 async function loadPlans() {
   const kelasFilter = qs('#filterKelas').value;
