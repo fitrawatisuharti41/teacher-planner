@@ -9,7 +9,7 @@ insert into weekly_schedule (owner_id, class_id, hari, jam_mulai, jam_selesai, m
 select
   (select id from teachers limit 1),
   (select id from classes where nama_kelas = j.kelas and owner_id = (select id from teachers limit 1)),
-  j.hari, j.jam_mulai, j.jam_selesai, j.mapel
+  j.hari, j.jam_mulai::time, j.jam_selesai::time, j.mapel
 from (values
   -- Senin
   ('senin', '08:00', '09:20', 'IPA', '7B'),
