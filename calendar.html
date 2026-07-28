@@ -137,6 +137,53 @@
       <div class="month-grid" id="monthGrid" style="margin-top:var(--space-2);"></div>
     </section>
 
+    <!-- Jadwal Mengajar Tetap — bisa diedit sendiri kapan aja jadwalnya berubah -->
+    <section class="card">
+      <div class="row gap-3" style="justify-content:space-between;">
+        <h3>Jadwal Mengajar Tetap</h3>
+        <button class="btn btn-primary" id="btnNewJadwal">+ Jadwal Baru</button>
+      </div>
+      <p class="text-sm text-muted">Ini yang muncul otomatis di "Jadwal Hari Ini" di Dashboard. Edit di sini kapan aja jadwalmu berubah.</p>
+
+      <form class="card row gap-4" id="jadwalForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-block:var(--space-4);">
+        <div class="stack gap-1" style="flex:1; min-width:130px;">
+          <label class="text-sm text-muted" for="jwHari">Hari</label>
+          <select class="input" id="jwHari" required>
+            <option value="senin">Senin</option>
+            <option value="selasa">Selasa</option>
+            <option value="rabu">Rabu</option>
+            <option value="kamis">Kamis</option>
+            <option value="jumat">Jumat</option>
+          </select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:110px;">
+          <label class="text-sm text-muted" for="jwJamMulai">Jam Mulai</label>
+          <input class="input" id="jwJamMulai" type="time" required>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:110px;">
+          <label class="text-sm text-muted" for="jwJamSelesai">Jam Selesai</label>
+          <input class="input" id="jwJamSelesai" type="time" required>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:130px;">
+          <label class="text-sm text-muted" for="jwMapel">Mapel</label>
+          <select class="input" id="jwMapel" required>
+            <option>IPA</option>
+            <option>Prakarya</option>
+          </select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:130px;">
+          <label class="text-sm text-muted" for="jwKelas">Kelas</label>
+          <select class="input" id="jwKelas" required></select>
+        </div>
+        <div class="row gap-2">
+          <button type="button" class="btn btn-secondary" id="btnCancelJadwal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+
+      <div class="stack gap-4" id="jadwalMingguanList"></div>
+    </section>
+
   </main>
 </div>
 
