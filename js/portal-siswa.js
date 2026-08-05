@@ -75,34 +75,36 @@ function pilihSiswa(studentId, nama) {
   document.getElementById('namaTerpilih').textContent = nama;
   document.getElementById('kelasTerpilih2').textContent = kelasNama;
   loadPenilaianDesc(classId);
-  renderSpecialInfo(studentId, nama);
+  renderSpecialInfo(studentId, classId);
   showStep(step3);
 }
 
-/** Banner ulang tahun (kalau hari ini tanggalnya) + kartu catatan perkembangan */
-async function renderSpecialInfo(studentId, nama) {
+/** Banner ulang tahun (kalau ada teman sekelas yang ultah hari ini) + kartu catatan perkembangan */
+async function renderSpecialInfo(studentId, classId) {
   const container = document.getElementById('specialInfoContainer');
   if (!container) return;
   container.innerHTML = '';
 
-  const { data, error } = await supabase
+  // --- Banner ulang tahun: cek SEMUA siswa di kelas ini, bukan cuma yang lagi login ---
+  const { data: classmates, error: classmatesError } = await supabase
     .from('students_public')
-    .select('tanggal_lahir, catatan_perkembangan')
-    .eq('id', studentId)
-    .maybeSingle();
+    .select('nama, tanggal_lahir')
+    .eq('class_id', classId);
 
-  if (error || !data) return;
-
-  // --- Banner ulang tahun ---
-  if (data.tanggal_lahir) {
+  if (!classmatesError && classmates) {
     const today = new Date();
-    const lahir = new Date(data.tanggal_lahir);
-    if (lahir.getMonth() === today.getMonth() && lahir.getDate() === today.getDate()) {
+    const yangUlangTahun = classmates.filter((s) => {
+      if (!s.tanggal_lahir) return false;
+      const lahir = new Date(s.tanggal_lahir);
+      return lahir.getMonth() === today.getMonth() && lahir.getDate() === today.getDate();
+    });
+
+    yangUlangTahun.forEach((s) => {
       const banner = document.createElement('div');
       banner.className = 'card';
       banner.style.background = 'var(--color-accent-blue-soft)';
       banner.innerHTML = `
-        <strong>💙 Doa untuk Ananda ${nama}</strong>
+        <strong>💙 Doa untuk Ananda ${s.nama}</strong>
         <p class="text-sm" style="margin-top:var(--space-2);">
           Pada momen istimewa ini, kami mengirimkan doa terbaik untuk Ananda.
           Semoga Allah senantiasa memberikan kesehatan, keberkahan dalam setiap langkah,
@@ -111,10 +113,18 @@ async function renderSpecialInfo(studentId, nama) {
           berilmu, berakhlak mulia, dan bermanfaat bagi sesama. Aamiin. 🤲
         </p>`;
       container.appendChild(banner);
-    }
+    });
   }
 
-  // --- Catatan Perkembangan ---
+  // --- Catatan Perkembangan: tetap cuma punya siswa yang dipilih (ini data pribadi) ---
+  const { data, error } = await supabase
+    .from('students_public')
+    .select('catatan_perkembangan')
+    .eq('id', studentId)
+    .maybeSingle();
+
+  if (error || !data) return;
+
   if (data.catatan_perkembangan) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -163,7 +173,7 @@ if (savedNama && savedKelasNama) {
   document.getElementById('namaTerpilih').textContent = savedNama;
   document.getElementById('kelasTerpilih2').textContent = savedKelasNama;
   loadPenilaianDesc(savedKelasId);
-  renderSpecialInfo(sessionStorage.getItem('portalStudentId'), savedNama);
+  renderSpecialInfo(sessionStorage.getItem('portalStudentId'), savedKelasId);
   showStep(step3);
 } else {
   loadClasses();
