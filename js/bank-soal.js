@@ -11,6 +11,7 @@ document.getElementById('btnLogout')?.addEventListener('click', () => logout('lo
 
 let teacher = null;
 let currentSetId = null;
+let classesCache = [];
 
 const session = await requireAuth('login.html');
 if (session) {
@@ -22,34 +23,59 @@ if (session) {
 }
 
 async function loadClassDropdown() {
-  const { data } = await supabase.from('classes').select('id, nama_kelas').eq('owner_id', teacher.id).order('nama_kelas');
-  qs('#sKelas').innerHTML = (data || []).map((c) => `<option value="${c.id}">${c.nama_kelas}</option>`).join('');
+  const { data } = await supabase.from('classes').select('id, nama_kelas, tingkat').eq('owner_id', teacher.id).order('nama_kelas');
+  classesCache = data || [];
+  qs('#sKelas').innerHTML = classesCache.map((c) => `<option value="${c.id}">${c.nama_kelas}</option>`).join('');
 }
 
 async function loadSets() {
   const { data, error } = await supabase
     .from('practice_sets')
-    .select('id, judul, mapel, classes(nama_kelas)')
+    .select('id, judul, mapel, gambar_url, classes(nama_kelas, tingkat)')
     .eq('owner_id', teacher.id)
     .order('created_at', { ascending: false });
 
   if (error) return console.error(error.message);
 
   const el = document.getElementById('setList');
-  el.innerHTML = (data || []).length
-    ? data
-        .map(
-          (s) => `
-      <div class="row gap-3" style="justify-content:space-between;">
-        <span>${s.judul} — ${s.mapel} · Kelas ${s.classes?.nama_kelas || '-'}</span>
-        <div class="row gap-2">
-          <button class="btn btn-secondary btn-open-set" data-id="${s.id}" data-judul="${s.judul}">Kelola Soal</button>
-          <button class="btn btn-ghost btn-delete-set" data-id="${s.id}">Hapus</button>
-        </div>
-      </div>`
-        )
-        .join('')
-    : '<p class="text-sm text-muted">Belum ada set soal.</p>';
+  if (!data || data.length === 0) {
+    el.innerHTML = '<p class="text-sm text-muted">Belum ada set soal.</p>';
+    return;
+  }
+
+  // Kelompokkan per Mapel + Tingkat, biar terorganisir
+  const groups = {};
+  data.forEach((s) => {
+    const key = `${s.mapel} — Kelas ${s.classes?.tingkat || '-'}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+
+  el.innerHTML = Object.entries(groups)
+    .map(
+      ([groupLabel, sets]) => `
+    <div style="margin-bottom:var(--space-4);">
+      <strong class="text-sm">${groupLabel}</strong>
+      <div class="stack gap-3" style="margin-top:var(--space-2);">
+        ${sets
+          .map(
+            (s) => `
+        <div class="row gap-3" style="justify-content:space-between;">
+          <div class="row gap-2">
+            ${s.gambar_url ? `<img src="${s.gambar_url}" alt="LKM" style="width:36px; height:36px; object-fit:cover; border-radius:var(--radius-sm);">` : ''}
+            <span>${s.judul} · Kelas ${s.classes?.nama_kelas || '-'}</span>
+          </div>
+          <div class="row gap-2">
+            <button class="btn btn-secondary btn-open-set" data-id="${s.id}" data-judul="${s.judul}">Kelola Soal</button>
+            <button class="btn btn-ghost btn-delete-set" data-id="${s.id}">Hapus</button>
+          </div>
+        </div>`
+          )
+          .join('')}
+      </div>
+    </div>`
+    )
+    .join('');
 
   qsa('.btn-open-set', el).forEach((btn) =>
     btn.addEventListener('click', () => openQuestionPanel(btn.dataset.id, btn.dataset.judul))
@@ -73,12 +99,42 @@ document.getElementById('btnCancelSet').addEventListener('click', () => {
 
 document.getElementById('setForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const submitBtn = qs('#sSubmitBtn');
+  const statusEl = qs('#sUploadStatus');
+  const file = qs('#sGambar').files[0];
+
+  if (file && file.size > 5 * 1024 * 1024) {
+    return alert('Ukuran foto maksimal 5MB. Pilih foto lain atau kompres dulu.');
+  }
+
+  submitBtn.disabled = true;
+  let gambarUrl = null;
+
+  if (file) {
+    statusEl.textContent = 'Mengupload foto...';
+    const ext = file.name.split('.').pop();
+    const path = `${teacher.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('bank-soal').upload(path, file);
+    if (uploadError) {
+      statusEl.textContent = '';
+      submitBtn.disabled = false;
+      return alert('Gagal upload foto: ' + uploadError.message);
+    }
+    gambarUrl = supabase.storage.from('bank-soal').getPublicUrl(path).data.publicUrl;
+  }
+
+  statusEl.textContent = 'Menyimpan...';
   const { error } = await supabase.from('practice_sets').insert({
     owner_id: teacher.id,
     class_id: qs('#sKelas').value,
     mapel: qs('#sMapel').value,
     judul: qs('#sJudul').value,
+    gambar_url: gambarUrl,
   });
+
+  submitBtn.disabled = false;
+  statusEl.textContent = '';
+
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
   document.getElementById('setFormPanel').style.display = 'none';

@@ -57,7 +57,7 @@
 
   const { data: sets, error } = await supabase
     .from('practice_sets')
-    .select('id, judul, mapel')
+    .select('id, judul, mapel, gambar_url')
     .eq('class_id', classId)
     .order('created_at', { ascending: false });
 
@@ -70,10 +70,13 @@
     setListEl.innerHTML = sets
       .map(
         (s) => `
-      <button class="card card-interactive row gap-3 btn-open-set" data-id="${s.id}" data-judul="${s.judul}" style="justify-content:space-between; text-align:left; border:none; cursor:pointer;">
-        <div>
-          <strong>${s.judul}</strong>
-          <div class="text-sm text-muted">${s.mapel}</div>
+      <button class="card card-interactive row gap-3 btn-open-set" data-id="${s.id}" data-judul="${s.judul}" data-gambar="${s.gambar_url || ''}" style="justify-content:space-between; text-align:left; border:none; cursor:pointer;">
+        <div class="row gap-3">
+          ${s.gambar_url ? `<img src="${s.gambar_url}" alt="LKM" style="width:40px; height:40px; object-fit:cover; border-radius:var(--radius-sm);">` : ''}
+          <div>
+            <strong>${s.judul}</strong>
+            <div class="text-sm text-muted">${s.mapel}</div>
+          </div>
         </div>
         <span>→</span>
       </button>`
@@ -81,12 +84,20 @@
       .join('');
 
     setListEl.querySelectorAll('.btn-open-set').forEach((btn) =>
-      btn.addEventListener('click', () => openSet(btn.dataset.id, btn.dataset.judul))
+      btn.addEventListener('click', () => openSet(btn.dataset.id, btn.dataset.judul, btn.dataset.gambar))
     );
   }
 
-  async function openSet(setId, judul) {
+  async function openSet(setId, judul, gambarUrl) {
     setListEl.style.display = 'none';
+
+    const lkmHtml = gambarUrl
+      ? `
+        <div class="stack gap-2" style="margin-bottom:var(--space-4);">
+          <img src="${gambarUrl}" alt="LKM ${judul}" style="width:100%; border-radius:var(--radius-md);">
+          <a class="btn btn-secondary" href="${gambarUrl}" download target="_blank" rel="noopener">⬇ Download LKM</a>
+        </div>`
+      : '';
 
     const { data: questions, error: qError } = await supabase
       .from('practice_questions')
@@ -95,13 +106,14 @@
       .order('nomor');
 
     if (qError || !questions || questions.length === 0) {
-      questionEl.innerHTML = '<div class="card"><p class="text-sm text-muted">Belum ada soal di set ini.</p></div>';
+      questionEl.innerHTML = `<div class="card"><h3>${judul}</h3>${lkmHtml}<p class="text-sm text-muted">Belum ada soal interaktif di set ini.</p></div>`;
       return;
     }
 
     questionEl.innerHTML = `
       <div class="card">
         <h3>${judul}</h3>
+        ${lkmHtml}
         <form class="stack gap-4" id="answerForm">
           ${questions
             .map(
