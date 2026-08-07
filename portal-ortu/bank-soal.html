@@ -57,7 +57,7 @@
 
   const { data: sets, error } = await supabase
     .from('practice_sets')
-    .select('id, judul, mapel, gambar_url')
+    .select('id, judul, mapel, gambar_url, link_gamifikasi')
     .eq('class_id', classId)
     .order('created_at', { ascending: false });
 
@@ -70,7 +70,7 @@
     setListEl.innerHTML = sets
       .map(
         (s) => `
-      <button class="card card-interactive row gap-3 btn-open-set" data-id="${s.id}" data-judul="${s.judul}" data-gambar="${s.gambar_url || ''}" style="justify-content:space-between; text-align:left; border:none; cursor:pointer;">
+      <button class="card card-interactive row gap-3 btn-open-set" data-id="${s.id}" data-judul="${s.judul}" data-gambar="${s.gambar_url || ''}" data-gamifikasi="${s.link_gamifikasi || ''}" style="justify-content:space-between; text-align:left; border:none; cursor:pointer;">
         <div class="row gap-3">
           ${s.gambar_url ? `<img src="${s.gambar_url}" alt="LKM" style="width:40px; height:40px; object-fit:cover; border-radius:var(--radius-sm);">` : ''}
           <div>
@@ -84,11 +84,11 @@
       .join('');
 
     setListEl.querySelectorAll('.btn-open-set').forEach((btn) =>
-      btn.addEventListener('click', () => openSet(btn.dataset.id, btn.dataset.judul, btn.dataset.gambar))
+      btn.addEventListener('click', () => openSet(btn.dataset.id, btn.dataset.judul, btn.dataset.gambar, btn.dataset.gamifikasi))
     );
   }
 
-  async function openSet(setId, judul, gambarUrl) {
+  async function openSet(setId, judul, gambarUrl, linkGamifikasi) {
     setListEl.style.display = 'none';
 
     const lkmHtml = gambarUrl
@@ -99,6 +99,10 @@
         </div>`
       : '';
 
+    const gamifikasiHtml = linkGamifikasi
+      ? `<a class="btn btn-primary" href="${linkGamifikasi}" target="_blank" rel="noopener" style="margin-bottom:var(--space-4); display:inline-flex;">🎮 Main Gamifikasi</a>`
+      : '';
+
     const { data: questions, error: qError } = await supabase
       .from('practice_questions')
       .select('id, nomor, soal')
@@ -106,7 +110,7 @@
       .order('nomor');
 
     if (qError || !questions || questions.length === 0) {
-      questionEl.innerHTML = `<div class="card"><h3>${judul}</h3>${lkmHtml}<p class="text-sm text-muted">Belum ada soal interaktif di set ini.</p></div>`;
+      questionEl.innerHTML = `<div class="card"><h3>${judul}</h3>${lkmHtml}${gamifikasiHtml}<p class="text-sm text-muted">Belum ada soal interaktif di set ini.</p></div>`;
       return;
     }
 
@@ -114,6 +118,7 @@
       <div class="card">
         <h3>${judul}</h3>
         ${lkmHtml}
+        ${gamifikasiHtml}
         <form class="stack gap-4" id="answerForm">
           ${questions
             .map(

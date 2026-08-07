@@ -6,6 +6,7 @@
 
 -- 1. Kolom gambar di practice_sets (satu LKM per set soal)
 alter table practice_sets add column if not exists gambar_url text;
+alter table practice_sets add column if not exists link_gamifikasi text; -- Wordwall/Quizizz/Educaplay/dsb
 
 -- 2. Bucket storage, public=true (dibutuhkan Portal Ortu yang anonim)
 insert into storage.buckets (id, name, public)

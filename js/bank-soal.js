@@ -31,7 +31,7 @@ async function loadClassDropdown() {
 async function loadSets() {
   const { data, error } = await supabase
     .from('practice_sets')
-    .select('id, judul, mapel, gambar_url, classes(nama_kelas, tingkat)')
+    .select('id, judul, mapel, gambar_url, link_gamifikasi, classes(nama_kelas, tingkat)')
     .eq('owner_id', teacher.id)
     .order('created_at', { ascending: false });
 
@@ -64,6 +64,7 @@ async function loadSets() {
           <div class="row gap-2">
             ${s.gambar_url ? `<img src="${s.gambar_url}" alt="LKM" style="width:36px; height:36px; object-fit:cover; border-radius:var(--radius-sm);">` : ''}
             <span>${s.judul} · Kelas ${s.classes?.nama_kelas || '-'}</span>
+            ${s.link_gamifikasi ? '<span class="badge badge-info">🎮 Gamifikasi</span>' : ''}
           </div>
           <div class="row gap-2">
             <button class="btn btn-secondary btn-open-set" data-id="${s.id}" data-judul="${s.judul}">Kelola Soal</button>
@@ -130,6 +131,7 @@ document.getElementById('setForm').addEventListener('submit', async (e) => {
     mapel: qs('#sMapel').value,
     judul: qs('#sJudul').value,
     gambar_url: gambarUrl,
+    link_gamifikasi: qs('#sGamifikasi').value || null,
   });
 
   submitBtn.disabled = false;
