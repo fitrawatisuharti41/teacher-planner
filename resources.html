@@ -151,6 +151,7 @@
             <option value="pdf">PDF</option>
             <option value="word">Word</option>
             <option value="ppt">PPT</option>
+            <option value="gambar">Gambar</option>
             <option value="video">Video</option>
             <option value="link">Link</option>
           </select>
@@ -163,7 +164,12 @@
           <label class="text-sm text-muted" for="guUrl">Link</label>
           <input class="input" id="guUrl" type="url" placeholder="https://...">
         </div>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="guFile">Atau Upload Gambar Langsung</label>
+          <input class="input" id="guFile" type="file" accept="image/*" style="padding:var(--space-1);">
+          <span class="text-xs text-muted" id="guUploadStatus"></span>
+        </div>
+        <button type="submit" class="btn btn-primary" id="guSubmitBtn">Simpan</button>
       </form>
 
       <div class="stack gap-2" id="generalResourceList" style="margin-top:var(--space-4);"></div>

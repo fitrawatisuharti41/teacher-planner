@@ -31,11 +31,12 @@ const KATEGORI_META = {
 };
 
 const TIPE_META = {
-  pdf:   { label: 'PDF',   color: '#d33d3d' },
-  word:  { label: 'Word',  color: '#2b579a' },
-  ppt:   { label: 'PPT',   color: '#d24726' },
-  video: { label: 'Video', color: '#8b5cf6' },
-  link:  { label: 'Link',  color: '#0ea5e9' },
+  pdf:    { label: 'PDF',    color: '#d33d3d' },
+  word:   { label: 'Word',   color: '#2b579a' },
+  ppt:    { label: 'PPT',    color: '#d24726' },
+  gambar: { label: 'Gambar', color: '#1faa59' },
+  video:  { label: 'Video',  color: '#8b5cf6' },
+  link:   { label: 'Link',   color: '#0ea5e9' },
 };
 
 let teacher = null;
@@ -366,16 +367,45 @@ document.getElementById('adminUploadForm').addEventListener('submit', async (e) 
 
 document.getElementById('generalUploadForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const submitBtn = qs('#guSubmitBtn');
+  const statusEl = qs('#guUploadStatus');
+  const file = qs('#guFile').files[0];
+
+  if (file && file.size > 5 * 1024 * 1024) {
+    return alert('Ukuran gambar maksimal 5MB. Pilih gambar lain atau kompres dulu.');
+  }
+
+  submitBtn.disabled = true;
+  let urlFinal = qs('#guUrl').value || null;
+
+  if (file) {
+    statusEl.textContent = 'Mengupload gambar...';
+    const ext = file.name.split('.').pop();
+    const path = `${teacher.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('arsip-materi').upload(path, file);
+    if (uploadError) {
+      statusEl.textContent = '';
+      submitBtn.disabled = false;
+      return alert('Gagal upload gambar: ' + uploadError.message);
+    }
+    urlFinal = supabase.storage.from('arsip-materi').getPublicUrl(path).data.publicUrl;
+  }
+
+  statusEl.textContent = 'Menyimpan...';
   const { error } = await supabase.from('resources').insert({
     owner_id: teacher.id,
     judul: qs('#guJudul').value,
     tipe: qs('#guTipe').value,
-    url: qs('#guUrl').value || null,
+    url: urlFinal,
     mapel_umum: qs('#guMapel').value,
     tingkat_umum: qs('#guTingkat').value,
     bab: qs('#guBab').value,
     kategori: null,
   });
+
+  submitBtn.disabled = false;
+  statusEl.textContent = '';
+
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
   document.getElementById('generalUploadForm').style.display = 'none';
