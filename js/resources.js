@@ -369,39 +369,65 @@ document.getElementById('generalUploadForm').addEventListener('submit', async (e
   e.preventDefault();
   const submitBtn = qs('#guSubmitBtn');
   const statusEl = qs('#guUploadStatus');
-  const file = qs('#guFile').files[0];
+  const files = Array.from(qs('#guFile').files || []);
 
-  if (file && file.size > 5 * 1024 * 1024) {
-    return alert('Ukuran gambar maksimal 5MB. Pilih gambar lain atau kompres dulu.');
+  const tooBig = files.find((f) => f.size > 5 * 1024 * 1024);
+  if (tooBig) {
+    return alert(`Ukuran gambar "${tooBig.name}" lebih dari 5MB. Pilih gambar lain atau kompres dulu.`);
   }
 
   submitBtn.disabled = true;
-  let urlFinal = qs('#guUrl').value || null;
 
-  if (file) {
-    statusEl.textContent = 'Mengupload gambar...';
-    const ext = file.name.split('.').pop();
-    const path = `${teacher.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from('arsip-materi').upload(path, file);
-    if (uploadError) {
-      statusEl.textContent = '';
-      submitBtn.disabled = false;
-      return alert('Gagal upload gambar: ' + uploadError.message);
+  const judulDasar = qs('#guJudul').value;
+  const tipe = qs('#guTipe').value;
+  const mapel_umum = qs('#guMapel').value;
+  const tingkat_umum = qs('#guTingkat').value;
+  const bab = qs('#guBab').value;
+
+  // Baris yang bakal di-insert ke `resources`. Kalau ada file gambar,
+  // tiap file jadi 1 baris tersendiri (biar tetap 1 gambar per baris di list).
+  // Kalau nggak ada file, fallback ke link biasa (perilaku lama).
+  const rows = [];
+
+  if (files.length > 0) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      statusEl.textContent = `Mengupload gambar ${i + 1}/${files.length}...`;
+      const ext = file.name.split('.').pop();
+      const path = `${teacher.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from('arsip-materi').upload(path, file);
+      if (uploadError) {
+        statusEl.textContent = '';
+        submitBtn.disabled = false;
+        return alert(`Gagal upload gambar "${file.name}": ` + uploadError.message);
+      }
+      const urlFinal = supabase.storage.from('arsip-materi').getPublicUrl(path).data.publicUrl;
+      rows.push({
+        owner_id: teacher.id,
+        judul: files.length > 1 ? `${judulDasar} (${i + 1})` : judulDasar,
+        tipe,
+        url: urlFinal,
+        mapel_umum,
+        tingkat_umum,
+        bab,
+        kategori: null,
+      });
     }
-    urlFinal = supabase.storage.from('arsip-materi').getPublicUrl(path).data.publicUrl;
+  } else {
+    rows.push({
+      owner_id: teacher.id,
+      judul: judulDasar,
+      tipe,
+      url: qs('#guUrl').value || null,
+      mapel_umum,
+      tingkat_umum,
+      bab,
+      kategori: null,
+    });
   }
 
   statusEl.textContent = 'Menyimpan...';
-  const { error } = await supabase.from('resources').insert({
-    owner_id: teacher.id,
-    judul: qs('#guJudul').value,
-    tipe: qs('#guTipe').value,
-    url: urlFinal,
-    mapel_umum: qs('#guMapel').value,
-    tingkat_umum: qs('#guTingkat').value,
-    bab: qs('#guBab').value,
-    kategori: null,
-  });
+  const { error } = await supabase.from('resources').insert(rows);
 
   submitBtn.disabled = false;
   statusEl.textContent = '';
