@@ -203,7 +203,7 @@ async function loadAdminDocs() {
 async function loadGeneralResources() {
   const { data, error } = await supabase
     .from('resources')
-    .select('id, judul, tipe, url, mapel_umum')
+    .select('id, judul, tipe, url, mapel_umum, tingkat_umum, bab')
     .eq('owner_id', teacher.id)
     .is('kategori', null)
     .order('created_at', { ascending: false });
@@ -234,21 +234,96 @@ async function loadGeneralResources() {
     </div>`;
   };
 
-  const ipa = data.filter((r) => r.mapel_umum === 'IPA');
-  const prakarya = data.filter((r) => r.mapel_umum === 'Prakarya');
-  const lainnya = data.filter((r) => r.mapel_umum !== 'IPA' && r.mapel_umum !== 'Prakarya');
+  // Materi lama yang belum punya kelas/bab (belum bisa muncul di Portal Ortu)
+  const belumLengkap = data.filter((r) => !r.tingkat_umum || !r.bab);
+  const lengkap = data.filter((r) => r.tingkat_umum && r.bab);
 
-  el.innerHTML = `
-    <div class="stack gap-2">
-      <strong class="text-sm">📗 IPA</strong>
-      ${ipa.length ? ipa.map(renderRow).join('') : '<p class="text-sm text-muted">Belum ada.</p>'}
-    </div>
-    <div class="stack gap-2" style="margin-top:var(--space-4);">
-      <strong class="text-sm">🧵 Prakarya</strong>
-      ${prakarya.length ? prakarya.map(renderRow).join('') : '<p class="text-sm text-muted">Belum ada.</p>'}
-    </div>
-    ${lainnya.length ? `<div class="stack gap-2" style="margin-top:var(--space-4);"><strong class="text-sm">Lainnya</strong>${lainnya.map(renderRow).join('')}</div>` : ''}
-  `;
+  const renderEditRow = (r) => {
+    const meta = TIPE_META[r.tipe];
+    return `
+    <div class="doc-row" style="--doc-color:${meta?.color || 'var(--color-info)'}; flex-wrap:wrap;" data-edit-id="${r.id}">
+      <div class="row gap-2" style="flex:1; min-width:160px;">
+        <span class="badge">${meta?.label || r.tipe}</span>
+        <span>${r.judul}</span>
+      </div>
+      <select class="input edit-mapel" style="width:auto;">
+        <option value="IPA" ${r.mapel_umum === 'IPA' ? 'selected' : ''}>IPA</option>
+        <option value="Prakarya" ${r.mapel_umum === 'Prakarya' ? 'selected' : ''}>Prakarya</option>
+      </select>
+      <select class="input edit-tingkat" style="width:auto;">
+        <option value="7" ${r.tingkat_umum === '7' ? 'selected' : ''}>Kelas 7</option>
+        <option value="8" ${r.tingkat_umum === '8' ? 'selected' : ''}>Kelas 8</option>
+      </select>
+      <input class="input edit-bab" type="text" placeholder="Bab / Topik" value="${r.bab || ''}" style="min-width:160px; flex:1;">
+      <button class="btn btn-primary btn-save-edit" data-id="${r.id}">Simpan</button>
+    </div>`;
+  };
+
+  const belumLengkapHtml = belumLengkap.length
+    ? `
+    <div class="stack gap-2" style="margin-bottom:var(--space-4); padding:var(--space-4); border:1px dashed var(--color-warning); border-radius:var(--radius-md);">
+      <strong class="text-sm" style="color:var(--color-warning);">⚠️ Perlu Dilengkapi (${belumLengkap.length}) — belum muncul di Portal Ortu sampai Kelas &amp; Bab diisi</strong>
+      <div class="stack gap-2">${belumLengkap.map(renderEditRow).join('')}</div>
+    </div>`
+    : '';
+
+  // Kelompok 1: mapel + tingkat (IPA Kelas 7, IPA Kelas 8, Prakarya Kelas 7...)
+  const kelasGroups = {};
+  lengkap.forEach((r) => {
+    const key = `${r.mapel_umum}|${r.tingkat_umum}`;
+    if (!kelasGroups[key]) {
+      kelasGroups[key] = {
+        label: `${r.mapel_umum === 'IPA' ? '📗' : '🧵'} ${r.mapel_umum} — Kelas ${r.tingkat_umum}`,
+        items: [],
+      };
+    }
+    kelasGroups[key].items.push(r);
+  });
+
+  const kelasGroupHtml = Object.values(kelasGroups)
+    .map((grp) => {
+      // Kelompok 2: per Bab di dalam tiap mapel+tingkat
+      const babGroups = {};
+      grp.items.forEach((r) => {
+        if (!babGroups[r.bab]) babGroups[r.bab] = [];
+        babGroups[r.bab].push(r);
+      });
+
+      const babHtml = Object.entries(babGroups)
+        .map(
+          ([bab, items]) => `
+        <div class="stack gap-2" style="margin-top:var(--space-3);">
+          <strong class="text-sm">${bab}</strong>
+          <div class="stack gap-2">${items.map(renderRow).join('')}</div>
+        </div>`
+        )
+        .join('');
+
+      return `
+      <div class="stack gap-2" style="margin-top:var(--space-4);">
+        <h4 style="margin:0;">${grp.label}</h4>
+        ${babHtml}
+      </div>`;
+    })
+    .join('');
+
+  el.innerHTML = belumLengkapHtml + kelasGroupHtml;
+
+  qsa('.btn-save-edit', el).forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      const row = btn.closest('[data-edit-id]');
+      const { error } = await supabase
+        .from('resources')
+        .update({
+          mapel_umum: row.querySelector('.edit-mapel').value,
+          tingkat_umum: row.querySelector('.edit-tingkat').value,
+          bab: row.querySelector('.edit-bab').value,
+        })
+        .eq('id', btn.dataset.id);
+      if (error) return alert('Gagal menyimpan: ' + error.message);
+      await loadGeneralResources();
+    })
+  );
 
   qsa('.btn-delete-general', el).forEach((btn) =>
     btn.addEventListener('click', async () => {
@@ -297,6 +372,8 @@ document.getElementById('generalUploadForm').addEventListener('submit', async (e
     tipe: qs('#guTipe').value,
     url: qs('#guUrl').value || null,
     mapel_umum: qs('#guMapel').value,
+    tingkat_umum: qs('#guTingkat').value,
+    bab: qs('#guBab').value,
     kategori: null,
   });
   if (error) return alert('Gagal menyimpan: ' + error.message);

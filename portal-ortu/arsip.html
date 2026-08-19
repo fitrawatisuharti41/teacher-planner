@@ -27,20 +27,8 @@
     <button class="btn btn-ghost" id="btnBackToMenu">← Menu</button>
   </div>
 
-  <section class="card">
-    <h3>📗 IPA</h3>
-    <p class="text-xs text-muted" style="margin-top:-4px;">File</p>
-    <div class="stack gap-3" id="ipaFileList"></div>
-    <p class="text-xs text-muted" style="margin-top:var(--space-3);">Video</p>
-    <div class="stack gap-3" id="ipaVideoList"></div>
-  </section>
-
-  <section class="card">
-    <h3>🧵 Prakarya</h3>
-    <p class="text-xs text-muted" style="margin-top:-4px;">File</p>
-    <div class="stack gap-3" id="prakaryaFileList"></div>
-    <p class="text-xs text-muted" style="margin-top:var(--space-3);">Video</p>
-    <div class="stack gap-3" id="prakaryaVideoList"></div>
+  <section class="card" id="materiSection">
+    <p class="text-sm text-muted" id="materiEmpty" style="display:none;">Belum ada materi untuk kelas ini.</p>
   </section>
 </div>
 
@@ -54,6 +42,7 @@
 
   const studentId = sessionStorage.getItem('portalStudentId');
   const nama = sessionStorage.getItem('portalNama');
+  const kelasId = sessionStorage.getItem('portalKelasId');
   const kelasNama = sessionStorage.getItem('portalKelasNama');
 
   if (!studentId) {
@@ -62,15 +51,30 @@
     document.getElementById('namaSiswa').textContent = nama;
     document.getElementById('kelasSiswa').textContent = kelasNama;
 
-    const { data, error } = await supabase
-      .from('resources')
-      .select('judul, tipe, url, mapel_umum')
-      .is('kategori', null)
-      .order('created_at', { ascending: false });
+    // Materi cuma relevan buat mapel+tingkat yang benar-benar diajarkan
+    // guru ini di kelas siswa ini (misal siswa 8A cuma butuh liat materi
+    // IPA Kelas 8, bukan IPA Kelas 7 atau Prakarya).
+    const { data: assignment } = await supabase
+      .from('teaching_assignments')
+      .select('mapel, classes(tingkat)')
+      .eq('kelas_id', kelasId)
+      .limit(1)
+      .maybeSingle();
 
-    if (error) {
-      console.error(error.message);
+    const mapel = assignment?.mapel;
+    const tingkat = assignment?.classes?.tingkat;
+
+    if (!mapel || !tingkat) {
+      document.getElementById('materiEmpty').style.display = 'block';
     } else {
+      const { data, error } = await supabase
+        .from('resources')
+        .select('judul, tipe, url, bab')
+        .is('kategori', null)
+        .eq('mapel_umum', mapel)
+        .eq('tingkat_umum', tingkat)
+        .order('created_at', { ascending: true });
+
       const renderItem = (r) => `
           <a class="row gap-3" href="${r.url || '#'}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
             <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#${r.tipe === 'video' ? 'icon-book' : 'icon-archive'}"/></svg></div>
@@ -80,20 +84,30 @@
             </div>
           </a>`;
 
-      const renderGroup = (elId, list) => {
-        document.getElementById(elId).innerHTML = list.length
-          ? list.map(renderItem).join('')
-          : '<p class="text-sm text-muted">Belum ada.</p>';
-      };
+      if (error || !data || data.length === 0) {
+        document.getElementById('materiEmpty').style.display = 'block';
+      } else {
+        const babGroups = {};
+        data.forEach((r) => {
+          const key = r.bab || '(Tanpa Bab)';
+          if (!babGroups[key]) babGroups[key] = [];
+          babGroups[key].push(r);
+        });
 
-      const byMapel = (mapel) => data.filter((r) => r.mapel_umum === mapel);
-      const ipa = byMapel('IPA');
-      const prakarya = byMapel('Prakarya');
-
-      renderGroup('ipaFileList', ipa.filter((r) => r.tipe !== 'video'));
-      renderGroup('ipaVideoList', ipa.filter((r) => r.tipe === 'video'));
-      renderGroup('prakaryaFileList', prakarya.filter((r) => r.tipe !== 'video'));
-      renderGroup('prakaryaVideoList', prakarya.filter((r) => r.tipe === 'video'));
+        const emoji = mapel === 'IPA' ? '📗' : '🧵';
+        document.getElementById('materiSection').innerHTML = `
+          <h3>${emoji} ${mapel} — Kelas ${tingkat}</h3>
+          ${Object.entries(babGroups)
+            .map(
+              ([bab, items]) => `
+            <div class="stack gap-3" style="margin-top:var(--space-4);">
+              <strong class="text-sm">${bab}</strong>
+              <div class="stack gap-3">${items.map(renderItem).join('')}</div>
+            </div>`
+            )
+            .join('')}
+        `;
+      }
     }
   }
 </script>

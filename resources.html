@@ -127,12 +127,23 @@
       <p class="text-sm text-muted">Materi ajar, video, atau link lain yang gak masuk 7 kategori administrasi.</p>
 
       <form class="row gap-4" id="generalUploadForm" style="flex-wrap:wrap; align-items:flex-end; display:none; margin-top:var(--space-4);">
-        <div class="stack gap-1" style="flex:1; min-width:140px;">
+        <div class="stack gap-1" style="flex:1; min-width:120px;">
           <label class="text-sm text-muted" for="guMapel">Mapel</label>
           <select class="input" id="guMapel" required>
             <option value="IPA">IPA</option>
             <option value="Prakarya">Prakarya</option>
           </select>
+        </div>
+        <div class="stack gap-1" style="flex:1; min-width:100px;">
+          <label class="text-sm text-muted" for="guTingkat">Kelas</label>
+          <select class="input" id="guTingkat" required>
+            <option value="7">Kelas 7</option>
+            <option value="8">Kelas 8</option>
+          </select>
+        </div>
+        <div class="stack gap-1" style="flex:2; min-width:200px;">
+          <label class="text-sm text-muted" for="guBab">Bab / Topik</label>
+          <input class="input" id="guBab" type="text" placeholder="Misal: Bab 1 - Hakikat Ilmu Sains" required>
         </div>
         <div class="stack gap-1" style="flex:1; min-width:140px;">
           <label class="text-sm text-muted" for="guTipe">Tipe</label>
@@ -145,8 +156,8 @@
           </select>
         </div>
         <div class="stack gap-1" style="flex:2; min-width:200px;">
-          <label class="text-sm text-muted" for="guJudul">Judul</label>
-          <input class="input" id="guJudul" type="text" required>
+          <label class="text-sm text-muted" for="guJudul">Judul File/Video</label>
+          <input class="input" id="guJudul" type="text" placeholder="Misal: Video Laboratorium IPA" required>
         </div>
         <div class="stack gap-1" style="flex:2; min-width:200px;">
           <label class="text-sm text-muted" for="guUrl">Link</label>
