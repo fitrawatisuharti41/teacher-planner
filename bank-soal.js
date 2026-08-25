@@ -248,11 +248,19 @@ document.getElementById('questionForm').addEventListener('submit', async (e) => 
       return;
     }
 
-    // Buang opsi kosong (opsi C/D opsional), lalu cari ulang index kunci
-    // setelah opsi kosong dibuang, supaya index-nya tetap cocok dengan array
-    // final yang disimpan.
-    opsi = opsiRaw.map((v) => v.trim()).filter((v) => v.length > 0);
-    kunciJawaban = opsi.indexOf(kunciTeks);
+    // Buang opsi kosong (opsi C/D opsional), lacak ulang posisi index kunci
+    // berdasarkan POSISI ASLINYA (bukan mencocokkan teks) — kalau dicocokkan
+    // lewat teks (opsi.indexOf(kunciTeks)) dan ada dua opsi yang teksnya
+    // kebetulan sama persis, kunci_jawaban bisa nyasar ke opsi yang salah
+    // tanpa ada error sama sekali. Menelusuri berdasarkan index jauh lebih aman.
+    opsi = [];
+    kunciJawaban = -1;
+    opsiRaw.forEach((v, i) => {
+      const trimmed = v.trim();
+      if (!trimmed) return;
+      if (i === kunciIndexAsli) kunciJawaban = opsi.length;
+      opsi.push(trimmed);
+    });
 
     if (opsi.length < 2) {
       errEl.textContent = 'Isi minimal 2 opsi jawaban.';
