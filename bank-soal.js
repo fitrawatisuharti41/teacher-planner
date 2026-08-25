@@ -158,11 +158,11 @@ document.getElementById('btnCloseQuestionPanel').addEventListener('click', () =>
   currentSetId = null;
 });
 
-qsa('input[name="qTipe"]').forEach((radio) =>
+document.querySelectorAll('input[name="qTipe"]').forEach((radio) =>
   radio.addEventListener('change', (e) => {
     const isEsai = e.target.value === 'esai';
     qs('#qOpsiWrap').style.display = isEsai ? 'none' : '';
-    qsa('#qOpsiWrap input[type="text"]').forEach((inp) => (inp.required = !isEsai && inp.id !== 'qOpsi2' && inp.id !== 'qOpsi3'));
+    document.querySelectorAll('#qOpsiWrap input[type="text"]').forEach((inp) => (inp.required = !isEsai && inp.id !== 'qOpsi2' && inp.id !== 'qOpsi3'));
   })
 );
 
