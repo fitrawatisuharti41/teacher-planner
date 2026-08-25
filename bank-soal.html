@@ -3,178 +3,296 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bank Soal — Teacher Planner</title>
-<link rel="manifest" href="manifest.json">
+<title>Bank Soal Latihan — Portal Siswa &amp; Orang Tua</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="css/variables.css">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/responsive.css">
+<style>
+  body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
+  .portal-shell { width:100%; max-width:560px; }
+  .opt-pg {
+    display:flex; align-items:center; gap:10px;
+    padding:12px 14px; border:1.5px solid var(--color-border, #E4E8F1); border-radius:var(--radius-sm, 10px);
+    cursor:pointer; font-size:14.5px;
+  }
+  .opt-pg input { flex:none; }
+  .opt-pg.correct { border-color:var(--color-accent-green, #16A34A); background:rgba(22,163,74,0.08); }
+  .opt-pg.wrong { border-color:#DC2626; background:rgba(220,38,38,0.08); }
+  .score-big { font-size:40px; font-weight:700; }
+  .history-row { display:flex; justify-content:space-between; padding:10px 12px; border-radius:var(--radius-sm, 10px); background:var(--color-bg-subtle, #F5F7FB); font-size:13.5px; }
+  .history-row.latest { outline:1.5px solid var(--color-accent-green, #16A34A); }
+</style>
 </head>
 <body>
 
-<div class="topnav">
-  <div class="row gap-3">
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Lipat sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-    <svg class="icon icon-lg" style="color:var(--color-accent-blue)"><use href="assets/icons/icons.svg#icon-book"/></svg>
-    <strong>Teacher Planner</strong>
-  </div>
-  <div class="row gap-3">
-    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
-      <svg class="icon"><use href="assets/icons/icons.svg#icon-sun"/></svg>
-    </button>
-    <button class="btn btn-ghost" id="btnLogout">Keluar</button>
-  </div>
-</div>
-
-<div class="layout-with-sidebar container" style="padding-block: var(--space-6);">
-
-  <nav class="sidebar stack gap-2" aria-label="Navigasi utama">
-    <a class="row gap-2 btn btn-ghost" href="dashboard.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-chart"/></svg> <span class="nav-label">Dashboard</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="calendar.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-calendar"/></svg> <span class="nav-label">Kalender</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="lesson-planner.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-book"/></svg> <span class="nav-label">Lesson Planner</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="absensi.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> <span class="nav-label">Absensi</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="todo.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-check"/></svg> <span class="nav-label">To-do</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="classes.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-folder"/></svg> <span class="nav-label">Kelas</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="students.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> <span class="nav-label">Siswa</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="assessment.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-award"/></svg> <span class="nav-label">Penilaian</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="resources.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-archive"/></svg> <span class="nav-label">Arsip &amp; Administrasi</span>
-    </a>
-    <a class="row gap-2 btn btn-primary" href="bank-soal.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> <span class="nav-label">Bank Soal</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="reflection.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-note"/></svg> <span class="nav-label">Refleksi</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="wali-kelas.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-user"/></svg> <span class="nav-label">Wali Kelas</span>
-    </a>
-    <a class="row gap-2 btn btn-ghost" href="settings.html">
-      <svg class="icon icon-sm"><use href="assets/icons/icons.svg#icon-gear"/></svg> <span class="nav-label">Pengaturan</span>
-    </a>
-  </nav>
-
-  <main class="content stack gap-6" style="padding-inline: var(--space-6);">
-
-    <div class="row gap-3" style="justify-content:space-between;">
-      <h1>Bank Soal Latihan</h1>
-      <button class="btn btn-primary" id="btnNewSet">+ Set Soal Baru</button>
+<div class="portal-shell stack gap-6">
+  <div class="row gap-3" style="justify-content:space-between;">
+    <div>
+      <strong id="namaSiswa"></strong>
+      <div class="text-sm text-muted">Kelas <span id="kelasSiswa"></span></div>
     </div>
-    <p class="text-muted">Latihan ini tersedia untuk SEMUA siswa di kelas (beda dari remedial yang cuma untuk nilai di bawah KKM).</p>
+    <button class="btn btn-ghost" id="btnBackToMenu">← Menu</button>
+  </div>
 
-    <section class="card" id="setFormPanel" style="display:none;">
-      <h3>Set Soal Baru</h3>
-      <form class="row gap-4" id="setForm" style="flex-wrap:wrap; align-items:flex-end;">
-        <div class="stack gap-1" style="flex:2; min-width:200px;">
-          <label class="text-sm text-muted" for="sJudul">Judul Set</label>
-          <input class="input" id="sJudul" type="text" placeholder="Misal: Latihan Ekosistem" required>
-        </div>
-        <div class="stack gap-1" style="flex:1; min-width:140px;">
-          <label class="text-sm text-muted" for="sKelas">Kelas</label>
-          <select class="input" id="sKelas" required></select>
-        </div>
-        <div class="stack gap-1" style="flex:1; min-width:140px;">
-          <label class="text-sm text-muted" for="sMapel">Mapel</label>
-          <select class="input" id="sMapel" required>
-            <option>IPA</option>
-            <option>Prakarya</option>
-          </select>
-        </div>
-        <div class="stack gap-1" style="flex:2; min-width:220px;">
-          <label class="text-sm text-muted" for="sGambar">Foto LKM (opsional)</label>
-          <input class="input" id="sGambar" type="file" accept="image/*" style="padding:var(--space-1);">
-          <span class="text-xs text-muted" id="sUploadStatus"></span>
-        </div>
-        <div class="stack gap-1" style="flex:2; min-width:220px;">
-          <label class="text-sm text-muted" for="sGamifikasi">Link Gamifikasi (Wordwall/Quizizz/dsb, opsional)</label>
-          <input class="input" id="sGamifikasi" type="url" placeholder="https://wordwall.net/...">
-        </div>
-        <div class="row gap-2">
-          <button type="button" class="btn btn-secondary" id="btnCancelSet">Batal</button>
-          <button type="submit" class="btn btn-primary" id="sSubmitBtn">Buat</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="card">
-      <h3>Daftar Set Soal</h3>
-      <div class="stack gap-3" id="setList"></div>
-    </section>
-
-    <section class="card" id="questionPanel" style="display:none;">
-      <div class="row gap-3" style="justify-content:space-between;">
-        <h3 id="questionPanelTitle">Soal dalam Set</h3>
-        <button class="btn btn-ghost" id="btnCloseQuestionPanel">Tutup</button>
-      </div>
-
-      <form class="stack gap-3" id="questionForm" style="margin-bottom:var(--space-4);">
-        <div class="stack gap-1">
-          <label class="text-sm text-muted" for="qSoal">Pertanyaan</label>
-          <input class="input" id="qSoal" type="text" placeholder="Tulis pertanyaan..." required>
-        </div>
-
-        <div class="stack gap-1">
-          <label class="text-sm text-muted" for="qGambar">Gambar Soal (opsional)</label>
-          <input class="input" id="qGambar" type="file" accept="image/*" style="padding:var(--space-1);">
-          <span class="text-xs text-muted" id="qUploadStatus"></span>
-        </div>
-
-        <div class="stack gap-1">
-          <label class="text-sm text-muted">Tipe Soal</label>
-          <div class="row gap-4">
-            <label class="row gap-1" style="align-items:center;"><input type="radio" name="qTipe" value="pg" checked> Pilihan Ganda</label>
-            <label class="row gap-1" style="align-items:center;"><input type="radio" name="qTipe" value="esai"> Esai</label>
-          </div>
-        </div>
-
-        <div class="stack gap-2" id="qOpsiWrap">
-          <label class="text-sm text-muted">Pilihan Jawaban — klik radio di jawaban yang benar</label>
-
-          <div class="row gap-2" style="align-items:center;">
-            <input type="radio" name="qKunci" value="0" required aria-label="Tandai opsi A sebagai jawaban benar">
-            <input class="input" id="qOpsi0" type="text" placeholder="Opsi A" required style="flex:1;">
-          </div>
-          <div class="row gap-2" style="align-items:center;">
-            <input type="radio" name="qKunci" value="1" aria-label="Tandai opsi B sebagai jawaban benar">
-            <input class="input" id="qOpsi1" type="text" placeholder="Opsi B" required style="flex:1;">
-          </div>
-          <div class="row gap-2" style="align-items:center;">
-            <input type="radio" name="qKunci" value="2" aria-label="Tandai opsi C sebagai jawaban benar">
-            <input class="input" id="qOpsi2" type="text" placeholder="Opsi C (opsional)" style="flex:1;">
-          </div>
-          <div class="row gap-2" style="align-items:center;">
-            <input type="radio" name="qKunci" value="3" aria-label="Tandai opsi D sebagai jawaban benar">
-            <input class="input" id="qOpsi3" type="text" placeholder="Opsi D (opsional)" style="flex:1;">
-          </div>
-          <span class="text-xs text-muted" id="qFormError" style="display:none; color:var(--color-danger, #d33);"></span>
-        </div>
-
-        <button type="submit" class="btn btn-primary" style="align-self:flex-start;">+ Tambah</button>
-      </form>
-
-      <div class="stack gap-2" id="questionList"></div>
-    </section>
-
-  </main>
+  <div id="setListContainer" class="stack gap-3"></div>
+  <div id="questionContainer" class="stack gap-6"></div>
 </div>
 
-<script type="module" src="js/bank-soal.js"></script>
+<script type="module">
+  import { supabase } from '../js/config/supabase.js';
+
+  /* =========================================================================
+     ASUMSI SKEMA (tolong sesuaikan nama kolom di bawah kalau beda di DB asli):
+     - practice_questions: menambahkan kolom
+         tipe_soal      text   -> 'pg' | 'esai'
+         opsi           jsonb  -> array string pilihan, khusus tipe_soal = 'pg'
+         kunci_jawaban  int4   -> index (0-based) opsi yang benar, khusus 'pg'
+     - practice_attempts (tabel baru, satu baris per percobaan):
+         id                uuid pk default gen_random_uuid()
+         practice_set_id   uuid fk -> practice_sets(id)
+         student_id        uuid fk -> students(id)
+         skor              int4
+         skor_maksimal     int4
+         waktu             timestamptz default now()
+       Lihat practice_attempts.sql yang dikirim terpisah untuk DDL + catatan RLS.
+     Kunci jawaban PG sengaja tetap di-select ke browser (bukan disembunyikan
+     lewat view/server) karena ini bank latihan berulang, bukan nilai resmi —
+     instan lebih penting daripada anti-nyontek ketat (beda dari halaman Ulangan).
+     ========================================================================= */
+
+  document.getElementById('btnBackToMenu')?.addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+  });
+
+  const studentId = sessionStorage.getItem('portalStudentId');
+  const nama = sessionStorage.getItem('portalNama');
+  const kelasNama = sessionStorage.getItem('portalKelasNama');
+  let classId = sessionStorage.getItem('portalClassId');
+
+  if (!studentId) {
+    window.location.href = 'index.html';
+  }
+  document.getElementById('namaSiswa').textContent = nama;
+  document.getElementById('kelasSiswa').textContent = kelasNama;
+
+  const setListEl = document.getElementById('setListContainer');
+  const questionEl = document.getElementById('questionContainer');
+
+  // Ambil class_id siswa langsung dari tabel students (lebih pasti daripada sessionStorage)
+  const { data: studentRow } = await supabase.from('students_public').select('class_id').eq('id', studentId).maybeSingle();
+  classId = studentRow?.class_id;
+
+  const { data: sets, error } = await supabase
+    .from('practice_sets')
+    .select('id, judul, mapel, gambar_url, link_gamifikasi')
+    .eq('class_id', classId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error.message);
+    setListEl.innerHTML = '<p class="text-sm text-muted">Gagal memuat bank soal.</p>';
+  } else if (!sets || sets.length === 0) {
+    setListEl.innerHTML = '<div class="card"><p class="text-sm text-muted">Belum ada latihan soal untuk kelas ini.</p></div>';
+  } else {
+    setListEl.innerHTML = sets
+      .map(
+        (s) => `
+      <button class="card card-interactive row gap-3 btn-open-set" data-id="${s.id}" data-judul="${s.judul}" data-gambar="${s.gambar_url || ''}" data-gamifikasi="${s.link_gamifikasi || ''}" style="justify-content:space-between; text-align:left; border:none; cursor:pointer;">
+        <div class="row gap-3">
+          ${s.gambar_url ? `<img src="${s.gambar_url}" alt="LKM" style="width:40px; height:40px; object-fit:cover; border-radius:var(--radius-sm);">` : ''}
+          <div>
+            <strong>${s.judul}</strong>
+            <div class="text-sm text-muted">${s.mapel}</div>
+          </div>
+        </div>
+        <span>→</span>
+      </button>`
+      )
+      .join('');
+
+    setListEl.querySelectorAll('.btn-open-set').forEach((btn) =>
+      btn.addEventListener('click', () => openSet(btn.dataset.id, btn.dataset.judul, btn.dataset.gambar, btn.dataset.gamifikasi))
+    );
+  }
+
+  async function openSet(setId, judul, gambarUrl, linkGamifikasi) {
+    setListEl.style.display = 'none';
+
+    const lkmHtml = gambarUrl
+      ? `
+        <div class="stack gap-2" style="margin-bottom:var(--space-4);">
+          <img src="${gambarUrl}" alt="LKM ${judul}" style="width:100%; border-radius:var(--radius-md);">
+          <a class="btn btn-secondary" href="${gambarUrl}" download target="_blank" rel="noopener">⬇ Download LKM</a>
+        </div>`
+      : '';
+
+    const gamifikasiHtml = linkGamifikasi
+      ? `<a class="btn btn-primary" href="${linkGamifikasi}" target="_blank" rel="noopener" style="margin-bottom:var(--space-4); display:inline-flex;">🎮 Main Gamifikasi</a>`
+      : '';
+
+    const { data: questions, error: qError } = await supabase
+      .from('practice_questions')
+      .select('id, nomor, soal, gambar_url, tipe_soal, opsi, kunci_jawaban')
+      .eq('practice_set_id', setId)
+      .order('nomor');
+
+    if (qError || !questions || questions.length === 0) {
+      questionEl.innerHTML = `<div class="card"><h3>${judul}</h3>${lkmHtml}${gamifikasiHtml}<p class="text-sm text-muted">Belum ada soal interaktif di set ini.</p></div>`;
+      return;
+    }
+
+    // Normalisasi: soal lama yang belum diisi tipe_soal dianggap 'esai' (kompatibel mundur)
+    questions.forEach((q) => { if (!q.tipe_soal) q.tipe_soal = 'esai'; });
+    const adaSoalPG = questions.some((q) => q.tipe_soal === 'pg');
+
+    questionEl.innerHTML = `
+      <div class="card">
+        <h3>${judul}</h3>
+        ${lkmHtml}
+        ${gamifikasiHtml}
+        <form class="stack gap-4" id="answerForm">
+          ${questions
+            .map((q) => {
+              const label = `<label class="text-sm" style="font-weight:var(--weight-semibold);">Soal ${q.nomor}. ${q.soal}</label>`;
+              const gambarHtml = q.gambar_url
+                ? `<img src="${q.gambar_url}" alt="Gambar soal ${q.nomor}" style="width:100%; max-width:320px; border-radius:var(--radius-sm, 10px);">`
+                : '';
+              if (q.tipe_soal === 'pg') {
+                const opsiHtml = (q.opsi || [])
+                  .map(
+                    (o, i) => `
+                  <label class="opt-pg" data-question-id="${q.id}" data-idx="${i}">
+                    <input type="radio" name="pg_${q.id}" value="${i}">
+                    ${o}
+                  </label>`
+                  )
+                  .join('');
+                return `<div class="stack gap-2" data-tipe="pg" data-question-id="${q.id}">${label}${gambarHtml}${opsiHtml}</div>`;
+              }
+              return `
+                <div class="stack gap-1" data-tipe="esai" data-question-id="${q.id}">
+                  ${label}
+                  ${gambarHtml}
+                  <textarea class="input" rows="3" data-question-id="${q.id}" required></textarea>
+                </div>`;
+            })
+            .join('')}
+          <button type="submit" class="btn btn-primary">Kirim Jawaban</button>
+        </form>
+      </div>`;
+
+    document.getElementById('answerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await submitAttempt(setId, judul, gambarUrl, linkGamifikasi, questions, adaSoalPG);
+    });
+  }
+
+  async function submitAttempt(setId, judul, gambarUrl, linkGamifikasi, questions, adaSoalPG) {
+    // Kumpulkan & validasi jawaban dari form
+    const pgAnswers = {};   // question_id -> index terpilih
+    const esaiRows = [];    // baris untuk practice_answers
+
+    for (const q of questions) {
+      if (q.tipe_soal === 'pg') {
+        const checked = document.querySelector(`input[name="pg_${q.id}"]:checked`);
+        if (!checked) {
+          alert(`Soal ${q.nomor} belum dijawab.`);
+          return;
+        }
+        pgAnswers[q.id] = parseInt(checked.value, 10);
+      } else {
+        const ta = document.querySelector(`textarea[data-question-id="${q.id}"]`);
+        const val = (ta?.value || '').trim();
+        if (!val) {
+          alert(`Soal ${q.nomor} belum dijawab.`);
+          return;
+        }
+        esaiRows.push({ question_id: q.id, student_id: studentId, jawaban: val });
+      }
+    }
+
+    // Simpan jawaban esai (tidak ikut dihitung skor)
+    if (esaiRows.length > 0) {
+      const { error: submitError } = await supabase.from('practice_answers').insert(esaiRows);
+      if (submitError) {
+        alert('Gagal mengirim jawaban esai: ' + submitError.message);
+        return;
+      }
+    }
+
+    if (!adaSoalPG) {
+      // Set ini murni esai — tidak ada yang bisa dinilai otomatis, cukup konfirmasi seperti sebelumnya
+      questionEl.innerHTML = '<div class="card"><p class="text-sm" style="color:var(--color-accent-green);">✓ Jawaban terkirim. Terima kasih!</p></div>';
+      return;
+    }
+
+    // Cocokkan PG ke kunci_jawaban, hitung skor instan di browser
+    const pgQuestions = questions.filter((q) => q.tipe_soal === 'pg');
+    let benar = 0;
+    pgQuestions.forEach((q) => { if (pgAnswers[q.id] === q.kunci_jawaban) benar++; });
+    const skor = benar;
+    const skorMaksimal = pgQuestions.length;
+
+    const { data: attemptRow, error: attemptError } = await supabase
+      .from('practice_attempts')
+      .insert({ practice_set_id: setId, student_id: studentId, skor, skor_maksimal: skorMaksimal, waktu: new Date().toISOString() })
+      .select('id, waktu')
+      .single();
+
+    if (attemptError) {
+      console.error(attemptError.message);
+    }
+
+    // Tandai opsi benar/salah secara visual pada form yang sudah terkirim
+    pgQuestions.forEach((q) => {
+      document.querySelectorAll(`.opt-pg[data-question-id="${q.id}"]`).forEach((el) => {
+        const idx = parseInt(el.dataset.idx, 10);
+        if (idx === q.kunci_jawaban) el.classList.add('correct');
+        else if (idx === pgAnswers[q.id]) el.classList.add('wrong');
+      });
+    });
+
+    // Ambil riwayat percobaan (termasuk yang baru saja dikirim)
+    const { data: riwayat } = await supabase
+      .from('practice_attempts')
+      .select('id, skor, skor_maksimal, waktu')
+      .eq('practice_set_id', setId)
+      .eq('student_id', studentId)
+      .order('waktu', { ascending: true });
+
+    const daftarRiwayat = riwayat || [];
+    const historyHtml = daftarRiwayat
+      .map((a, i) => {
+        const isLatest = attemptRow && a.id === attemptRow.id;
+        const waktuStr = new Date(a.waktu).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+        return `<div class="history-row ${isLatest ? 'latest' : ''}">
+          <span>Percobaan ke-${i + 1}${isLatest ? ' · baru saja' : ''}</span>
+          <b>${a.skor}/${a.skor_maksimal}</b>
+          <span class="text-sm text-muted">${waktuStr}</span>
+        </div>`;
+      })
+      .reverse()
+      .join('');
+
+    questionEl.innerHTML = `
+      <div class="card stack gap-4">
+        <h3>${judul}</h3>
+        <div class="stack gap-1" style="text-align:center;">
+          <span class="text-sm text-muted">Skor percobaan ini</span>
+          <span class="score-big">${skor}/${skorMaksimal}</span>
+        </div>
+        <button class="btn btn-primary" id="btnCobaLagi">↻ Coba Lagi</button>
+        <div class="stack gap-2">
+          <span class="text-sm" style="font-weight:var(--weight-semibold);">Riwayat Percobaan</span>
+          ${historyHtml || '<p class="text-sm text-muted">Belum ada riwayat.</p>'}
+        </div>
+      </div>`;
+
+    document.getElementById('btnCobaLagi').addEventListener('click', () => openSet(setId, judul, gambarUrl, linkGamifikasi));
+  }
+</script>
 </body>
 </html>
