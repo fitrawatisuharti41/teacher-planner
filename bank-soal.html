@@ -136,7 +136,15 @@
           <span class="text-xs text-muted" id="qUploadStatus"></span>
         </div>
 
-        <div class="stack gap-2">
+        <div class="stack gap-1">
+          <label class="text-sm text-muted">Tipe Soal</label>
+          <div class="row gap-4">
+            <label class="row gap-1" style="align-items:center;"><input type="radio" name="qTipe" value="pg" checked> Pilihan Ganda</label>
+            <label class="row gap-1" style="align-items:center;"><input type="radio" name="qTipe" value="esai"> Esai</label>
+          </div>
+        </div>
+
+        <div class="stack gap-2" id="qOpsiWrap">
           <label class="text-sm text-muted">Pilihan Jawaban — klik radio di jawaban yang benar</label>
 
           <div class="row gap-2" style="align-items:center;">

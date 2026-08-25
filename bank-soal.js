@@ -158,10 +158,18 @@ document.getElementById('btnCloseQuestionPanel').addEventListener('click', () =>
   currentSetId = null;
 });
 
+qsa('input[name="qTipe"]').forEach((radio) =>
+  radio.addEventListener('change', (e) => {
+    const isEsai = e.target.value === 'esai';
+    qs('#qOpsiWrap').style.display = isEsai ? 'none' : '';
+    qsa('#qOpsiWrap input[type="text"]').forEach((inp) => (inp.required = !isEsai && inp.id !== 'qOpsi2' && inp.id !== 'qOpsi3'));
+  })
+);
+
 async function loadQuestions() {
   const { data, error } = await supabase
     .from('practice_questions')
-    .select('id, nomor, soal, gambar_url, opsi, kunci_jawaban')
+    .select('id, nomor, soal, gambar_url, tipe_soal, opsi, kunci_jawaban')
     .eq('practice_set_id', currentSetId)
     .order('nomor');
 
@@ -171,14 +179,19 @@ async function loadQuestions() {
   el.innerHTML = (data || []).length
     ? data
         .map((q) => {
-          const opsiHtml = Array.isArray(q.opsi) && q.opsi.length
-            ? `<div class="row gap-3" style="flex-wrap:wrap; margin-top:var(--space-1);">${q.opsi
-                .map(
-                  (o, i) =>
-                    `<span class="text-xs text-muted" style="${i === q.kunci_jawaban ? 'font-weight:700; color:var(--color-accent-blue);' : ''}">${i === q.kunci_jawaban ? '✓ ' : ''}${o}</span>`
-                )
-                .join('')}</div>`
-            : `<span class="text-xs text-muted">(belum ada opsi jawaban — soal lama sebelum fitur kunci jawaban ditambahkan)</span>`;
+          let bodyHtml;
+          if (q.tipe_soal === 'esai') {
+            bodyHtml = `<span class="text-xs text-muted">📝 Esai — dijawab bebas, tidak dinilai otomatis</span>`;
+          } else if (Array.isArray(q.opsi) && q.opsi.length) {
+            bodyHtml = `<div class="row gap-3" style="flex-wrap:wrap; margin-top:var(--space-1);">${q.opsi
+              .map(
+                (o, i) =>
+                  `<span class="text-xs text-muted" style="${i === q.kunci_jawaban ? 'font-weight:700; color:var(--color-accent-blue);' : ''}">${i === q.kunci_jawaban ? '✓ ' : ''}${o}</span>`
+              )
+              .join('')}</div>`;
+          } else {
+            bodyHtml = `<span class="text-xs text-muted">(belum ada opsi jawaban — soal lama sebelum fitur kunci jawaban ditambahkan)</span>`;
+          }
 
           const gambarHtml = q.gambar_url
             ? `<img src="${q.gambar_url}" alt="Gambar soal" style="width:56px; height:56px; object-fit:cover; border-radius:var(--radius-sm); flex-shrink:0;">`
@@ -192,7 +205,7 @@ async function loadQuestions() {
             <span class="text-sm">${q.nomor}. ${q.soal}</span>
             <button class="btn btn-ghost btn-delete-question" data-id="${q.id}">Hapus</button>
           </div>
-          ${opsiHtml}
+          ${bodyHtml}
         </div>
       </div>`;
         })
@@ -214,33 +227,40 @@ document.getElementById('questionForm').addEventListener('submit', async (e) => 
   const statusEl = qs('#qUploadStatus');
   errEl.style.display = 'none';
 
-  const opsiRaw = [qs('#qOpsi0').value, qs('#qOpsi1').value, qs('#qOpsi2').value, qs('#qOpsi3').value];
+  const tipeSoal = document.querySelector('input[name="qTipe"]:checked').value;
+  let opsi = null;
+  let kunciJawaban = null;
 
-  const kunciRadio = document.querySelector('input[name="qKunci"]:checked');
-  if (!kunciRadio) {
-    errEl.textContent = 'Pilih dulu opsi mana yang jawaban benar (klik radio di sebelahnya).';
-    errEl.style.display = 'inline';
-    return;
-  }
-  const kunciIndexAsli = parseInt(kunciRadio.value, 10);
-  const kunciTeks = opsiRaw[kunciIndexAsli]?.trim();
-  if (!kunciTeks) {
-    errEl.textContent = 'Opsi yang ditandai sebagai jawaban benar tidak boleh kosong.';
-    errEl.style.display = 'inline';
-    return;
-  }
+  if (tipeSoal === 'pg') {
+    const opsiRaw = [qs('#qOpsi0').value, qs('#qOpsi1').value, qs('#qOpsi2').value, qs('#qOpsi3').value];
 
-  // Buang opsi kosong (opsi C/D opsional), lalu cari ulang index kunci
-  // setelah opsi kosong dibuang, supaya index-nya tetap cocok dengan array
-  // final yang disimpan.
-  const opsi = opsiRaw.map((v) => v.trim()).filter((v) => v.length > 0);
-  const kunciJawaban = opsi.indexOf(kunciTeks);
+    const kunciRadio = document.querySelector('input[name="qKunci"]:checked');
+    if (!kunciRadio) {
+      errEl.textContent = 'Pilih dulu opsi mana yang jawaban benar (klik radio di sebelahnya).';
+      errEl.style.display = 'inline';
+      return;
+    }
+    const kunciIndexAsli = parseInt(kunciRadio.value, 10);
+    const kunciTeks = opsiRaw[kunciIndexAsli]?.trim();
+    if (!kunciTeks) {
+      errEl.textContent = 'Opsi yang ditandai sebagai jawaban benar tidak boleh kosong.';
+      errEl.style.display = 'inline';
+      return;
+    }
 
-  if (opsi.length < 2) {
-    errEl.textContent = 'Isi minimal 2 opsi jawaban.';
-    errEl.style.display = 'inline';
-    return;
+    // Buang opsi kosong (opsi C/D opsional), lalu cari ulang index kunci
+    // setelah opsi kosong dibuang, supaya index-nya tetap cocok dengan array
+    // final yang disimpan.
+    opsi = opsiRaw.map((v) => v.trim()).filter((v) => v.length > 0);
+    kunciJawaban = opsi.indexOf(kunciTeks);
+
+    if (opsi.length < 2) {
+      errEl.textContent = 'Isi minimal 2 opsi jawaban.';
+      errEl.style.display = 'inline';
+      return;
+    }
   }
+  // tipeSoal === 'esai' -> opsi & kunciJawaban tetap null, tidak perlu divalidasi
 
   const file = qs('#qGambar').files[0];
   if (file && file.size > 5 * 1024 * 1024) {
@@ -279,11 +299,13 @@ document.getElementById('questionForm').addEventListener('submit', async (e) => 
     nomor: nextNomor,
     soal: qs('#qSoal').value,
     gambar_url: gambarUrl,
+    tipe_soal: tipeSoal,
     opsi,
     kunci_jawaban: kunciJawaban,
   });
   statusEl.textContent = '';
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
+  qs('#qOpsiWrap').style.display = '';
   await loadQuestions();
 });
