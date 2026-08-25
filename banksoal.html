@@ -135,7 +135,7 @@
 
     const { data: questions, error: qError } = await supabase
       .from('practice_questions')
-      .select('id, nomor, soal, tipe_soal, opsi, kunci_jawaban')
+      .select('id, nomor, soal, gambar_url, tipe_soal, opsi, kunci_jawaban')
       .eq('practice_set_id', setId)
       .order('nomor');
 
@@ -157,6 +157,9 @@
           ${questions
             .map((q) => {
               const label = `<label class="text-sm" style="font-weight:var(--weight-semibold);">Soal ${q.nomor}. ${q.soal}</label>`;
+              const gambarHtml = q.gambar_url
+                ? `<img src="${q.gambar_url}" alt="Gambar soal ${q.nomor}" style="width:100%; max-width:320px; border-radius:var(--radius-sm, 10px);">`
+                : '';
               if (q.tipe_soal === 'pg') {
                 const opsiHtml = (q.opsi || [])
                   .map(
@@ -167,11 +170,12 @@
                   </label>`
                   )
                   .join('');
-                return `<div class="stack gap-2" data-tipe="pg" data-question-id="${q.id}">${label}${opsiHtml}</div>`;
+                return `<div class="stack gap-2" data-tipe="pg" data-question-id="${q.id}">${label}${gambarHtml}${opsiHtml}</div>`;
               }
               return `
                 <div class="stack gap-1" data-tipe="esai" data-question-id="${q.id}">
                   ${label}
+                  ${gambarHtml}
                   <textarea class="input" rows="3" data-question-id="${q.id}" required></textarea>
                 </div>`;
             })
