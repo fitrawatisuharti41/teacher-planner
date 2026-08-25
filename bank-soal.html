@@ -124,12 +124,41 @@
         <button class="btn btn-ghost" id="btnCloseQuestionPanel">Tutup</button>
       </div>
 
-      <form class="row gap-4" id="questionForm" style="flex-wrap:wrap; align-items:flex-end; margin-bottom:var(--space-4);">
-        <div class="stack gap-1" style="flex:1;">
-          <label class="text-sm text-muted" for="qSoal">Soal Baru</label>
+      <form class="stack gap-3" id="questionForm" style="margin-bottom:var(--space-4);">
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="qSoal">Pertanyaan</label>
           <input class="input" id="qSoal" type="text" placeholder="Tulis pertanyaan..." required>
         </div>
-        <button type="submit" class="btn btn-primary">+ Tambah</button>
+
+        <div class="stack gap-1">
+          <label class="text-sm text-muted" for="qGambar">Gambar Soal (opsional)</label>
+          <input class="input" id="qGambar" type="file" accept="image/*" style="padding:var(--space-1);">
+          <span class="text-xs text-muted" id="qUploadStatus"></span>
+        </div>
+
+        <div class="stack gap-2">
+          <label class="text-sm text-muted">Pilihan Jawaban — klik radio di jawaban yang benar</label>
+
+          <div class="row gap-2" style="align-items:center;">
+            <input type="radio" name="qKunci" value="0" required aria-label="Tandai opsi A sebagai jawaban benar">
+            <input class="input" id="qOpsi0" type="text" placeholder="Opsi A" required style="flex:1;">
+          </div>
+          <div class="row gap-2" style="align-items:center;">
+            <input type="radio" name="qKunci" value="1" aria-label="Tandai opsi B sebagai jawaban benar">
+            <input class="input" id="qOpsi1" type="text" placeholder="Opsi B" required style="flex:1;">
+          </div>
+          <div class="row gap-2" style="align-items:center;">
+            <input type="radio" name="qKunci" value="2" aria-label="Tandai opsi C sebagai jawaban benar">
+            <input class="input" id="qOpsi2" type="text" placeholder="Opsi C (opsional)" style="flex:1;">
+          </div>
+          <div class="row gap-2" style="align-items:center;">
+            <input type="radio" name="qKunci" value="3" aria-label="Tandai opsi D sebagai jawaban benar">
+            <input class="input" id="qOpsi3" type="text" placeholder="Opsi D (opsional)" style="flex:1;">
+          </div>
+          <span class="text-xs text-muted" id="qFormError" style="display:none; color:var(--color-danger, #d33);"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="align-self:flex-start;">+ Tambah</button>
       </form>
 
       <div class="stack gap-2" id="questionList"></div>
