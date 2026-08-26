@@ -44,22 +44,12 @@
   import { supabase } from '../js/config/supabase.js';
 
   /* =========================================================================
-     ASUMSI SKEMA (tolong sesuaikan nama kolom di bawah kalau beda di DB asli):
-     - practice_questions: menambahkan kolom
-         tipe_soal      text   -> 'pg' | 'esai'
-         opsi           jsonb  -> array string pilihan, khusus tipe_soal = 'pg'
-         kunci_jawaban  int4   -> index (0-based) opsi yang benar, khusus 'pg'
-     - practice_attempts (tabel baru, satu baris per percobaan):
-         id                uuid pk default gen_random_uuid()
-         practice_set_id   uuid fk -> practice_sets(id)
-         student_id        uuid fk -> students(id)
-         skor              int4
-         skor_maksimal     int4
-         waktu             timestamptz default now()
-       Lihat practice_attempts.sql yang dikirim terpisah untuk DDL + catatan RLS.
      Kunci jawaban PG sengaja tetap di-select ke browser (bukan disembunyikan
      lewat view/server) karena ini bank latihan berulang, bukan nilai resmi —
      instan lebih penting daripada anti-nyontek ketat (beda dari halaman Ulangan).
+     Skema yang dipakai: practice_questions.tipe_soal/opsi/kunci_jawaban/gambar_url,
+     dan tabel practice_attempts (id, practice_set_id, student_id, skor,
+     skor_maksimal, submitted_at) — lihat add_practice_attempts.sql.
      ========================================================================= */
 
   document.getElementById('btnBackToMenu')?.addEventListener('click', () => {
@@ -214,9 +204,43 @@
       }
     }
 
-    // Simpan jawaban esai (tidak ikut dihitung skor)
+    let attemptRow = null;
+    let skor = 0;
+    let skorMaksimal = 0;
+
+    if (adaSoalPG) {
+      // Cocokkan PG ke kunci_jawaban, hitung skor instan di browser
+      const pgQuestions = questions.filter((q) => q.tipe_soal === 'pg');
+      let benar = 0;
+      pgQuestions.forEach((q) => { if (pgAnswers[q.id] === q.kunci_jawaban) benar++; });
+      skor = benar;
+      skorMaksimal = pgQuestions.length;
+
+      const { data, error: attemptError } = await supabase
+        .from('practice_attempts')
+        .insert({ practice_set_id: setId, student_id: studentId, skor, skor_maksimal: skorMaksimal })
+        .select('id, submitted_at')
+        .single();
+
+      if (attemptError) console.error(attemptError.message);
+      attemptRow = data;
+
+      // Simpan juga jawaban PG per soal ke practice_answers, ditandai attempt_id + benar/salah
+      const pgRows = pgQuestions.map((q) => ({
+        question_id: q.id,
+        student_id: studentId,
+        attempt_id: attemptRow?.id || null,
+        jawaban: q.opsi?.[pgAnswers[q.id]] ?? String(pgAnswers[q.id]),
+        benar: pgAnswers[q.id] === q.kunci_jawaban,
+      }));
+      const { error: pgSaveError } = await supabase.from('practice_answers').insert(pgRows);
+      if (pgSaveError) console.error(pgSaveError.message);
+    }
+
+    // Simpan jawaban esai (tidak ikut dihitung skor), ditautkan ke attempt yang sama kalau ada
     if (esaiRows.length > 0) {
-      const { error: submitError } = await supabase.from('practice_answers').insert(esaiRows);
+      const esaiRowsWithAttempt = esaiRows.map((r) => ({ ...r, attempt_id: attemptRow?.id || null }));
+      const { error: submitError } = await supabase.from('practice_answers').insert(esaiRowsWithAttempt);
       if (submitError) {
         alert('Gagal mengirim jawaban esai: ' + submitError.message);
         return;
@@ -224,50 +248,35 @@
     }
 
     if (!adaSoalPG) {
-      // Set ini murni esai — tidak ada yang bisa dinilai otomatis, cukup konfirmasi seperti sebelumnya
+      // Set ini murni esai — tidak ada yang bisa dinilai otomatis, cukup konfirmasi
       questionEl.innerHTML = '<div class="card"><p class="text-sm" style="color:var(--color-accent-green);">✓ Jawaban terkirim. Terima kasih!</p></div>';
       return;
     }
 
-    // Cocokkan PG ke kunci_jawaban, hitung skor instan di browser
-    const pgQuestions = questions.filter((q) => q.tipe_soal === 'pg');
-    let benar = 0;
-    pgQuestions.forEach((q) => { if (pgAnswers[q.id] === q.kunci_jawaban) benar++; });
-    const skor = benar;
-    const skorMaksimal = pgQuestions.length;
-
-    const { data: attemptRow, error: attemptError } = await supabase
-      .from('practice_attempts')
-      .insert({ practice_set_id: setId, student_id: studentId, skor, skor_maksimal: skorMaksimal, waktu: new Date().toISOString() })
-      .select('id, waktu')
-      .single();
-
-    if (attemptError) {
-      console.error(attemptError.message);
-    }
-
     // Tandai opsi benar/salah secara visual pada form yang sudah terkirim
-    pgQuestions.forEach((q) => {
-      document.querySelectorAll(`.opt-pg[data-question-id="${q.id}"]`).forEach((el) => {
-        const idx = parseInt(el.dataset.idx, 10);
-        if (idx === q.kunci_jawaban) el.classList.add('correct');
-        else if (idx === pgAnswers[q.id]) el.classList.add('wrong');
+    questions
+      .filter((q) => q.tipe_soal === 'pg')
+      .forEach((q) => {
+        document.querySelectorAll(`.opt-pg[data-question-id="${q.id}"]`).forEach((el) => {
+          const idx = parseInt(el.dataset.idx, 10);
+          if (idx === q.kunci_jawaban) el.classList.add('correct');
+          else if (idx === pgAnswers[q.id]) el.classList.add('wrong');
+        });
       });
-    });
 
     // Ambil riwayat percobaan (termasuk yang baru saja dikirim)
     const { data: riwayat } = await supabase
       .from('practice_attempts')
-      .select('id, skor, skor_maksimal, waktu')
+      .select('id, skor, skor_maksimal, submitted_at')
       .eq('practice_set_id', setId)
       .eq('student_id', studentId)
-      .order('waktu', { ascending: true });
+      .order('submitted_at', { ascending: true });
 
     const daftarRiwayat = riwayat || [];
     const historyHtml = daftarRiwayat
       .map((a, i) => {
         const isLatest = attemptRow && a.id === attemptRow.id;
-        const waktuStr = new Date(a.waktu).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+        const waktuStr = new Date(a.submitted_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
         return `<div class="history-row ${isLatest ? 'latest' : ''}">
           <span>Percobaan ke-${i + 1}${isLatest ? ' · baru saja' : ''}</span>
           <b>${a.skor}/${a.skor_maksimal}</b>
@@ -291,7 +300,10 @@
         </div>
       </div>`;
 
-    document.getElementById('btnCobaLagi').addEventListener('click', () => openSet(setId, judul, gambarUrl, linkGamifikasi));
+    document.getElementById('btnCobaLagi').addEventListener('click', () => {
+      setListEl.style.display = '';
+      openSet(setId, judul, gambarUrl, linkGamifikasi);
+    });
   }
 </script>
 </body>
