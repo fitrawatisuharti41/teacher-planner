@@ -158,10 +158,18 @@ document.getElementById('btnCloseQuestionPanel').addEventListener('click', () =>
   currentSetId = null;
 });
 
+document.querySelectorAll('input[name="qTipe"]').forEach((radio) =>
+  radio.addEventListener('change', (e) => {
+    const isEsai = e.target.value === 'esai';
+    qs('#qOpsiWrap').style.display = isEsai ? 'none' : '';
+    document.querySelectorAll('#qOpsiWrap input[type="text"]').forEach((inp) => (inp.required = !isEsai && inp.id !== 'qOpsi2' && inp.id !== 'qOpsi3'));
+  })
+);
+
 async function loadQuestions() {
   const { data, error } = await supabase
     .from('practice_questions')
-    .select('id, nomor, soal')
+    .select('id, nomor, soal, gambar_url, tipe_soal, opsi, kunci_jawaban')
     .eq('practice_set_id', currentSetId)
     .order('nomor');
 
@@ -170,13 +178,37 @@ async function loadQuestions() {
   const el = document.getElementById('questionList');
   el.innerHTML = (data || []).length
     ? data
-        .map(
-          (q) => `
-      <div class="row gap-3" style="justify-content:space-between;">
-        <span class="text-sm">${q.nomor}. ${q.soal}</span>
-        <button class="btn btn-ghost btn-delete-question" data-id="${q.id}">Hapus</button>
-      </div>`
-        )
+        .map((q) => {
+          let bodyHtml;
+          if (q.tipe_soal === 'esai') {
+            bodyHtml = `<span class="text-xs text-muted">📝 Esai — dijawab bebas, tidak dinilai otomatis</span>`;
+          } else if (Array.isArray(q.opsi) && q.opsi.length) {
+            bodyHtml = `<div class="row gap-3" style="flex-wrap:wrap; margin-top:var(--space-1);">${q.opsi
+              .map(
+                (o, i) =>
+                  `<span class="text-xs text-muted" style="${i === q.kunci_jawaban ? 'font-weight:700; color:var(--color-accent-blue);' : ''}">${i === q.kunci_jawaban ? '✓ ' : ''}${o}</span>`
+              )
+              .join('')}</div>`;
+          } else {
+            bodyHtml = `<span class="text-xs text-muted">(belum ada opsi jawaban — soal lama sebelum fitur kunci jawaban ditambahkan)</span>`;
+          }
+
+          const gambarHtml = q.gambar_url
+            ? `<img src="${q.gambar_url}" alt="Gambar soal" style="width:56px; height:56px; object-fit:cover; border-radius:var(--radius-sm); flex-shrink:0;">`
+            : '';
+
+          return `
+      <div class="row gap-3" style="padding-block:var(--space-2); border-bottom:1px solid var(--color-border, #eee); align-items:flex-start;">
+        ${gambarHtml}
+        <div class="stack gap-1" style="flex:1;">
+          <div class="row gap-3" style="justify-content:space-between;">
+            <span class="text-sm">${q.nomor}. ${q.soal}</span>
+            <button class="btn btn-ghost btn-delete-question" data-id="${q.id}">Hapus</button>
+          </div>
+          ${bodyHtml}
+        </div>
+      </div>`;
+        })
         .join('')
     : '<p class="text-sm text-muted">Belum ada soal di set ini.</p>';
 
@@ -191,6 +223,75 @@ async function loadQuestions() {
 
 document.getElementById('questionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const errEl = qs('#qFormError');
+  const statusEl = qs('#qUploadStatus');
+  errEl.style.display = 'none';
+
+  const tipeSoal = document.querySelector('input[name="qTipe"]:checked').value;
+  let opsi = null;
+  let kunciJawaban = null;
+
+  if (tipeSoal === 'pg') {
+    const opsiRaw = [qs('#qOpsi0').value, qs('#qOpsi1').value, qs('#qOpsi2').value, qs('#qOpsi3').value];
+
+    const kunciRadio = document.querySelector('input[name="qKunci"]:checked');
+    if (!kunciRadio) {
+      errEl.textContent = 'Pilih dulu opsi mana yang jawaban benar (klik radio di sebelahnya).';
+      errEl.style.display = 'inline';
+      return;
+    }
+    const kunciIndexAsli = parseInt(kunciRadio.value, 10);
+    const kunciTeks = opsiRaw[kunciIndexAsli]?.trim();
+    if (!kunciTeks) {
+      errEl.textContent = 'Opsi yang ditandai sebagai jawaban benar tidak boleh kosong.';
+      errEl.style.display = 'inline';
+      return;
+    }
+
+    // Buang opsi kosong (opsi C/D opsional), lacak ulang posisi index kunci
+    // berdasarkan POSISI ASLINYA (bukan mencocokkan teks) — kalau dicocokkan
+    // lewat teks (opsi.indexOf(kunciTeks)) dan ada dua opsi yang teksnya
+    // kebetulan sama persis, kunci_jawaban bisa nyasar ke opsi yang salah
+    // tanpa ada error sama sekali. Menelusuri berdasarkan index jauh lebih aman.
+    opsi = [];
+    kunciJawaban = -1;
+    opsiRaw.forEach((v, i) => {
+      const trimmed = v.trim();
+      if (!trimmed) return;
+      if (i === kunciIndexAsli) kunciJawaban = opsi.length;
+      opsi.push(trimmed);
+    });
+
+    if (opsi.length < 2) {
+      errEl.textContent = 'Isi minimal 2 opsi jawaban.';
+      errEl.style.display = 'inline';
+      return;
+    }
+  }
+  // tipeSoal === 'esai' -> opsi & kunciJawaban tetap null, tidak perlu divalidasi
+
+  const file = qs('#qGambar').files[0];
+  if (file && file.size > 5 * 1024 * 1024) {
+    errEl.textContent = 'Ukuran gambar maksimal 5MB. Pilih gambar lain atau kompres dulu.';
+    errEl.style.display = 'inline';
+    return;
+  }
+
+  let gambarUrl = null;
+  if (file) {
+    statusEl.textContent = 'Mengupload gambar...';
+    const ext = file.name.split('.').pop();
+    const path = `${teacher.id}/soal/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('bank-soal').upload(path, file);
+    if (uploadError) {
+      statusEl.textContent = '';
+      errEl.textContent = 'Gagal upload gambar: ' + uploadError.message;
+      errEl.style.display = 'inline';
+      return;
+    }
+    gambarUrl = supabase.storage.from('bank-soal').getPublicUrl(path).data.publicUrl;
+  }
+
   const { data: existing } = await supabase
     .from('practice_questions')
     .select('nomor')
@@ -200,12 +301,19 @@ document.getElementById('questionForm').addEventListener('submit', async (e) => 
 
   const nextNomor = (existing?.[0]?.nomor || 0) + 1;
 
+  statusEl.textContent = 'Menyimpan...';
   const { error } = await supabase.from('practice_questions').insert({
     practice_set_id: currentSetId,
     nomor: nextNomor,
     soal: qs('#qSoal').value,
+    gambar_url: gambarUrl,
+    tipe_soal: tipeSoal,
+    opsi,
+    kunci_jawaban: kunciJawaban,
   });
+  statusEl.textContent = '';
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
+  qs('#qOpsiWrap').style.display = '';
   await loadQuestions();
 });
