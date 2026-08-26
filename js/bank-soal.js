@@ -150,6 +150,16 @@ async function openQuestionPanel(setId, judul) {
   document.getElementById('questionPanelTitle').textContent = `Soal — ${judul}`;
   document.getElementById('questionPanel').style.display = 'block';
   document.getElementById('questionPanel').scrollIntoView({ behavior: 'smooth' });
+
+  // Paksa reset ke "Pilihan Ganda" — browser suka nyimpen radio terakhir
+  // yang dipilih sebelumnya (autofill), jadi tidak bisa diandalkan e.target.reset() saja.
+  const pgRadio = document.querySelector('input[name="qTipe"][value="pg"]');
+  if (pgRadio) {
+    pgRadio.checked = true;
+    qs('#qOpsiWrap').style.display = '';
+    document.querySelectorAll('#qOpsiWrap input[type="text"]').forEach((inp) => (inp.required = inp.id !== 'qOpsi2' && inp.id !== 'qOpsi3'));
+  }
+
   await loadQuestions();
 }
 
