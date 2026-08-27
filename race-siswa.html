@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Balapan Sains — Siswa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+<script>
+  window.addEventListener('error', (e) => {
+    const msg = (e.message || 'Error tidak diketahui') + (e.filename ? `\n${e.filename.split('/').pop()}:${e.lineno}` : '');
+    showErrBanner(msg);
+  });
+  window.addEventListener('unhandledrejection', (e) => showErrBanner('Promise error: ' + (e.reason && e.reason.message ? e.reason.message : e.reason)));
+  function showErrBanner(msg){
+    let el = document.getElementById('errBanner');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'errBanner';
+      el.style.cssText = 'position:fixed; bottom:0; left:0; right:0; z-index:9999; background:#B91C1C; color:#fff; padding:14px 18px; font-family:monospace; font-size:13px; white-space:pre-wrap; max-height:40vh; overflow:auto;';
+      document.body.appendChild(el);
+    }
+    el.textContent = '⚠️ ' + msg;
+  }
+</script>
+<style>
+  :root{
+    --bg:#0F1B3D; --panel:#16234E; --ink:#F4F6FF; --ink-soft:#B9C2E8;
+    --line:#28376B; --blue:#5B7CFA; --green:#22C55E; --amber:#FBBF24; --red:#F87171;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{
+    margin:0; min-height:100vh; font-family:'Plus Jakarta Sans', system-ui, sans-serif;
+    background: radial-gradient(900px 500px at 50% -10%, #1D2E66 0%, var(--bg) 60%);
+    color:var(--ink); display:flex; flex-direction:column;
+  }
+  .stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .card{ width:100%; max-width:420px; background:#16234E; border:1px solid var(--line); border-radius:20px; padding:28px 24px; text-align:center; }
+  h1{ font-size:22px; margin:0 0 4px; }
+  p.sub{ color:var(--ink-soft); font-size:14px; margin:0 0 22px; }
+  input{
+    width:100%; font-family:inherit; font-size:16px; font-weight:600; text-align:center;
+    border:1.5px solid var(--line); border-radius:12px; padding:14px; background:#0F1B3D; color:var(--ink);
+    margin-bottom:12px;
+  }
+  input#inputKode{ text-transform:uppercase; letter-spacing:4px; font-family:'JetBrains Mono', monospace; }
+  input:focus{ outline:none; border-color:var(--blue); }
+  .btn{
+    appearance:none; border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:16px;
+    border-radius:12px; padding:15px; width:100%; background:var(--blue); color:#fff;
+  }
+  .btn:disabled{ opacity:.4; }
+  .err{ color:var(--red); font-size:13px; margin-top:10px; min-height:18px; }
+
+  .waiting{ text-align:center; padding:40px 20px; }
+  .waiting .pulse{ width:60px; height:60px; border-radius:50%; background:var(--blue); margin:0 auto 20px; animation:pulse 1.4s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:.5; transform:scale(1);} 50%{ opacity:1; transform:scale(1.15);} }
+
+  .soal-wrap{ width:100%; max-width:460px; padding:18px; }
+  .soal-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .tag{ font-size:12px; font-weight:700; background:#1E2C5C; padding:5px 12px; border-radius:999px; }
+  .tag.bonus{ background:#3D2E0A; color:var(--amber); }
+  .tag.jebakan{ background:#3D1414; color:var(--red); }
+  .timer{ font-family:'JetBrains Mono', monospace; font-size:24px; font-weight:700; }
+  .timer.warn{ color:var(--red); }
+  .soal-text{ font-size:19px; font-weight:700; line-height:1.5; margin-bottom:20px; }
+  .opsi-btn{
+    display:block; width:100%; text-align:left; margin-bottom:12px;
+    background:#1E2C5C; border:1.5px solid var(--line); border-radius:14px; padding:16px 18px;
+    font-family:inherit; font-size:16px; font-weight:600; color:var(--ink); cursor:pointer;
+  }
+  .opsi-btn .huruf{ display:inline-flex; width:26px; height:26px; border-radius:8px; background:var(--blue); align-items:center; justify-content:center; font-size:13px; margin-right:10px; }
+  .opsi-btn.dipilih{ border-color:var(--blue); background:#22306B; }
+  .opsi-btn.benar{ border-color:var(--green); background:#123122; }
+  .opsi-btn.salah{ border-color:var(--red); background:#3D1414; }
+  .opsi-btn:disabled{ cursor:default; }
+
+  .feedback{ text-align:center; padding:30px 20px; }
+  .feedback .emoji{ font-size:60px; }
+  .feedback h2{ font-size:24px; margin:10px 0 4px; }
+  .posisi-bar{ height:14px; background:#0F1B3D; border:1px solid var(--line); border-radius:999px; margin-top:18px; overflow:hidden; }
+  .posisi-fill{ height:100%; background:var(--blue); transition:width .5s ease; }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- ===== JOIN ===== -->
+  <div class="card" id="viewJoin">
+    <h1>🚀 Balapan Sains</h1>
+    <p class="sub">Masukkan kode dari layar kelas dan nama kamu.</p>
+    <input id="inputKode" type="text" placeholder="KODE" maxlength="5">
+    <input id="inputNama" type="text" placeholder="Nama kamu" maxlength="24">
+    <button class="btn" id="btnGabung">Gabung 🎮</button>
+    <div class="err" id="errJoin"></div>
+  </div>
+
+  <!-- ===== WAITING ===== -->
+  <div class="card waiting hidden" id="viewWaiting">
+    <div class="pulse"></div>
+    <h1>Menunggu guru memulai...</h1>
+    <p class="sub" id="waitingNama">-</p>
+  </div>
+
+  <!-- ===== SOAL ===== -->
+  <div class="soal-wrap hidden" id="viewSoal">
+    <div class="soal-top">
+      <span class="tag" id="soalTag">Soal</span>
+      <span class="timer" id="timerTampil">20</span>
+    </div>
+    <div class="soal-text" id="soalText">...</div>
+    <div id="opsiList"></div>
+    <p class="sub" id="statusJawab" style="text-align:center;"></p>
+  </div>
+
+  <!-- ===== FEEDBACK RONDE ===== -->
+  <div class="card feedback hidden" id="viewFeedback">
+    <div class="emoji" id="fbEmoji">✅</div>
+    <h2 id="fbTitle">Benar!</h2>
+    <p class="sub" id="fbSub">+1 langkah</p>
+    <p class="sub">Posisimu: <b id="fbPosisi">0</b>/20</p>
+    <div class="posisi-bar"><div class="posisi-fill" id="fbBar" style="width:0%;"></div></div>
+    <p class="sub" style="margin-top:18px;">Menunggu soal berikutnya...</p>
+  </div>
+
+  <!-- ===== MENANG ===== -->
+  <div class="card feedback hidden" id="viewMenang">
+    <div class="emoji">🏆</div>
+    <h2 id="menangTitle">Pemenang!</h2>
+    <p class="sub" id="menangSub">-</p>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://uhibpjmmjbwwlhtuondl.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_6IvELi6Gpp7OtZxTTFaTpA_iE5n8IMZ";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const FINISH_LINE = 20;
+let channel = null;
+let namaSaya = '';
+let soalAktif = null;
+let sudahJawab = false;
+let pilihanSaya = null;
+let timerInterval = null;
+
+function showOnly(id){
+  ['viewJoin','viewWaiting','viewSoal','viewFeedback','viewMenang'].forEach(v => {
+    document.getElementById(v).classList.toggle('hidden', v !== id);
+  });
+}
+
+document.getElementById('btnGabung').addEventListener('click', () => {
+  const kode = document.getElementById('inputKode').value.trim().toUpperCase();
+  const nama = document.getElementById('inputNama').value.trim();
+  const errEl = document.getElementById('errJoin');
+  if (!kode || kode.length < 4) { errEl.textContent = 'Masukkan kode room yang benar.'; return; }
+  if (!nama) { errEl.textContent = 'Masukkan nama kamu.'; return; }
+  errEl.textContent = '';
+  namaSaya = nama;
+
+  channel = supabaseClient.channel('race_' + kode, { config: { broadcast: { self: false } } });
+
+  channel.on('broadcast', { event: 'soal_baru' }, ({ payload }) => tampilkanSoal(payload));
+  channel.on('broadcast', { event: 'hasil_ronde' }, ({ payload }) => tampilkanHasil(payload));
+  channel.on('broadcast', { event: 'menang' }, ({ payload }) => tampilkanMenang(payload));
+
+  channel.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      channel.send({ type:'broadcast', event:'join', payload:{ nama: namaSaya } });
+      document.getElementById('waitingNama').textContent = `Halo, ${namaSaya}!`;
+      showOnly('viewWaiting');
+    }
+  });
+});
+
+function tampilkanSoal(soal){
+  soalAktif = soal; sudahJawab = false; pilihanSaya = null;
+  document.getElementById('soalTag').textContent = `Soal ${soal.index + 1}`;
+  document.getElementById('soalTag').className = 'tag' + (soal.tipe !== 'normal' ? ' ' + soal.tipe : '');
+  document.getElementById('soalText').textContent = soal.pertanyaan;
+  document.getElementById('opsiList').innerHTML = soal.opsi.map((o,i) => `
+    <button class="opsi-btn" data-idx="${i}"><span class="huruf">${String.fromCharCode(65+i)}</span>${o}</button>
+  `).join('');
+  document.getElementById('statusJawab').textContent = '';
+  document.querySelectorAll('.opsi-btn').forEach(btn => btn.addEventListener('click', () => pilihJawaban(btn)));
+  showOnly('viewSoal');
+
+  clearInterval(timerInterval);
+  const timerEl = document.getElementById('timerTampil');
+  function tick(){
+    const sisa = Math.max(0, Math.ceil((soal.mulai + soal.durasi*1000 - Date.now())/1000));
+    timerEl.textContent = sisa;
+    timerEl.classList.toggle('warn', sisa <= 5);
+    if (sisa <= 0) clearInterval(timerInterval);
+  }
+  tick();
+  timerInterval = setInterval(tick, 300);
+}
+
+function pilihJawaban(btn){
+  if (sudahJawab || !soalAktif) return;
+  sudahJawab = true;
+  pilihanSaya = parseInt(btn.dataset.idx, 10);
+  document.querySelectorAll('.opsi-btn').forEach(b => { b.disabled = true; });
+  btn.classList.add('dipilih');
+  document.getElementById('statusJawab').textContent = 'Jawaban terkirim, tunggu ronde selesai...';
+  channel.send({ type:'broadcast', event:'jawab', payload:{ nama: namaSaya, pilihan: pilihanSaya, waktu: Date.now() } });
+}
+
+function tampilkanHasil(hasil){
+  clearInterval(timerInterval);
+  const benar = sudahJawab && pilihanSaya === hasil.kunci;
+  const posisi = hasil.posisi[namaSaya] ?? 0;
+
+  document.getElementById('fbEmoji').textContent = benar ? '✅' : (sudahJawab ? '❌' : '⏱️');
+  document.getElementById('fbTitle').textContent = benar ? 'Benar!' : (sudahJawab ? 'Kurang tepat' : 'Waktu habis');
+  document.getElementById('fbSub').textContent = soalAktif && soalAktif.tipe === 'bonus' && benar
+    ? '+2 langkah (soal bonus!)'
+    : (soalAktif && soalAktif.tipe === 'jebakan' && !benar ? '-1 langkah (soal jebakan)' : (benar ? '+1 langkah' : '+0 langkah'));
+  document.getElementById('fbPosisi').textContent = posisi;
+  document.getElementById('fbBar').style.width = Math.min(100, (posisi/FINISH_LINE)*100) + '%';
+  showOnly('viewFeedback');
+}
+
+function tampilkanMenang(data){
+  clearInterval(timerInterval);
+  const menangSendiri = data.nama === namaSaya;
+  document.getElementById('menangTitle').textContent = menangSendiri ? 'Kamu Menang! 🎉' : 'Permainan Selesai';
+  document.getElementById('menangSub').textContent = menangSendiri ? 'Kamu duluan sampai garis finis!' : `Pemenangnya: ${data.nama}`;
+  showOnly('viewMenang');
+}
+</script>
+</body>
+</html>
