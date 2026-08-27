@@ -191,6 +191,10 @@ async function loadQuestions() {
 
 document.getElementById('questionForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn.disabled) return; // jaga-jaga kalau ada klik dobel yang lolos
+  submitBtn.disabled = true;
+
   const { data: existing } = await supabase
     .from('practice_questions')
     .select('nomor')
@@ -205,6 +209,8 @@ document.getElementById('questionForm').addEventListener('submit', async (e) => 
     nomor: nextNomor,
     soal: qs('#qSoal').value,
   });
+
+  submitBtn.disabled = false;
   if (error) return alert('Gagal menyimpan: ' + error.message);
   e.target.reset();
   await loadQuestions();
