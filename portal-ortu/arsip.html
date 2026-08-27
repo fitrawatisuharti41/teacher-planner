@@ -12,12 +12,8 @@
 <style>
   body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
   .portal-shell { width:100%; max-width:560px; }
-  .thumb {
-    width:64px; height:64px; border-radius: var(--radius-sm); background: var(--color-accent-blue-soft);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;
-  }
-  .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-  .thumb img.favicon-img { width:28px; height:28px; object-fit:contain; }
+  .thumb { width:56px; height:56px; border-radius: var(--radius-sm); background: var(--color-accent-blue-soft);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -79,57 +75,9 @@
         .eq('tingkat_umum', tingkat)
         .order('created_at', { ascending: true });
 
-      /* ============ SAMPUL/THUMBNAIL ============
-         Tidak ada kolom thumbnail di tabel resources, jadi sampul
-         diturunkan langsung dari `url` sesuai tipe:
-         - gambar -> url itu sendiri adalah gambarnya
-         - video  -> kalau YouTube, pakai thumbnail bawaan YouTube
-         - link   -> pakai favicon situs tujuan (PDF juga lewat sini,
-                     karena PDF sekarang selalu berupa link Google Drive)
-      */
-      const ICON_FALLBACK = { video: 'icon-book' };
-
-      function iconMarkup(tipe) {
-        const icon = ICON_FALLBACK[tipe] || 'icon-archive';
-        return `<svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#${icon}"/></svg>`;
-      }
-
-      function extractYouTubeId(url) {
-        try {
-          const u = new URL(url);
-          if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
-          if (u.hostname.includes('youtube.com')) {
-            if (u.searchParams.get('v')) return u.searchParams.get('v');
-            const m = u.pathname.match(/\/(embed|shorts)\/([^/?]+)/);
-            if (m) return m[2];
-          }
-        } catch (e) {}
-        return null;
-      }
-
-      function thumbMarkup(r) {
-        const safeUrl = (r.url || '').replace(/"/g, '&quot;');
-        if (r.tipe === 'gambar' && r.url) {
-          return `<img src="${safeUrl}" alt="" onerror="this.closest('.thumb').innerHTML='${iconMarkup(r.tipe).replace(/'/g, "\\'")}'">`;
-        }
-        if (r.tipe === 'video' && r.url) {
-          const ytId = extractYouTubeId(r.url);
-          if (ytId) {
-            return `<img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" alt="" onerror="this.closest('.thumb').innerHTML='${iconMarkup(r.tipe).replace(/'/g, "\\'")}'">`;
-          }
-        }
-        if ((r.tipe === 'link' || r.tipe === 'pdf') && r.url) {
-          try {
-            const domain = new URL(r.url).hostname;
-            return `<img class="favicon-img" src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="" onerror="this.closest('.thumb').innerHTML='${iconMarkup(r.tipe).replace(/'/g, "\\'")}'">`;
-          } catch (e) {}
-        }
-        return iconMarkup(r.tipe);
-      }
-
       const renderItem = (r) => `
           <a class="row gap-3" href="${r.url || '#'}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
-            <div class="thumb">${thumbMarkup(r)}</div>
+            <div class="thumb"><svg class="icon" style="color:var(--color-accent-blue)"><use href="../assets/icons/icons.svg#${r.tipe === 'video' ? 'icon-book' : 'icon-archive'}"/></svg></div>
             <div>
               <strong class="text-sm">${r.judul}</strong>
               <div class="text-xs text-muted">${r.tipe.toUpperCase()}</div>

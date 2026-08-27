@@ -12,17 +12,6 @@
 <style>
   body { display:flex; justify-content:center; min-height:100vh; padding: var(--space-8) var(--space-4); }
   .portal-shell { width:100%; max-width:560px; }
-  .opt-pg {
-    display:flex; align-items:center; gap:10px;
-    padding:12px 14px; border:1.5px solid var(--color-border, #E4E8F1); border-radius:var(--radius-sm, 10px);
-    cursor:pointer; font-size:14.5px;
-  }
-  .opt-pg input { flex:none; }
-  .opt-pg.correct { border-color:var(--color-accent-green, #16A34A); background:rgba(22,163,74,0.08); }
-  .opt-pg.wrong { border-color:#DC2626; background:rgba(220,38,38,0.08); }
-  .score-big { font-size:40px; font-weight:700; }
-  .history-row { display:flex; justify-content:space-between; padding:10px 12px; border-radius:var(--radius-sm, 10px); background:var(--color-bg-subtle, #F5F7FB); font-size:13.5px; }
-  .history-row.latest { outline:1.5px solid var(--color-accent-green, #16A34A); }
 </style>
 </head>
 <body>
@@ -42,15 +31,6 @@
 
 <script type="module">
   import { supabase } from '../js/config/supabase.js';
-
-  /* =========================================================================
-     Kunci jawaban PG sengaja tetap di-select ke browser (bukan disembunyikan
-     lewat view/server) karena ini bank latihan berulang, bukan nilai resmi —
-     instan lebih penting daripada anti-nyontek ketat (beda dari halaman Ulangan).
-     Skema yang dipakai: practice_questions.tipe_soal/opsi/kunci_jawaban/gambar_url,
-     dan tabel practice_attempts (id, practice_set_id, student_id, skor,
-     skor_maksimal, submitted_at) — lihat add_practice_attempts.sql.
-     ========================================================================= */
 
   document.getElementById('btnBackToMenu')?.addEventListener('click', () => {
     sessionStorage.clear();
@@ -125,7 +105,7 @@
 
     const { data: questions, error: qError } = await supabase
       .from('practice_questions')
-      .select('id, nomor, soal, gambar_url, tipe_soal, opsi, kunci_jawaban')
+      .select('id, nomor, soal')
       .eq('practice_set_id', setId)
       .order('nomor');
 
@@ -134,10 +114,6 @@
       return;
     }
 
-    // Normalisasi: soal lama yang belum diisi tipe_soal dianggap 'esai' (kompatibel mundur)
-    questions.forEach((q) => { if (!q.tipe_soal) q.tipe_soal = 'esai'; });
-    const adaSoalPG = questions.some((q) => q.tipe_soal === 'pg');
-
     questionEl.innerHTML = `
       <div class="card">
         <h3>${judul}</h3>
@@ -145,30 +121,13 @@
         ${gamifikasiHtml}
         <form class="stack gap-4" id="answerForm">
           ${questions
-            .map((q) => {
-              const label = `<label class="text-sm" style="font-weight:var(--weight-semibold);">Soal ${q.nomor}. ${q.soal}</label>`;
-              const gambarHtml = q.gambar_url
-                ? `<img src="${q.gambar_url}" alt="Gambar soal ${q.nomor}" style="width:100%; max-width:320px; border-radius:var(--radius-sm, 10px);">`
-                : '';
-              if (q.tipe_soal === 'pg') {
-                const opsiHtml = (q.opsi || [])
-                  .map(
-                    (o, i) => `
-                  <label class="opt-pg" data-question-id="${q.id}" data-idx="${i}">
-                    <input type="radio" name="pg_${q.id}" value="${i}">
-                    ${o}
-                  </label>`
-                  )
-                  .join('');
-                return `<div class="stack gap-2" data-tipe="pg" data-question-id="${q.id}">${label}${gambarHtml}${opsiHtml}</div>`;
-              }
-              return `
-                <div class="stack gap-1" data-tipe="esai" data-question-id="${q.id}">
-                  ${label}
-                  ${gambarHtml}
-                  <textarea class="input" rows="3" data-question-id="${q.id}" required></textarea>
-                </div>`;
-            })
+            .map(
+              (q) => `
+            <div class="stack gap-1">
+              <label class="text-sm" style="font-weight:var(--weight-semibold);">Soal ${q.nomor}. ${q.soal}</label>
+              <textarea class="input" rows="3" data-question-id="${q.id}" required></textarea>
+            </div>`
+            )
             .join('')}
           <button type="submit" class="btn btn-primary">Kirim Jawaban</button>
         </form>
@@ -176,133 +135,17 @@
 
     document.getElementById('answerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      await submitAttempt(setId, judul, gambarUrl, linkGamifikasi, questions, adaSoalPG);
-    });
-  }
-
-  async function submitAttempt(setId, judul, gambarUrl, linkGamifikasi, questions, adaSoalPG) {
-    // Kumpulkan & validasi jawaban dari form
-    const pgAnswers = {};   // question_id -> index terpilih
-    const esaiRows = [];    // baris untuk practice_answers
-
-    for (const q of questions) {
-      if (q.tipe_soal === 'pg') {
-        const checked = document.querySelector(`input[name="pg_${q.id}"]:checked`);
-        if (!checked) {
-          alert(`Soal ${q.nomor} belum dijawab.`);
-          return;
-        }
-        pgAnswers[q.id] = parseInt(checked.value, 10);
-      } else {
-        const ta = document.querySelector(`textarea[data-question-id="${q.id}"]`);
-        const val = (ta?.value || '').trim();
-        if (!val) {
-          alert(`Soal ${q.nomor} belum dijawab.`);
-          return;
-        }
-        esaiRows.push({ question_id: q.id, student_id: studentId, jawaban: val });
-      }
-    }
-
-    let attemptRow = null;
-    let skor = 0;
-    let skorMaksimal = 0;
-
-    if (adaSoalPG) {
-      // Cocokkan PG ke kunci_jawaban, hitung skor instan di browser
-      const pgQuestions = questions.filter((q) => q.tipe_soal === 'pg');
-      let benar = 0;
-      pgQuestions.forEach((q) => { if (pgAnswers[q.id] === q.kunci_jawaban) benar++; });
-      skor = benar;
-      skorMaksimal = pgQuestions.length;
-
-      const { data, error: attemptError } = await supabase
-        .from('practice_attempts')
-        .insert({ practice_set_id: setId, student_id: studentId, skor, skor_maksimal: skorMaksimal })
-        .select('id, submitted_at')
-        .single();
-
-      if (attemptError) console.error(attemptError.message);
-      attemptRow = data;
-
-      // Simpan juga jawaban PG per soal ke practice_answers, ditandai attempt_id + benar/salah
-      const pgRows = pgQuestions.map((q) => ({
-        question_id: q.id,
+      const rows = Array.from(e.target.querySelectorAll('textarea')).map((ta) => ({
+        question_id: ta.dataset.questionId,
         student_id: studentId,
-        attempt_id: attemptRow?.id || null,
-        jawaban: q.opsi?.[pgAnswers[q.id]] ?? String(pgAnswers[q.id]),
-        benar: pgAnswers[q.id] === q.kunci_jawaban,
+        jawaban: ta.value,
       }));
-      const { error: pgSaveError } = await supabase.from('practice_answers').insert(pgRows);
-      if (pgSaveError) console.error(pgSaveError.message);
-    }
-
-    // Simpan jawaban esai (tidak ikut dihitung skor), ditautkan ke attempt yang sama kalau ada
-    if (esaiRows.length > 0) {
-      const esaiRowsWithAttempt = esaiRows.map((r) => ({ ...r, attempt_id: attemptRow?.id || null }));
-      const { error: submitError } = await supabase.from('practice_answers').insert(esaiRowsWithAttempt);
+      const { error: submitError } = await supabase.from('practice_answers').insert(rows);
       if (submitError) {
-        alert('Gagal mengirim jawaban esai: ' + submitError.message);
+        alert('Gagal mengirim: ' + submitError.message);
         return;
       }
-    }
-
-    if (!adaSoalPG) {
-      // Set ini murni esai — tidak ada yang bisa dinilai otomatis, cukup konfirmasi
       questionEl.innerHTML = '<div class="card"><p class="text-sm" style="color:var(--color-accent-green);">✓ Jawaban terkirim. Terima kasih!</p></div>';
-      return;
-    }
-
-    // Tandai opsi benar/salah secara visual pada form yang sudah terkirim
-    questions
-      .filter((q) => q.tipe_soal === 'pg')
-      .forEach((q) => {
-        document.querySelectorAll(`.opt-pg[data-question-id="${q.id}"]`).forEach((el) => {
-          const idx = parseInt(el.dataset.idx, 10);
-          if (idx === q.kunci_jawaban) el.classList.add('correct');
-          else if (idx === pgAnswers[q.id]) el.classList.add('wrong');
-        });
-      });
-
-    // Ambil riwayat percobaan (termasuk yang baru saja dikirim)
-    const { data: riwayat } = await supabase
-      .from('practice_attempts')
-      .select('id, skor, skor_maksimal, submitted_at')
-      .eq('practice_set_id', setId)
-      .eq('student_id', studentId)
-      .order('submitted_at', { ascending: true });
-
-    const daftarRiwayat = riwayat || [];
-    const historyHtml = daftarRiwayat
-      .map((a, i) => {
-        const isLatest = attemptRow && a.id === attemptRow.id;
-        const waktuStr = new Date(a.submitted_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-        return `<div class="history-row ${isLatest ? 'latest' : ''}">
-          <span>Percobaan ke-${i + 1}${isLatest ? ' · baru saja' : ''}</span>
-          <b>${a.skor}/${a.skor_maksimal}</b>
-          <span class="text-sm text-muted">${waktuStr}</span>
-        </div>`;
-      })
-      .reverse()
-      .join('');
-
-    questionEl.innerHTML = `
-      <div class="card stack gap-4">
-        <h3>${judul}</h3>
-        <div class="stack gap-1" style="text-align:center;">
-          <span class="text-sm text-muted">Skor percobaan ini</span>
-          <span class="score-big">${skor}/${skorMaksimal}</span>
-        </div>
-        <button class="btn btn-primary" id="btnCobaLagi">↻ Coba Lagi</button>
-        <div class="stack gap-2">
-          <span class="text-sm" style="font-weight:var(--weight-semibold);">Riwayat Percobaan</span>
-          ${historyHtml || '<p class="text-sm text-muted">Belum ada riwayat.</p>'}
-        </div>
-      </div>`;
-
-    document.getElementById('btnCobaLagi').addEventListener('click', () => {
-      setListEl.style.display = '';
-      openSet(setId, judul, gambarUrl, linkGamifikasi);
     });
   }
 </script>
