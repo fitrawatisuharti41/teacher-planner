@@ -63,6 +63,13 @@
   .timer{ font-family:'JetBrains Mono', monospace; font-size:28px; font-weight:700; }
   .timer.warn{ color:var(--red); }
   .soal-text{ font-size:26px; font-weight:700; line-height:1.5; margin:6px 0 22px; }
+  .hazard-strip{ display:flex; flex-wrap:wrap; gap:14px; margin:-6px 0 22px; }
+  .hazard-badge{
+    width:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    border:2px solid; border-radius:16px; padding:14px 8px; text-align:center;
+  }
+  .hazard-badge .emoji{ font-size:34px; line-height:1; }
+  .hazard-badge .label{ font-size:11px; font-weight:700; color:var(--ink); line-height:1.3; }
   .opsi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:10px; }
   .opsi{ background:#1E2C5C; border:1.5px solid var(--line); border-radius:12px; padding:16px 18px; font-size:17px; font-weight:600; }
   .opsi .huruf{ display:inline-flex; width:26px; height:26px; border-radius:8px; background:var(--blue); align-items:center; justify-content:center; font-size:13px; margin-right:10px; }
@@ -113,6 +120,7 @@
       <span class="timer" id="timerTampil">20</span>
     </div>
     <div class="soal-text" id="soalText">...</div>
+    <div class="hazard-strip" id="soalGambar"></div>
     <div class="opsi-grid" id="opsiGrid"></div>
     <div class="jawab-progress" id="jawabProgress">0 dari 0 siswa sudah menjawab</div>
     <div style="margin-top:16px; display:flex; gap:10px;">
@@ -145,7 +153,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_6IvELi6Gpp7OtZxTTFaTpA_iE5n8IMZ";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const FINISH_LINE = 20;      // langkah untuk menang
-const DURASI_RONDE = 8;     // detik per soal
+const DURASI_RONDE = 10;     // detik per soal
 
 /* =========================================================================
    BANK SOAL — IPA Kelas 7 Bab 1: Hakikat Ilmu Sains & Metode Ilmiah
@@ -173,9 +181,24 @@ const SOAL = [
   { topik:"Variabel Percobaan", tipe:"normal", pertanyaan:"Variabel yang sengaja diubah-ubah oleh peneliti dalam suatu percobaan disebut...", opsi:["Variabel terikat","Variabel bebas","Variabel kontrol","Variabel acak"], kunci:1 },
   { topik:"Variabel Percobaan", tipe:"bonus", pertanyaan:"⭐ BONUS: Variabel yang nilainya berubah akibat pengaruh variabel bebas disebut...", opsi:["Variabel kontrol","Variabel bebas","Variabel terikat","Variabel tetap"], kunci:2 },
   { topik:"Variabel Percobaan", tipe:"normal", pertanyaan:"Variabel yang dibuat sama/tidak diubah dalam suatu percobaan disebut...", opsi:["Variabel bebas","Variabel terikat","Variabel kontrol","Variabel acak"], kunci:2 },
-  { topik:"Keselamatan Kerja di Lab", tipe:"normal", pertanyaan:"Sebelum praktikum di laboratorium, siswa sebaiknya memakai...", opsi:["Sandal jepit","Jas laboratorium dan kacamata pelindung","Baju bebas","Perhiasan lengkap"], kunci:1 },
-  { topik:"Keselamatan Kerja di Lab", tipe:"jebakan", pertanyaan:"⚠️ Jika terkena bahan kimia berbahaya di kulit saat praktikum, tindakan pertama yang tepat adalah...", opsi:["Mengabaikannya","Membasuh dengan air mengalir dan lapor guru","Menutupnya dengan plester","Menggosoknya dengan tangan"], kunci:1 },
-  { topik:"Keselamatan Kerja di Lab", tipe:"normal", pertanyaan:"Simbol tanda bahaya \"mudah terbakar\" pada bahan kimia biasanya berwarna...", opsi:["Hijau","Biru","Merah/oranye dengan gambar api","Putih polos"], kunci:2 },
+  { topik:"Keselamatan Kerja di Lab", tipe:"normal", pertanyaan:"Sebelum praktikum di laboratorium, siswa sebaiknya memakai...", opsi:["Sandal jepit","Jas laboratorium dan kacamata pelindung","Baju bebas","Perhiasan lengkap"], kunci:1,
+    gambar:[
+      { emoji:"🥽", label:"Wajib Kacamata", bg:"#0F2A4D", border:"#5B7CFA" },
+      { emoji:"🥼", label:"Wajib Jas Lab", bg:"#0F2A4D", border:"#5B7CFA" },
+      { emoji:"🧤", label:"Wajib Sarung Tangan", bg:"#0F2A4D", border:"#5B7CFA" },
+    ] },
+  { topik:"Keselamatan Kerja di Lab", tipe:"jebakan", pertanyaan:"⚠️ Jika terkena bahan kimia berbahaya di kulit saat praktikum, tindakan pertama yang tepat adalah...", opsi:["Mengabaikannya","Membasuh dengan air mengalir dan lapor guru","Menutupnya dengan plester","Menggosoknya dengan tangan"], kunci:1,
+    gambar:[
+      { emoji:"🧪", label:"Korosif", bg:"#3D1414", border:"#F87171" },
+      { emoji:"⚠️", label:"Iritan / Bahaya", bg:"#3D2E0A", border:"#FBBF24" },
+    ] },
+  { topik:"Keselamatan Kerja di Lab", tipe:"normal", pertanyaan:"Simbol tanda bahaya \"mudah terbakar\" pada bahan kimia biasanya berwarna...", opsi:["Hijau","Biru","Merah/oranye dengan gambar api","Putih polos"], kunci:2,
+    gambar:[
+      { emoji:"🔥", label:"Mudah Terbakar", bg:"#3D1414", border:"#F87171" },
+      { emoji:"☠️", label:"Beracun", bg:"#241a35", border:"#A78BFA" },
+      { emoji:"🧪", label:"Korosif", bg:"#3D2E0A", border:"#FBBF24" },
+      { emoji:"🚫", label:"Dilarang Sembarangan", bg:"#1E293B", border:"#94A3B8" },
+    ] },
 ];
 
 const WARNA_AVATAR = ["#F87171","#FBBF24","#34D399","#60A5FA","#A78BFA","#F472B6","#FB923C","#4ADE80","#38BDF8","#E879F9"];
@@ -242,6 +265,15 @@ document.getElementById('btnMulai').addEventListener('click', () => {
   kirimSoal();
 });
 
+function renderGambarSoal(gambar){
+  if (!gambar || !gambar.length) return '';
+  return gambar.map(g => `
+    <div class="hazard-badge" style="background:${g.bg}; border-color:${g.border};">
+      <div class="emoji">${g.emoji}</div>
+      <div class="label">${g.label}</div>
+    </div>`).join('');
+}
+
 function kirimSoal(){
   jawabanRonde = {};
   const soal = SOAL[soalIndex];
@@ -250,6 +282,7 @@ function kirimSoal(){
   document.getElementById('soalTag').textContent = `Soal ${soalIndex+1}/${SOAL.length} · ${soal.topik}`;
   document.getElementById('soalTag').className = 'soal-tag' + (soal.tipe !== 'normal' ? ' ' + soal.tipe : '');
   document.getElementById('soalText').textContent = soal.pertanyaan;
+  document.getElementById('soalGambar').innerHTML = renderGambarSoal(soal.gambar);
   document.getElementById('opsiGrid').innerHTML = soal.opsi.map((o,i) => `
     <div class="opsi" id="opsi${i}"><span class="huruf">${String.fromCharCode(65+i)}</span>${o}</div>
   `).join('');
@@ -259,7 +292,7 @@ function kirimSoal(){
   renderTrack();
 
   channel.send({ type:'broadcast', event:'soal_baru', payload:{
-    index: soalIndex, pertanyaan: soal.pertanyaan, opsi: soal.opsi, tipe: soal.tipe,
+    index: soalIndex, pertanyaan: soal.pertanyaan, opsi: soal.opsi, tipe: soal.tipe, gambar: soal.gambar,
     mulai, durasi: DURASI_RONDE
   }});
 
