@@ -306,7 +306,7 @@ function kirimSoal(){
   updateJawabProgress();
   renderTrack();
   channel.send({ type:'broadcast', event:'soal_baru', payload:{
-    index: soalIndex, pertanyaan: soal.pertanyaan, opsi: soal.opsi, tipe: soal.tipe,
+    index: soalIndex, pertanyaan: soal.pertanyaan, opsi: soal.opsi, tipe: soal.tipe, gambar: soal.gambar,
     mulai, durasi: DURASI_RONDE
   }});
   let sisa = DURASI_RONDE;
