@@ -51,11 +51,9 @@
   .btn-secondary{ background:var(--panel); color:var(--ink); border:1px solid var(--line); }
   .btn-danger{ background:var(--red); color:#fff; }
   .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:28px; }
-
   .lobby-list{ display:flex; flex-wrap:wrap; gap:10px; margin:20px 0; min-height:44px; }
   .chip{ background:#1E2C5C; border:1px solid var(--line); padding:8px 16px; border-radius:999px; font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px; }
   .chip .dot{ width:10px; height:10px; border-radius:50%; }
-
   .soal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
   .soal-tag{ font-size:12.5px; font-weight:700; padding:5px 12px; border-radius:999px; background:#1E2C5C; }
   .soal-tag.bonus{ background:#3D2E0A; color:var(--amber); }
@@ -74,9 +72,7 @@
   .opsi{ background:#1E2C5C; border:1.5px solid var(--line); border-radius:12px; padding:16px 18px; font-size:17px; font-weight:600; }
   .opsi .huruf{ display:inline-flex; width:26px; height:26px; border-radius:8px; background:var(--blue); align-items:center; justify-content:center; font-size:13px; margin-right:10px; }
   .opsi.benar{ border-color:var(--green); background:#123122; }
-
   .jawab-progress{ font-size:13.5px; color:var(--ink-soft); margin-top:10px; }
-
   .track-wrap{ margin-top:26px; display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; padding-right:4px; }
   .lane{ display:flex; align-items:center; gap:10px; }
   .lane .nama{ width:110px; font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -84,35 +80,34 @@
   .lane .fill{ height:100%; border-radius:999px; transition:width .6s ease; }
   .lane .avatar{ position:absolute; top:50%; transform:translate(-50%,-50%); font-size:20px; transition:left .6s ease; }
   .finish-mark{ position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:14px; opacity:.6; }
-
   .winner{ text-align:center; padding:60px 20px; }
   .winner .emoji{ font-size:80px; }
   .winner h1{ font-size:38px; margin:12px 0 6px; }
-  .rank-list{ text-align:left; max-width:420px; margin:24px auto 0; display:flex; flex-direction:column; gap:8px; }
+  .rank-list{ text-align:left; max-width:460px; margin:24px auto 0; display:flex; flex-direction:column; gap:8px; max-height:50vh; overflow-y:auto; }
   .rank-row{ display:flex; justify-content:space-between; background:#1E2C5C; padding:10px 16px; border-radius:10px; font-weight:600; }
-
+  .rank-row.bebas{ border:1.5px solid var(--green); background:#123122; }
+  .rank-badge{ font-size:11px; font-weight:800; color:var(--green); margin-left:8px; }
+  .lanjut-info{ font-size:13px; color:var(--ink-soft); }
+  .auto-toggle{ cursor:pointer; }
   .hidden{ display:none !important; }
   @media (max-width:640px){ .opsi-grid{ grid-template-columns:1fr; } .soal-text{ font-size:20px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <div class="topbar">
     <div class="brand">🫀 Balapan Sains — Pencernaan &amp; Peredaran Darah</div>
     <div class="row">
       <div class="kode-box">Kode Gabung: <b id="kodeTampil">......</b></div>
     </div>
   </div>
-
   <!-- ===== LOBBY ===== -->
   <div class="card" id="viewLobby">
-    <p style="color:var(--ink-soft); margin-top:0;">Siswa buka <b>race-siswa.html</b> di HP masing-masing, masukkan kode di atas dan nama mereka.</p>
+    <p style="color:var(--ink-soft); margin-top:0;">Siswa buka <b>race-siswa-kelas8.html</b> di HP masing-masing, masukkan kode di atas dan nama mereka. 50 soal · 🎓 10 skor tertinggi bebas ulangan tambahan.</p>
     <h3 style="margin-bottom:6px;">Peserta bergabung (<span id="jumlahPeserta">0</span>)</h3>
     <div class="lobby-list" id="lobbyList"></div>
     <button class="btn btn-primary" id="btnMulai" disabled>Mulai Balapan 🏁</button>
   </div>
-
   <!-- ===== SOAL / RACE ===== -->
   <div class="card hidden" id="viewSoal">
     <div class="soal-head">
@@ -123,24 +118,28 @@
     <div class="hazard-strip" id="soalGambar"></div>
     <div class="opsi-grid" id="opsiGrid"></div>
     <div class="jawab-progress" id="jawabProgress">0 dari 0 siswa sudah menjawab</div>
-    <div style="margin-top:16px; display:flex; gap:10px;">
+    <div style="margin-top:16px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
       <button class="btn btn-secondary" id="btnTutupRonde">Tutup Ronde Sekarang</button>
-      <button class="btn btn-primary hidden" id="btnLanjut">Soal Berikutnya →</button>
+      <button class="btn btn-primary hidden" id="btnLanjut">Lanjut Sekarang →</button>
+      <span class="lanjut-info hidden" id="lanjutInfo">⏩ Lanjut otomatis dalam <b id="lanjutCountdown">5</b> detik...</span>
+      <label class="auto-toggle" style="margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft);">
+        <input type="checkbox" id="chkAutoLanjut" checked> Lanjut Otomatis
+      </label>
     </div>
     <div class="track-wrap" id="trackWrap"></div>
   </div>
-
   <!-- ===== WINNER ===== -->
   <div class="card winner hidden" id="viewWinner">
     <div class="emoji">🏆</div>
     <h1 id="winnerNama">-</h1>
-    <p style="color:var(--ink-soft);">berhasil finis lebih dulu!</p>
+    <p style="color:var(--ink-soft);">Skor tertinggi dari 50 soal · 🎓 = bebas ulangan tambahan</p>
     <div class="rank-list" id="rankList"></div>
-    <button class="btn btn-primary" id="btnRoomBaru" style="margin-top:26px;">Mulai Room Baru</button>
+    <div style="margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="btnUnduhHasil">⬇️ Unduh Hasil (CSV)</button>
+      <button class="btn btn-primary" id="btnRoomBaru">Mulai Room Baru</button>
+    </div>
   </div>
-
 </div>
-
 <script>
 /* =========================================================================
    KONFIGURASI SUPABASE — sama dengan game Balapan Sains Kelas 7 (project
@@ -149,10 +148,9 @@
 const SUPABASE_URL = "https://uhibpjmmjbwwlhtuondl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_6IvELi6Gpp7OtZxTTFaTpA_iE5n8IMZ";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const FINISH_LINE = 20;      // langkah untuk menang
-const DURASI_RONDE = 10;     // detik per soal
-
+const DURASI_RONDE = 12;     // detik per soal (dipersingkat supaya 50 soal muat <30 menit)
+const JEDA_HASIL   = 5;      // detik jeda tampil kunci jawaban sebelum lanjut otomatis
+const TOP_N_BEBAS  = 10;     // jumlah skor tertinggi yang bebas ulangan tambahan
 /* =========================================================================
    BANK SOAL — IPA Kelas 8: Sistem Pencernaan & Peredaran Darah
    Topik: Makanan, Kandungan Zat Gizi, Sistem Pencernaan, Sistem Peredaran
@@ -160,30 +158,51 @@ const DURASI_RONDE = 10;     // detik per soal
    tipe: 'normal' (+1 benar), 'bonus' (+2 benar), 'jebakan' (+1 benar / -1 salah)
    ========================================================================= */
 const SOAL = [
-  { topik:"Makanan", tipe:"normal", pertanyaan:"Sumber energi utama bagi tubuh manusia berasal dari makanan yang mengandung...", opsi:["Karbohidrat","Vitamin","Mineral","Air"], kunci:0 },
-  { topik:"Makanan", tipe:"normal", pertanyaan:"Makanan yang berfungsi sebagai zat pembangun (membangun sel dan jaringan tubuh) adalah yang mengandung...", opsi:["Lemak","Protein","Vitamin","Serat"], kunci:1 },
-  { topik:"Makanan", tipe:"normal", pertanyaan:"Salah satu fungsi lemak bagi tubuh adalah...", opsi:["Sumber energi cadangan dan pelindung organ tubuh","Membentuk hemoglobin","Mempercepat pembekuan darah","Menetralkan racun di hati"], kunci:0 },
-  { topik:"Makanan", tipe:"normal", pertanyaan:"Makanan bergizi seimbang harus mencakup zat-zat berikut, kecuali...", opsi:["Karbohidrat","Protein","Zat pewarna buatan","Vitamin dan mineral"], kunci:2 },
-  { topik:"Makanan", tipe:"bonus", pertanyaan:"⭐ BONUS: Pola makan yang baik menurut prinsip gizi seimbang adalah...", opsi:["Makan sebanyak-banyaknya setiap saat","Beragam, bergizi, seimbang, dan aman","Hanya makan makanan manis","Menghindari semua jenis lemak"], kunci:1 },
-
-  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Zat gizi yang berfungsi mengatur proses-proses dalam tubuh dan diperlukan dalam jumlah sedikit adalah...", opsi:["Karbohidrat dan lemak","Protein","Vitamin dan mineral","Air"], kunci:2 },
+  // ===== TOPIK 1: MAKANAN (10 soal) =====
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Zat gizi yang merupakan sumber energi utama dan paling cepat digunakan tubuh adalah...", opsi:["Karbohidrat","Protein","Lemak","Vitamin"], kunci:0 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Bahan makanan berikut yang merupakan sumber protein hewani adalah...", opsi:["Tempe","Telur","Kacang hijau","Beras"], kunci:1 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Selain sebagai sumber energi cadangan, fungsi lemak bagi tubuh adalah...", opsi:["Melindungi organ tubuh dan menjaga suhu tubuh","Membentuk hemoglobin","Mempercepat pembekuan darah","Mengatur kadar gula darah"], kunci:0 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Air termasuk zat gizi yang penting karena berfungsi sebagai...", opsi:["Pelarut dan pengatur suhu tubuh","Sumber energi utama","Zat pembangun sel","Pembentuk hormon"], kunci:0 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Makanan bergizi seimbang sebaiknya terdiri atas...", opsi:["Karbohidrat saja","Karbohidrat, protein, lemak, vitamin, dan mineral","Protein dan lemak saja","Vitamin dan air saja"], kunci:1 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Pada piring model 'Isi Piringku', porsi terbesar sebaiknya diisi oleh...", opsi:["Lauk pauk","Buah-buahan","Sayuran dan makanan pokok","Minyak dan gula"], kunci:2 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Berikut ini contoh makanan sumber karbohidrat kompleks adalah...", opsi:["Nasi merah dan ubi","Gula pasir","Minyak goreng","Daging sapi"], kunci:0 },
+  { topik:"Makanan", tipe:"jebakan", pertanyaan:"⚠️ Kekurangan energi dan protein dalam jangka panjang pada balita dapat menyebabkan penyakit...", opsi:["Rabun senja","Kwashiorkor atau marasmus","Sariawan","Gondok"], kunci:1 },
+  { topik:"Makanan", tipe:"jebakan", pertanyaan:"⚠️ Kelebihan mengonsumsi makanan berkalori tinggi tanpa aktivitas fisik yang seimbang dapat menyebabkan...", opsi:["Anemia","Obesitas","Sariawan","Osteoporosis"], kunci:1 },
+  { topik:"Makanan", tipe:"bonus", pertanyaan:"⭐ BONUS: Prinsip gizi seimbang menganjurkan pola makan yang...", opsi:["Beragam, bergizi, seimbang, dan aman","Sebanyak-banyaknya setiap waktu","Hanya mengandung karbohidrat","Menghindari seluruh jenis lemak"], kunci:0 },
+  // ===== TOPIK 2: KANDUNGAN ZAT GIZI (10 soal) =====
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Zat gizi yang dibutuhkan tubuh dalam jumlah sedikit namun berperan penting mengatur proses tubuh adalah...", opsi:["Karbohidrat dan lemak","Protein","Vitamin dan mineral","Air"], kunci:2 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Vitamin yang berperan menjaga kesehatan mata dan mencegah rabun senja adalah...", opsi:["Vitamin A","Vitamin B1","Vitamin C","Vitamin K"], kunci:0 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Mineral yang paling banyak dibutuhkan untuk pembentukan tulang dan gigi adalah...", opsi:["Zat besi (Fe)","Kalsium (Ca)","Yodium (I)","Natrium (Na)"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Kekurangan yodium dalam makanan dapat menyebabkan penyakit...", opsi:["Anemia","Gondok","Rabun senja","Skorbut"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Karbohidrat di dalam tubuh akhirnya dipecah menjadi molekul sederhana berupa...", opsi:["Asam amino","Glukosa","Asam lemak","Gliserol"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Protein di dalam tubuh akhirnya dipecah menjadi molekul sederhana berupa...", opsi:["Glukosa","Asam amino","Gliserol","Fruktosa"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Lemak di dalam tubuh dipecah menjadi...", opsi:["Glukosa dan fruktosa","Asam amino","Asam lemak dan gliserol","Vitamin larut lemak"], kunci:2 },
+  { topik:"Kandungan Zat Gizi", tipe:"jebakan", pertanyaan:"⚠️ Vitamin yang larut dalam lemak (bukan air) adalah...", opsi:["Vitamin B dan C","Vitamin A, D, E, dan K","Vitamin B1 dan B2","Vitamin C dan B12"], kunci:1 },
   { topik:"Kandungan Zat Gizi", tipe:"jebakan", pertanyaan:"⚠️ Kekurangan vitamin C dalam waktu lama dapat menyebabkan penyakit...", opsi:["Rabun senja","Sariawan/skorbut","Anemia","Gondok"], kunci:1 },
-  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Kekurangan zat besi (Fe) dalam makanan dapat menyebabkan penyakit...", opsi:["Anemia","Diabetes","Osteoporosis","Gondok"], kunci:0 },
-  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Vitamin yang berperan penting dalam proses pembekuan darah adalah...", opsi:["Vitamin A","Vitamin C","Vitamin D","Vitamin K"], kunci:3 },
-  { topik:"Kandungan Zat Gizi", tipe:"jebakan", pertanyaan:"⚠️ Karbohidrat di dalam tubuh akhirnya dipecah menjadi molekul sederhana berupa...", opsi:["Asam amino","Glukosa","Asam lemak","Gliserol"], kunci:1 },
-
-  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Urutan organ pencernaan makanan yang benar adalah...", opsi:["Mulut - lambung - kerongkongan - usus halus - usus besar","Mulut - kerongkongan - lambung - usus halus - usus besar","Mulut - usus halus - lambung - kerongkongan - usus besar","Kerongkongan - mulut - lambung - usus besar - usus halus"], kunci:1 },
-  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Proses pencernaan yang mengubah makanan menjadi bagian lebih kecil secara fisik (dikunyah) disebut pencernaan...", opsi:["Kimiawi","Mekanik","Biologis","Enzimatis"], kunci:1 },
-  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Enzim yang dihasilkan oleh lambung untuk mencerna protein adalah...", opsi:["Amilase","Pepsin","Lipase","Tripsin"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"bonus", pertanyaan:"⭐ BONUS: Zat gizi yang berfungsi sebagai zat pembangun untuk pertumbuhan dan perbaikan sel tubuh adalah...", opsi:["Karbohidrat","Protein","Vitamin","Air"], kunci:1 },
+  // ===== TOPIK 3: SISTEM PENCERNAAN (10 soal) =====
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Urutan organ pencernaan makanan yang benar adalah...", opsi:["Mulut - kerongkongan - lambung - usus halus - usus besar","Mulut - lambung - kerongkongan - usus halus - usus besar","Mulut - usus halus - lambung - kerongkongan - usus besar","Kerongkongan - mulut - lambung - usus besar - usus halus"], kunci:0 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Proses mengunyah makanan dengan bantuan gigi termasuk pencernaan...", opsi:["Kimiawi","Mekanik","Enzimatis","Biologis"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Enzim yang dihasilkan lambung untuk mencerna protein adalah...", opsi:["Amilase","Pepsin","Lipase","Tripsin"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Enzim ptialin (amilase) pada air liur berfungsi mengubah...", opsi:["Amilum menjadi gula sederhana","Protein menjadi asam amino","Lemak menjadi asam lemak","Vitamin menjadi mineral"], kunci:0 },
   { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Penyerapan sari-sari makanan sebagian besar terjadi di organ...", opsi:["Lambung","Usus halus","Usus besar","Kerongkongan"], kunci:1 },
-  { topik:"Sistem Pencernaan", tipe:"bonus", pertanyaan:"⭐ BONUS: Fungsi usus besar dalam sistem pencernaan adalah...", opsi:["Mencerna protein","Menyerap air dan membentuk feses","Menghasilkan enzim amilase","Menyerap sari makanan"], kunci:1 },
-
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Gerakan meremas dan mendorong makanan di sepanjang saluran pencernaan disebut gerak...", opsi:["Refleks","Peristaltik","Sinaptik","Difusi"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Fungsi utama jonjot usus (vili) pada usus halus adalah...", opsi:["Memperluas permukaan penyerapan sari makanan","Menghasilkan asam lambung","Membunuh bakteri","Menyimpan sisa makanan"], kunci:0 },
+  { topik:"Sistem Pencernaan", tipe:"jebakan", pertanyaan:"⚠️ Fungsi utama usus besar dalam sistem pencernaan adalah...", opsi:["Mencerna protein","Menyerap air dan membentuk feses","Menghasilkan enzim amilase","Menyerap sari makanan"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"jebakan", pertanyaan:"⚠️ Organ pencernaan yang menghasilkan empedu untuk membantu mencerna lemak adalah...", opsi:["Pankreas","Hati","Lambung","Usus halus"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"bonus", pertanyaan:"⭐ BONUS: Kelenjar pencernaan yang menghasilkan enzim amilase, lipase, dan tripsin sekaligus adalah...", opsi:["Hati","Pankreas","Lambung","Kelenjar ludah"], kunci:1 },
+  // ===== TOPIK 4: SISTEM PEREDARAN DARAH (10 soal) =====
   { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Organ utama yang berfungsi memompa darah ke seluruh tubuh adalah...", opsi:["Paru-paru","Jantung","Hati","Ginjal"], kunci:1 },
   { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Pembuluh darah yang membawa darah dari jantung menuju seluruh tubuh disebut...", opsi:["Vena","Arteri","Kapiler","Vena pulmonalis"], kunci:1 },
   { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Bagian darah yang berfungsi mengangkut oksigen adalah...", opsi:["Plasma darah","Sel darah merah (eritrosit)","Sel darah putih (leukosit)","Keping darah (trombosit)"], kunci:1 },
   { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Sel darah yang berperan dalam pembekuan darah saat luka adalah...", opsi:["Eritrosit","Leukosit","Trombosit","Plasma"], kunci:2 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Sel darah putih (leukosit) berfungsi untuk...", opsi:["Mengangkut oksigen","Melawan kuman dan infeksi","Membekukan darah","Mengangkut sari makanan"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Bagian jantung yang memompa darah kaya oksigen ke seluruh tubuh adalah...", opsi:["Bilik (ventrikel) kanan","Bilik (ventrikel) kiri","Serambi (atrium) kanan","Serambi (atrium) kiri"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Pembuluh darah terkecil tempat terjadinya pertukaran zat antara darah dan sel tubuh disebut...", opsi:["Arteri","Vena","Kapiler","Aorta"], kunci:2 },
   { topik:"Sistem Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Peredaran darah kecil adalah peredaran darah dari jantung menuju...", opsi:["Seluruh tubuh dan kembali ke jantung","Paru-paru dan kembali ke jantung","Hati dan kembali ke jantung","Ginjal dan kembali ke jantung"], kunci:1 },
-
+  { topik:"Sistem Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Pembuluh vena (kecuali vena pulmonalis) umumnya membawa darah yang kaya akan...", opsi:["Oksigen","Karbon dioksida","Sari makanan saja","Hormon saja"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"bonus", pertanyaan:"⭐ BONUS: Denyut jantung meningkat drastis saat berolahraga karena tubuh memerlukan...", opsi:["Lebih banyak oksigen dan energi untuk otot","Lebih sedikit oksigen","Lebih banyak air saja","Waktu istirahat tambahan"], kunci:0 },
+  // ===== TOPIK 5: PENYAKIT PENCERNAAN & PEREDARAN DARAH (10 soal) =====
   { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Penyakit akibat peningkatan asam lambung sehingga menimbulkan nyeri ulu hati disebut...", opsi:["Diare","Maag (gastritis)","Sembelit","Apendisitis"], kunci:1,
     gambar:[ { emoji:"🔥", label:"Nyeri Ulu Hati", bg:"#3D1414", border:"#F87171" } ] },
   { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Kondisi sulit buang air besar karena feses terlalu keras disebut...", opsi:["Diare","Sembelit (konstipasi)","Maag","Kolera"], kunci:1 },
@@ -191,37 +210,44 @@ const SOAL = [
     gambar:[ { emoji:"🩸", label:"Anemia", bg:"#3D1414", border:"#F87171" } ] },
   { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Tekanan darah tinggi yang bisa meningkatkan risiko penyakit jantung disebut...", opsi:["Hipotensi","Hipertensi","Anemia","Varises"], kunci:1,
     gambar:[ { emoji:"🫀", label:"Tekanan Darah Tinggi", bg:"#3D2E0A", border:"#FBBF24" } ] },
-  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"bonus", pertanyaan:"⭐ BONUS: Kelainan darah yang menyebabkan darah sulit membeku saat luka disebut...", opsi:["Anemia","Hemofilia","Leukemia","Hipertensi"], kunci:1,
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Gangguan pencernaan dengan gejala buang air besar cair lebih dari 3 kali sehari disebut...", opsi:["Diare","Sembelit","Maag","Apendisitis"], kunci:0 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Peradangan pada usus buntu (apendiks) disebut...", opsi:["Apendisitis","Gastritis","Kolitis","Hepatitis"], kunci:0 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Kebiasaan berikut yang dapat mencegah gangguan sistem pencernaan adalah...", opsi:["Makan tidak teratur","Makan tinggi serat dan minum cukup air","Menahan buang air besar","Makan terlalu pedas dan berlemak"], kunci:1 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Kelainan darah yang menyebabkan darah sulit membeku saat luka disebut...", opsi:["Anemia","Hemofilia","Leukemia","Hipertensi"], kunci:1,
     gambar:[ { emoji:"🩹", label:"Sulit Membeku", bg:"#241a35", border:"#A78BFA" } ] },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Penumpukan plak lemak pada dinding pembuluh darah yang dapat menyumbat aliran darah disebut...", opsi:["Anemia","Aterosklerosis","Hemofilia","Varises"], kunci:1 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"bonus", pertanyaan:"⭐ BONUS: Kanker darah yang ditandai dengan produksi sel darah putih tidak terkendali disebut...", opsi:["Anemia","Leukemia","Hemofilia","Hipertensi"], kunci:1 },
 ];
-
+// Skor maksimum yang bisa dicapai (dipakai untuk isi bar & bukan lagi "garis finis" —
+// game selalu main sampai soal ke-50 lalu diranking, tidak berhenti di tengah jalan).
+const MAX_SKOR = SOAL.reduce((total, s) => total + (s.tipe === 'bonus' ? 2 : 1), 0);
 const WARNA_AVATAR = ["#F87171","#FBBF24","#34D399","#60A5FA","#A78BFA","#F472B6","#FB923C","#4ADE80","#38BDF8","#E879F9"];
 const AVATAR_EMOJI = ["🚀","🛸","🌠","☄️","🪐"];
-
 let kode = "";
 let channel = null;
 let pemain = {};      // nama -> { warna, posisi }
 let soalIndex = -1;
 let jawabanRonde = {}; // nama -> { pilihan, waktu }
 let roundInterval = null;
+let lanjutInterval = null;
+let roundClosed = false;
+let autoLanjut = true;
 let gameOver = false;
-
+let hasilAkhirRanking = [];
 function generateKode(){
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let s = "";
   for (let i=0;i<5;i++) s += chars[Math.floor(Math.random()*chars.length)];
   return s;
 }
-
 function initRoom(){
   kode = generateKode();
   document.getElementById('kodeTampil').textContent = kode;
-  pemain = {}; soalIndex = -1; jawabanRonde = {}; gameOver = false;
+  pemain = {}; soalIndex = -1; jawabanRonde = {}; gameOver = false; roundClosed = false;
+  clearInterval(lanjutInterval);
   renderLobby();
-
   if (channel) supabaseClient.removeChannel(channel);
   channel = supabaseClient.channel('race_' + kode, { config: { broadcast: { self: false } } });
-
   channel.on('broadcast', { event: 'join' }, ({ payload }) => {
     const nama = (payload.nama || '').trim().slice(0, 24);
     if (!nama) return;
@@ -231,7 +257,6 @@ function initRoom(){
     renderLobby();
     if (soalIndex >= 0 && !gameOver) renderTrack();
   });
-
   channel.on('broadcast', { event: 'jawab' }, ({ payload }) => {
     const nama = (payload.nama || '').trim();
     if (!nama || !pemain[nama]) return;
@@ -239,10 +264,8 @@ function initRoom(){
     jawabanRonde[nama] = { pilihan: payload.pilihan, waktu: payload.waktu };
     updateJawabProgress();
   });
-
   channel.subscribe();
 }
-
 function renderLobby(){
   const list = document.getElementById('lobbyList');
   const namaArr = Object.keys(pemain);
@@ -250,14 +273,12 @@ function renderLobby(){
   list.innerHTML = namaArr.map(n => `<div class="chip"><span class="dot" style="background:${pemain[n].warna}"></span>${n}</div>`).join('') || '<span style="color:var(--ink-soft); font-size:14px;">Belum ada yang bergabung.</span>';
   document.getElementById('btnMulai').disabled = namaArr.length === 0;
 }
-
 document.getElementById('btnMulai').addEventListener('click', () => {
   document.getElementById('viewLobby').classList.add('hidden');
   document.getElementById('viewSoal').classList.remove('hidden');
   soalIndex = 0;
   kirimSoal();
 });
-
 function renderGambarSoal(gambar){
   if (!gambar || !gambar.length) return '';
   return gambar.map(g => `
@@ -266,12 +287,12 @@ function renderGambarSoal(gambar){
       <div class="label">${g.label}</div>
     </div>`).join('');
 }
-
 function kirimSoal(){
   jawabanRonde = {};
+  roundClosed = false;
+  clearInterval(lanjutInterval);
   const soal = SOAL[soalIndex];
   const mulai = Date.now();
-
   document.getElementById('soalTag').textContent = `Soal ${soalIndex+1}/${SOAL.length} · ${soal.topik}`;
   document.getElementById('soalTag').className = 'soal-tag' + (soal.tipe !== 'normal' ? ' ' + soal.tipe : '');
   document.getElementById('soalText').textContent = soal.pertanyaan;
@@ -280,15 +301,14 @@ function kirimSoal(){
     <div class="opsi" id="opsi${i}"><span class="huruf">${String.fromCharCode(65+i)}</span>${o}</div>
   `).join('');
   document.getElementById('btnLanjut').classList.add('hidden');
+  document.getElementById('lanjutInfo').classList.add('hidden');
   document.getElementById('btnTutupRonde').classList.remove('hidden');
   updateJawabProgress();
   renderTrack();
-
   channel.send({ type:'broadcast', event:'soal_baru', payload:{
     index: soalIndex, pertanyaan: soal.pertanyaan, opsi: soal.opsi, tipe: soal.tipe,
     mulai, durasi: DURASI_RONDE
   }});
-
   let sisa = DURASI_RONDE;
   const timerEl = document.getElementById('timerTampil');
   timerEl.textContent = sisa; timerEl.classList.remove('warn');
@@ -300,20 +320,25 @@ function kirimSoal(){
     if (sisa <= 0) { clearInterval(roundInterval); tutupRonde(); }
   }, 1000);
 }
-
 function updateJawabProgress(){
   const total = Object.keys(pemain).length;
   const sudah = Object.keys(jawabanRonde).length;
   document.getElementById('jawabProgress').textContent = `${sudah} dari ${total} siswa sudah menjawab`;
+  // Kalau semua yang gabung sudah jawab, langsung tutup ronde — tidak perlu nunggu timer habis.
+  // Ini yang paling banyak menghemat waktu dari target <30 menit untuk 50 soal.
+  if (!roundClosed && total > 0 && sudah >= total) {
+    clearInterval(roundInterval);
+    tutupRonde();
+  }
 }
-
 document.getElementById('btnTutupRonde').addEventListener('click', () => { clearInterval(roundInterval); tutupRonde(); });
-
 function tutupRonde(){
+  if (roundClosed) return;
+  roundClosed = true;
+  clearInterval(roundInterval);
   const soal = SOAL[soalIndex];
   document.querySelectorAll('.opsi').forEach((el,i) => { if (i === soal.kunci) el.classList.add('benar'); });
   document.getElementById('btnTutupRonde').classList.add('hidden');
-
   Object.keys(pemain).forEach(nama => {
     const j = jawabanRonde[nama];
     const benar = j && j.pilihan === soal.kunci;
@@ -323,30 +348,49 @@ function tutupRonde(){
     else delta = benar ? 1 : 0;
     pemain[nama].posisi = Math.max(0, pemain[nama].posisi + delta);
   });
-
+  // Skor maksimum yang mungkin dicapai sampai soal ini (dipakai siswa utk isi progress bar).
+  const maxSoFar = SOAL.slice(0, soalIndex + 1).reduce((t,s) => t + (s.tipe === 'bonus' ? 2 : 1), 0);
   const posisiMap = {}; Object.keys(pemain).forEach(n => posisiMap[n] = pemain[n].posisi);
-  channel.send({ type:'broadcast', event:'hasil_ronde', payload:{ kunci: soal.kunci, posisi: posisiMap } });
+  channel.send({ type:'broadcast', event:'hasil_ronde', payload:{ kunci: soal.kunci, posisi: posisiMap, maxSoFar } });
   renderTrack();
 
-  const pemenang = Object.keys(pemain).find(n => pemain[n].posisi >= FINISH_LINE);
-  if (pemenang) { setTimeout(() => tampilkanPemenang(pemenang), 1200); return; }
+  // Tidak ada lagi "finis duluan langsung menang" — semua 50 soal selalu dimainkan sampai
+  // habis supaya peringkat/skor akhirnya adil dipakai menentukan 10 besar bebas ulangan tambahan.
+  if (soalIndex + 1 >= SOAL.length) {
+    setTimeout(() => tampilkanHasilAkhir(), 1500);
+    return;
+  }
 
-  if (soalIndex + 1 < SOAL.length) {
-    document.getElementById('btnLanjut').classList.remove('hidden');
-  } else {
-    const urut = Object.keys(pemain).sort((a,b) => pemain[b].posisi - pemain[a].posisi);
-    setTimeout(() => tampilkanPemenang(urut[0]), 1200);
+  document.getElementById('btnLanjut').classList.remove('hidden');
+  if (autoLanjut) {
+    let sisaJeda = JEDA_HASIL;
+    const info = document.getElementById('lanjutInfo');
+    const cd = document.getElementById('lanjutCountdown');
+    info.classList.remove('hidden');
+    cd.textContent = sisaJeda;
+    clearInterval(lanjutInterval);
+    lanjutInterval = setInterval(() => {
+      sisaJeda--;
+      cd.textContent = Math.max(sisaJeda, 0);
+      if (sisaJeda <= 0) { clearInterval(lanjutInterval); soalIndex++; kirimSoal(); }
+    }, 1000);
   }
 }
-
-document.getElementById('btnLanjut').addEventListener('click', () => { soalIndex++; kirimSoal(); });
-
+document.getElementById('btnLanjut').addEventListener('click', () => {
+  clearInterval(lanjutInterval);
+  soalIndex++;
+  kirimSoal();
+});
+document.getElementById('chkAutoLanjut').addEventListener('change', (e) => {
+  autoLanjut = e.target.checked;
+  if (!autoLanjut) { clearInterval(lanjutInterval); document.getElementById('lanjutInfo').classList.add('hidden'); }
+});
 function renderTrack(){
   const wrap = document.getElementById('trackWrap');
   const urut = Object.keys(pemain).sort((a,b) => pemain[b].posisi - pemain[a].posisi);
   wrap.innerHTML = urut.map((nama,i) => {
     const p = pemain[nama];
-    const pct = Math.min(100, (p.posisi / FINISH_LINE) * 100);
+    const pct = Math.min(100, (p.posisi / MAX_SKOR) * 100);
     const emoji = AVATAR_EMOJI[i % AVATAR_EMOJI.length];
     return `<div class="lane">
       <div class="nama">${nama}</div>
@@ -358,25 +402,36 @@ function renderTrack(){
     </div>`;
   }).join('');
 }
-
-function tampilkanPemenang(namaMenang){
+function tampilkanHasilAkhir(){
   gameOver = true;
   document.getElementById('viewSoal').classList.add('hidden');
   document.getElementById('viewWinner').classList.remove('hidden');
-  document.getElementById('winnerNama').textContent = namaMenang || '-';
   const urut = Object.keys(pemain).sort((a,b) => pemain[b].posisi - pemain[a].posisi);
+  document.getElementById('winnerNama').textContent = urut[0] || '-';
   document.getElementById('rankList').innerHTML = urut.map((n,i) => `
-    <div class="rank-row"><span>${i+1}. ${n}</span><span>${pemain[n].posisi} langkah</span></div>
+    <div class="rank-row${i < TOP_N_BEBAS ? ' bebas' : ''}">
+      <span>${i+1}. ${n}${i < TOP_N_BEBAS ? '<span class="rank-badge">🎓 BEBAS</span>' : ''}</span>
+      <span>${pemain[n].posisi} / ${MAX_SKOR} poin</span>
+    </div>
   `).join('');
-  channel.send({ type:'broadcast', event:'menang', payload:{ nama: namaMenang } });
+  hasilAkhirRanking = urut.map(n => ({ nama: n, skor: pemain[n].posisi }));
+  channel.send({ type:'broadcast', event:'game_selesai', payload:{ ranking: hasilAkhirRanking, topN: TOP_N_BEBAS, maxSkor: MAX_SKOR } });
 }
-
+document.getElementById('btnUnduhHasil').addEventListener('click', () => {
+  let csv = 'Peringkat,Nama,Skor,Bebas Ulangan Tambahan\n';
+  hasilAkhirRanking.forEach((r,i) => { csv += `${i+1},"${r.nama.replace(/"/g,'""')}",${r.skor},${i < TOP_N_BEBAS ? 'YA' : ''}\n`; });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `hasil-balapan-sains-kelas8-${kode}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
 document.getElementById('btnRoomBaru').addEventListener('click', () => {
   document.getElementById('viewWinner').classList.add('hidden');
   document.getElementById('viewLobby').classList.remove('hidden');
   initRoom();
 });
-
 initRoom();
 </script>
 </body>
