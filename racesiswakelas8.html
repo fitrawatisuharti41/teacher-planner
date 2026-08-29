@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Balapan Sains — Siswa (Kelas 8)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balapan Sains — Layar Kelas (Kelas 8)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
@@ -28,228 +28,411 @@
   :root{
     --bg:#0F1B3D; --panel:#16234E; --ink:#F4F6FF; --ink-soft:#B9C2E8;
     --line:#28376B; --blue:#5B7CFA; --green:#22C55E; --amber:#FBBF24; --red:#F87171;
+    --radius:16px;
   }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  *{ box-sizing:border-box; }
   body{
     margin:0; min-height:100vh; font-family:'Plus Jakarta Sans', system-ui, sans-serif;
-    background: radial-gradient(900px 500px at 50% -10%, #1D2E66 0%, var(--bg) 60%);
-    color:var(--ink); display:flex; flex-direction:column;
+    background: radial-gradient(1200px 700px at 50% -10%, #1D2E66 0%, var(--bg) 60%);
+    color:var(--ink); padding:24px;
   }
-  .stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:20px; }
-  .card{ width:100%; max-width:420px; background:#16234E; border:1px solid var(--line); border-radius:20px; padding:28px 24px; text-align:center; }
-  h1{ font-size:22px; margin:0 0 4px; }
-  p.sub{ color:var(--ink-soft); font-size:14px; margin:0 0 22px; }
-  input{
-    width:100%; font-family:inherit; font-size:16px; font-weight:600; text-align:center;
-    border:1.5px solid var(--line); border-radius:12px; padding:14px; background:#0F1B3D; color:var(--ink);
-    margin-bottom:12px;
-  }
-  input#inputKode{ text-transform:uppercase; letter-spacing:4px; font-family:'JetBrains Mono', monospace; }
-  input:focus{ outline:none; border-color:var(--blue); }
+  .wrap{ max-width:1100px; margin:0 auto; }
+  .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+  .brand{ font-size:20px; font-weight:800; display:flex; align-items:center; gap:10px; }
+  .kode-box{ display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:8px 18px; }
+  .kode-box b{ font-family:'JetBrains Mono', monospace; font-size:22px; letter-spacing:3px; color:var(--amber); }
   .btn{
-    appearance:none; border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:16px;
-    border-radius:12px; padding:15px; width:100%; background:var(--blue); color:#fff;
+    appearance:none; border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:15px;
+    border-radius:12px; padding:14px 26px; transition:.12s ease;
   }
-  .btn:disabled{ opacity:.4; }
-  .err{ color:var(--red); font-size:13px; margin-top:10px; min-height:18px; }
-
-  .waiting{ text-align:center; padding:40px 20px; }
-  .waiting .pulse{ width:60px; height:60px; border-radius:50%; background:var(--blue); margin:0 auto 20px; animation:pulse 1.4s infinite; }
-  @keyframes pulse{ 0%,100%{ opacity:.5; transform:scale(1);} 50%{ opacity:1; transform:scale(1.15);} }
-
-  .soal-wrap{ width:100%; max-width:460px; padding:18px; }
-  .soal-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-  .tag{ font-size:12px; font-weight:700; background:#1E2C5C; padding:5px 12px; border-radius:999px; }
-  .tag.bonus{ background:#3D2E0A; color:var(--amber); }
-  .tag.jebakan{ background:#3D1414; color:var(--red); }
-  .timer{ font-family:'JetBrains Mono', monospace; font-size:24px; font-weight:700; }
+  .btn-primary{ background:var(--blue); color:#fff; }
+  .btn-primary:hover{ transform:translateY(-1px); background:#4A67E0; }
+  .btn-primary:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .btn-secondary{ background:var(--panel); color:var(--ink); border:1px solid var(--line); }
+  .btn-danger{ background:var(--red); color:#fff; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:28px; }
+  .lobby-list{ display:flex; flex-wrap:wrap; gap:10px; margin:20px 0; min-height:44px; }
+  .chip{ background:#1E2C5C; border:1px solid var(--line); padding:8px 16px; border-radius:999px; font-weight:600; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .chip .dot{ width:10px; height:10px; border-radius:50%; }
+  .soal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .soal-tag{ font-size:12.5px; font-weight:700; padding:5px 12px; border-radius:999px; background:#1E2C5C; }
+  .soal-tag.bonus{ background:#3D2E0A; color:var(--amber); }
+  .soal-tag.jebakan{ background:#3D1414; color:var(--red); }
+  .timer{ font-family:'JetBrains Mono', monospace; font-size:28px; font-weight:700; }
   .timer.warn{ color:var(--red); }
-  .soal-text{ font-size:19px; font-weight:700; line-height:1.5; margin-bottom:20px; }
-  .opsi-btn{
-    display:block; width:100%; text-align:left; margin-bottom:12px;
-    background:#1E2C5C; border:1.5px solid var(--line); border-radius:14px; padding:16px 18px;
-    font-family:inherit; font-size:16px; font-weight:600; color:var(--ink); cursor:pointer;
+  .soal-text{ font-size:26px; font-weight:700; line-height:1.5; margin:6px 0 22px; }
+  .hazard-strip{ display:flex; flex-wrap:wrap; gap:14px; margin:-6px 0 22px; }
+  .hazard-badge{
+    width:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    border:2px solid; border-radius:16px; padding:14px 8px; text-align:center;
   }
-  .opsi-btn .huruf{ display:inline-flex; width:26px; height:26px; border-radius:8px; background:var(--blue); align-items:center; justify-content:center; font-size:13px; margin-right:10px; }
-  .opsi-btn.dipilih{ border-color:var(--blue); background:#22306B; }
-  .opsi-btn.benar{ border-color:var(--green); background:#123122; }
-  .opsi-btn.salah{ border-color:var(--red); background:#3D1414; }
-  .opsi-btn:disabled{ cursor:default; }
-
-  .feedback{ text-align:center; padding:30px 20px; }
-  .feedback .emoji{ font-size:60px; }
-  .feedback h2{ font-size:24px; margin:10px 0 4px; }
-  .posisi-bar{ height:14px; background:#0F1B3D; border:1px solid var(--line); border-radius:999px; margin-top:18px; overflow:hidden; }
-  .posisi-fill{ height:100%; background:var(--blue); transition:width .5s ease; }
-
-  .menang-sub{ font-size:14px; color:var(--ink-soft); line-height:1.6; }
-  .menang-sub b{ color:var(--ink); }
-
+  .hazard-badge .emoji{ font-size:34px; line-height:1; }
+  .hazard-badge .label{ font-size:11px; font-weight:700; color:var(--ink); line-height:1.3; }
+  .opsi-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:10px; }
+  .opsi{ background:#1E2C5C; border:1.5px solid var(--line); border-radius:12px; padding:16px 18px; font-size:17px; font-weight:600; }
+  .opsi .huruf{ display:inline-flex; width:26px; height:26px; border-radius:8px; background:var(--blue); align-items:center; justify-content:center; font-size:13px; margin-right:10px; }
+  .opsi.benar{ border-color:var(--green); background:#123122; }
+  .jawab-progress{ font-size:13.5px; color:var(--ink-soft); margin-top:10px; }
+  .track-wrap{ margin-top:26px; display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; padding-right:4px; }
+  .lane{ display:flex; align-items:center; gap:10px; }
+  .lane .nama{ width:110px; font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lane .bar{ flex:1; height:26px; background:#0F1B3D; border:1px solid var(--line); border-radius:999px; position:relative; overflow:hidden; }
+  .lane .fill{ height:100%; border-radius:999px; transition:width .6s ease; }
+  .lane .avatar{ position:absolute; top:50%; transform:translate(-50%,-50%); font-size:20px; transition:left .6s ease; }
+  .finish-mark{ position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:14px; opacity:.6; }
+  .winner{ text-align:center; padding:60px 20px; }
+  .winner .emoji{ font-size:80px; }
+  .winner h1{ font-size:38px; margin:12px 0 6px; }
+  .rank-list{ text-align:left; max-width:460px; margin:24px auto 0; display:flex; flex-direction:column; gap:8px; max-height:50vh; overflow-y:auto; }
+  .rank-row{ display:flex; justify-content:space-between; background:#1E2C5C; padding:10px 16px; border-radius:10px; font-weight:600; }
+  .rank-row.bebas{ border:1.5px solid var(--green); background:#123122; }
+  .rank-badge{ font-size:11px; font-weight:800; color:var(--green); margin-left:8px; }
+  .lanjut-info{ font-size:13px; color:var(--ink-soft); }
+  .auto-toggle{ cursor:pointer; }
   .hidden{ display:none !important; }
+  @media (max-width:640px){ .opsi-grid{ grid-template-columns:1fr; } .soal-text{ font-size:20px; } }
 </style>
 </head>
 <body>
-
-<div class="stage">
-
-  <!-- ===== JOIN ===== -->
-  <div class="card" id="viewJoin">
-    <h1>🚀 Balapan Sains</h1>
-    <p class="sub">Masukkan kode dari layar kelas dan nama kamu.</p>
-    <input id="inputKode" type="text" placeholder="KODE" maxlength="5">
-    <input id="inputNama" type="text" placeholder="Nama kamu" maxlength="24">
-    <button class="btn" id="btnGabung">Gabung 🎮</button>
-    <div class="err" id="errJoin"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">🫀 Balapan Sains — Pencernaan &amp; Peredaran Darah</div>
+    <div class="row">
+      <div class="kode-box">Kode Gabung: <b id="kodeTampil">......</b></div>
+    </div>
   </div>
-
-  <!-- ===== WAITING ===== -->
-  <div class="card waiting hidden" id="viewWaiting">
-    <div class="pulse"></div>
-    <h1>Menunggu guru memulai...</h1>
-    <p class="sub" id="waitingNama">-</p>
+  <!-- ===== LOBBY ===== -->
+  <div class="card" id="viewLobby">
+    <p style="color:var(--ink-soft); margin-top:0;">Siswa buka <b>race-siswa-kelas8.html</b> di HP masing-masing, masukkan kode di atas dan nama mereka. 50 soal · 🎓 10 skor tertinggi bebas ulangan tambahan.</p>
+    <h3 style="margin-bottom:6px;">Peserta bergabung (<span id="jumlahPeserta">0</span>)</h3>
+    <div class="lobby-list" id="lobbyList"></div>
+    <button class="btn btn-primary" id="btnMulai" disabled>Mulai Balapan 🏁</button>
   </div>
-
-  <!-- ===== SOAL ===== -->
-  <div class="soal-wrap hidden" id="viewSoal">
-    <div class="soal-top">
-      <span class="tag" id="soalTag">Soal</span>
-      <span class="timer" id="timerTampil">12</span>
+  <!-- ===== SOAL / RACE ===== -->
+  <div class="card hidden" id="viewSoal">
+    <div class="soal-head">
+      <span class="soal-tag" id="soalTag">Soal 1/25</span>
+      <span class="timer" id="timerTampil">10</span>
     </div>
     <div class="soal-text" id="soalText">...</div>
-    <div id="opsiList"></div>
-    <p class="sub" id="statusJawab" style="text-align:center;"></p>
+    <div class="hazard-strip" id="soalGambar"></div>
+    <div class="opsi-grid" id="opsiGrid"></div>
+    <div class="jawab-progress" id="jawabProgress">0 dari 0 siswa sudah menjawab</div>
+    <div style="margin-top:16px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="btnTutupRonde">Tutup Ronde Sekarang</button>
+      <button class="btn btn-primary hidden" id="btnLanjut">Lanjut Sekarang →</button>
+      <span class="lanjut-info hidden" id="lanjutInfo">⏩ Lanjut otomatis dalam <b id="lanjutCountdown">5</b> detik...</span>
+      <label class="auto-toggle" style="margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft);">
+        <input type="checkbox" id="chkAutoLanjut" checked> Lanjut Otomatis
+      </label>
+    </div>
+    <div class="track-wrap" id="trackWrap"></div>
   </div>
-
-  <!-- ===== FEEDBACK RONDE ===== -->
-  <div class="card feedback hidden" id="viewFeedback">
-    <div class="emoji" id="fbEmoji">✅</div>
-    <h2 id="fbTitle">Benar!</h2>
-    <p class="sub" id="fbSub">+1 poin</p>
-    <p class="sub">Skor kamu: <b id="fbPosisi">0</b>/<span id="fbMax">0</span></p>
-    <div class="posisi-bar"><div class="posisi-fill" id="fbBar" style="width:0%;"></div></div>
-    <p class="sub" style="margin-top:18px;">Menunggu soal berikutnya...</p>
+  <!-- ===== WINNER ===== -->
+  <div class="card winner hidden" id="viewWinner">
+    <div class="emoji">🏆</div>
+    <h1 id="winnerNama">-</h1>
+    <p style="color:var(--ink-soft);">Skor tertinggi dari 50 soal · 🎓 = bebas ulangan tambahan</p>
+    <div class="rank-list" id="rankList"></div>
+    <div style="margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary" id="btnUnduhHasil">⬇️ Unduh Hasil (CSV)</button>
+      <button class="btn btn-primary" id="btnRoomBaru">Mulai Room Baru</button>
+    </div>
   </div>
-
-  <!-- ===== HASIL AKHIR ===== -->
-  <div class="card feedback hidden" id="viewMenang">
-    <div class="emoji" id="menangEmoji">🏆</div>
-    <h2 id="menangTitle">Permainan Selesai</h2>
-    <p class="menang-sub" id="menangSub">-</p>
-  </div>
-
 </div>
-
 <script>
+/* =========================================================================
+   KONFIGURASI SUPABASE — sama dengan game Balapan Sains Kelas 7 (project
+   Teacher Planner). Cuma pakai Realtime Broadcast, tidak ada tabel baru.
+   ========================================================================= */
 const SUPABASE_URL = "https://uhibpjmmjbwwlhtuondl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_6IvELi6Gpp7OtZxTTFaTpA_iE5n8IMZ";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+const DURASI_RONDE = 12;     // detik per soal (dipersingkat supaya 50 soal muat <30 menit)
+const JEDA_HASIL   = 5;      // detik jeda tampil kunci jawaban sebelum lanjut otomatis
+const TOP_N_BEBAS  = 10;     // jumlah skor tertinggi yang bebas ulangan tambahan
+/* =========================================================================
+   BANK SOAL — IPA Kelas 8: Sistem Pencernaan & Peredaran Darah
+   Topik: Makanan, Kandungan Zat Gizi, Sistem Pencernaan, Sistem Peredaran
+   Darah, dan Penyakit terkait keduanya.
+   tipe: 'normal' (+1 benar), 'bonus' (+2 benar), 'jebakan' (+1 benar / -1 salah)
+   ========================================================================= */
+const SOAL = [
+  // ===== TOPIK 1: MAKANAN (10 soal) =====
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Zat gizi yang merupakan sumber energi utama dan paling cepat digunakan tubuh adalah...", opsi:["Karbohidrat","Protein","Lemak","Vitamin"], kunci:0 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Bahan makanan berikut yang merupakan sumber protein hewani adalah...", opsi:["Tempe","Telur","Kacang hijau","Beras"], kunci:1 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Selain sebagai sumber energi cadangan, fungsi lemak bagi tubuh adalah...", opsi:["Melindungi organ tubuh dan menjaga suhu tubuh","Membentuk hemoglobin","Mempercepat pembekuan darah","Mengatur kadar gula darah"], kunci:0 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Air termasuk zat gizi yang penting karena berfungsi sebagai...", opsi:["Pelarut dan pengatur suhu tubuh","Sumber energi utama","Zat pembangun sel","Pembentuk hormon"], kunci:0 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Makanan bergizi seimbang sebaiknya terdiri atas...", opsi:["Karbohidrat saja","Karbohidrat, protein, lemak, vitamin, dan mineral","Protein dan lemak saja","Vitamin dan air saja"], kunci:1 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Pada piring model 'Isi Piringku', porsi terbesar sebaiknya diisi oleh...", opsi:["Lauk pauk","Buah-buahan","Sayuran dan makanan pokok","Minyak dan gula"], kunci:2 },
+  { topik:"Makanan", tipe:"normal", pertanyaan:"Berikut ini contoh makanan sumber karbohidrat kompleks adalah...", opsi:["Nasi merah dan ubi","Gula pasir","Minyak goreng","Daging sapi"], kunci:0 },
+  { topik:"Makanan", tipe:"jebakan", pertanyaan:"⚠️ Kekurangan energi dan protein dalam jangka panjang pada balita dapat menyebabkan penyakit...", opsi:["Rabun senja","Kwashiorkor atau marasmus","Sariawan","Gondok"], kunci:1 },
+  { topik:"Makanan", tipe:"jebakan", pertanyaan:"⚠️ Kelebihan mengonsumsi makanan berkalori tinggi tanpa aktivitas fisik yang seimbang dapat menyebabkan...", opsi:["Anemia","Obesitas","Sariawan","Osteoporosis"], kunci:1 },
+  { topik:"Makanan", tipe:"bonus", pertanyaan:"⭐ BONUS: Prinsip gizi seimbang menganjurkan pola makan yang...", opsi:["Beragam, bergizi, seimbang, dan aman","Sebanyak-banyaknya setiap waktu","Hanya mengandung karbohidrat","Menghindari seluruh jenis lemak"], kunci:0 },
+  // ===== TOPIK 2: KANDUNGAN ZAT GIZI (10 soal) =====
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Zat gizi yang dibutuhkan tubuh dalam jumlah sedikit namun berperan penting mengatur proses tubuh adalah...", opsi:["Karbohidrat dan lemak","Protein","Vitamin dan mineral","Air"], kunci:2 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Vitamin yang berperan menjaga kesehatan mata dan mencegah rabun senja adalah...", opsi:["Vitamin A","Vitamin B1","Vitamin C","Vitamin K"], kunci:0 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Mineral yang paling banyak dibutuhkan untuk pembentukan tulang dan gigi adalah...", opsi:["Zat besi (Fe)","Kalsium (Ca)","Yodium (I)","Natrium (Na)"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Kekurangan yodium dalam makanan dapat menyebabkan penyakit...", opsi:["Anemia","Gondok","Rabun senja","Skorbut"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Karbohidrat di dalam tubuh akhirnya dipecah menjadi molekul sederhana berupa...", opsi:["Asam amino","Glukosa","Asam lemak","Gliserol"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Protein di dalam tubuh akhirnya dipecah menjadi molekul sederhana berupa...", opsi:["Glukosa","Asam amino","Gliserol","Fruktosa"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"normal", pertanyaan:"Lemak di dalam tubuh dipecah menjadi...", opsi:["Glukosa dan fruktosa","Asam amino","Asam lemak dan gliserol","Vitamin larut lemak"], kunci:2 },
+  { topik:"Kandungan Zat Gizi", tipe:"jebakan", pertanyaan:"⚠️ Vitamin yang larut dalam lemak (bukan air) adalah...", opsi:["Vitamin B dan C","Vitamin A, D, E, dan K","Vitamin B1 dan B2","Vitamin C dan B12"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"jebakan", pertanyaan:"⚠️ Kekurangan vitamin C dalam waktu lama dapat menyebabkan penyakit...", opsi:["Rabun senja","Sariawan/skorbut","Anemia","Gondok"], kunci:1 },
+  { topik:"Kandungan Zat Gizi", tipe:"bonus", pertanyaan:"⭐ BONUS: Zat gizi yang berfungsi sebagai zat pembangun untuk pertumbuhan dan perbaikan sel tubuh adalah...", opsi:["Karbohidrat","Protein","Vitamin","Air"], kunci:1 },
+  // ===== TOPIK 3: SISTEM PENCERNAAN (10 soal) =====
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Urutan organ pencernaan makanan yang benar adalah...", opsi:["Mulut - kerongkongan - lambung - usus halus - usus besar","Mulut - lambung - kerongkongan - usus halus - usus besar","Mulut - usus halus - lambung - kerongkongan - usus besar","Kerongkongan - mulut - lambung - usus besar - usus halus"], kunci:0 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Proses mengunyah makanan dengan bantuan gigi termasuk pencernaan...", opsi:["Kimiawi","Mekanik","Enzimatis","Biologis"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Enzim yang dihasilkan lambung untuk mencerna protein adalah...", opsi:["Amilase","Pepsin","Lipase","Tripsin"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Enzim ptialin (amilase) pada air liur berfungsi mengubah...", opsi:["Amilum menjadi gula sederhana","Protein menjadi asam amino","Lemak menjadi asam lemak","Vitamin menjadi mineral"], kunci:0 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Penyerapan sari-sari makanan sebagian besar terjadi di organ...", opsi:["Lambung","Usus halus","Usus besar","Kerongkongan"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Gerakan meremas dan mendorong makanan di sepanjang saluran pencernaan disebut gerak...", opsi:["Refleks","Peristaltik","Sinaptik","Difusi"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"normal", pertanyaan:"Fungsi utama jonjot usus (vili) pada usus halus adalah...", opsi:["Memperluas permukaan penyerapan sari makanan","Menghasilkan asam lambung","Membunuh bakteri","Menyimpan sisa makanan"], kunci:0 },
+  { topik:"Sistem Pencernaan", tipe:"jebakan", pertanyaan:"⚠️ Fungsi utama usus besar dalam sistem pencernaan adalah...", opsi:["Mencerna protein","Menyerap air dan membentuk feses","Menghasilkan enzim amilase","Menyerap sari makanan"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"jebakan", pertanyaan:"⚠️ Organ pencernaan yang menghasilkan empedu untuk membantu mencerna lemak adalah...", opsi:["Pankreas","Hati","Lambung","Usus halus"], kunci:1 },
+  { topik:"Sistem Pencernaan", tipe:"bonus", pertanyaan:"⭐ BONUS: Kelenjar pencernaan yang menghasilkan enzim amilase, lipase, dan tripsin sekaligus adalah...", opsi:["Hati","Pankreas","Lambung","Kelenjar ludah"], kunci:1 },
+  // ===== TOPIK 4: SISTEM PEREDARAN DARAH (10 soal) =====
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Organ utama yang berfungsi memompa darah ke seluruh tubuh adalah...", opsi:["Paru-paru","Jantung","Hati","Ginjal"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Pembuluh darah yang membawa darah dari jantung menuju seluruh tubuh disebut...", opsi:["Vena","Arteri","Kapiler","Vena pulmonalis"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Bagian darah yang berfungsi mengangkut oksigen adalah...", opsi:["Plasma darah","Sel darah merah (eritrosit)","Sel darah putih (leukosit)","Keping darah (trombosit)"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Sel darah yang berperan dalam pembekuan darah saat luka adalah...", opsi:["Eritrosit","Leukosit","Trombosit","Plasma"], kunci:2 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Sel darah putih (leukosit) berfungsi untuk...", opsi:["Mengangkut oksigen","Melawan kuman dan infeksi","Membekukan darah","Mengangkut sari makanan"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Bagian jantung yang memompa darah kaya oksigen ke seluruh tubuh adalah...", opsi:["Bilik (ventrikel) kanan","Bilik (ventrikel) kiri","Serambi (atrium) kanan","Serambi (atrium) kiri"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"normal", pertanyaan:"Pembuluh darah terkecil tempat terjadinya pertukaran zat antara darah dan sel tubuh disebut...", opsi:["Arteri","Vena","Kapiler","Aorta"], kunci:2 },
+  { topik:"Sistem Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Peredaran darah kecil adalah peredaran darah dari jantung menuju...", opsi:["Seluruh tubuh dan kembali ke jantung","Paru-paru dan kembali ke jantung","Hati dan kembali ke jantung","Ginjal dan kembali ke jantung"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Pembuluh vena (kecuali vena pulmonalis) umumnya membawa darah yang kaya akan...", opsi:["Oksigen","Karbon dioksida","Sari makanan saja","Hormon saja"], kunci:1 },
+  { topik:"Sistem Peredaran Darah", tipe:"bonus", pertanyaan:"⭐ BONUS: Denyut jantung meningkat drastis saat berolahraga karena tubuh memerlukan...", opsi:["Lebih banyak oksigen dan energi untuk otot","Lebih sedikit oksigen","Lebih banyak air saja","Waktu istirahat tambahan"], kunci:0 },
+  // ===== TOPIK 5: PENYAKIT PENCERNAAN & PEREDARAN DARAH (10 soal) =====
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Penyakit akibat peningkatan asam lambung sehingga menimbulkan nyeri ulu hati disebut...", opsi:["Diare","Maag (gastritis)","Sembelit","Apendisitis"], kunci:1,
+    gambar:[ { emoji:"🔥", label:"Nyeri Ulu Hati", bg:"#3D1414", border:"#F87171" } ] },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Kondisi sulit buang air besar karena feses terlalu keras disebut...", opsi:["Diare","Sembelit (konstipasi)","Maag","Kolera"], kunci:1 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Penyakit akibat kekurangan sel darah merah/hemoglobin sehingga tubuh mudah lelah dan pucat disebut...", opsi:["Leukemia","Hemofilia","Anemia","Hipertensi"], kunci:2,
+    gambar:[ { emoji:"🩸", label:"Anemia", bg:"#3D1414", border:"#F87171" } ] },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Tekanan darah tinggi yang bisa meningkatkan risiko penyakit jantung disebut...", opsi:["Hipotensi","Hipertensi","Anemia","Varises"], kunci:1,
+    gambar:[ { emoji:"🫀", label:"Tekanan Darah Tinggi", bg:"#3D2E0A", border:"#FBBF24" } ] },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Gangguan pencernaan dengan gejala buang air besar cair lebih dari 3 kali sehari disebut...", opsi:["Diare","Sembelit","Maag","Apendisitis"], kunci:0 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Peradangan pada usus buntu (apendiks) disebut...", opsi:["Apendisitis","Gastritis","Kolitis","Hepatitis"], kunci:0 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"normal", pertanyaan:"Kebiasaan berikut yang dapat mencegah gangguan sistem pencernaan adalah...", opsi:["Makan tidak teratur","Makan tinggi serat dan minum cukup air","Menahan buang air besar","Makan terlalu pedas dan berlemak"], kunci:1 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Kelainan darah yang menyebabkan darah sulit membeku saat luka disebut...", opsi:["Anemia","Hemofilia","Leukemia","Hipertensi"], kunci:1,
+    gambar:[ { emoji:"🩹", label:"Sulit Membeku", bg:"#241a35", border:"#A78BFA" } ] },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"jebakan", pertanyaan:"⚠️ Penumpukan plak lemak pada dinding pembuluh darah yang dapat menyumbat aliran darah disebut...", opsi:["Anemia","Aterosklerosis","Hemofilia","Varises"], kunci:1 },
+  { topik:"Penyakit Pencernaan & Peredaran Darah", tipe:"bonus", pertanyaan:"⭐ BONUS: Kanker darah yang ditandai dengan produksi sel darah putih tidak terkendali disebut...", opsi:["Anemia","Leukemia","Hemofilia","Hipertensi"], kunci:1 },
+];
+// Skor maksimum yang bisa dicapai (dipakai untuk isi bar & bukan lagi "garis finis" —
+// game selalu main sampai soal ke-50 lalu diranking, tidak berhenti di tengah jalan).
+const MAX_SKOR = SOAL.reduce((total, s) => total + (s.tipe === 'bonus' ? 2 : 1), 0);
+const WARNA_AVATAR = ["#F87171","#FBBF24","#34D399","#60A5FA","#A78BFA","#F472B6","#FB923C","#4ADE80","#38BDF8","#E879F9"];
+const AVATAR_EMOJI = ["🚀","🛸","🌠","☄️","🪐"];
+let kode = "";
 let channel = null;
-let namaSaya = '';
-let soalAktif = null;
-let sudahJawab = false;
-let pilihanSaya = null;
-let timerInterval = null;
-
-function showOnly(id){
-  ['viewJoin','viewWaiting','viewSoal','viewFeedback','viewMenang'].forEach(v => {
-    document.getElementById(v).classList.toggle('hidden', v !== id);
-  });
+let pemain = {};      // nama -> { warna, posisi }
+let soalIndex = -1;
+let jawabanRonde = {}; // nama -> { pilihan, waktu }
+let roundInterval = null;
+let lanjutInterval = null;
+let roundClosed = false;
+let autoLanjut = true;
+let gameOver = false;
+let hasilAkhirRanking = [];
+function generateKode(){
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for (let i=0;i<5;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
 }
-
-document.getElementById('btnGabung').addEventListener('click', () => {
-  const kode = document.getElementById('inputKode').value.trim().toUpperCase();
-  const nama = document.getElementById('inputNama').value.trim();
-  const errEl = document.getElementById('errJoin');
-  if (!kode || kode.length < 4) { errEl.textContent = 'Masukkan kode room yang benar.'; return; }
-  if (!nama) { errEl.textContent = 'Masukkan nama kamu.'; return; }
-  errEl.textContent = '';
-  namaSaya = nama;
-
+function initRoom(){
+  kode = generateKode();
+  document.getElementById('kodeTampil').textContent = kode;
+  pemain = {}; soalIndex = -1; jawabanRonde = {}; gameOver = false; roundClosed = false;
+  clearInterval(lanjutInterval);
+  renderLobby();
+  if (channel) supabaseClient.removeChannel(channel);
   channel = supabaseClient.channel('race_' + kode, { config: { broadcast: { self: false } } });
-
-  channel.on('broadcast', { event: 'soal_baru' }, ({ payload }) => tampilkanSoal(payload));
-  channel.on('broadcast', { event: 'hasil_ronde' }, ({ payload }) => tampilkanHasil(payload));
-  channel.on('broadcast', { event: 'game_selesai' }, ({ payload }) => tampilkanHasilAkhir(payload));
-
-  channel.subscribe((status) => {
-    if (status === 'SUBSCRIBED') {
-      channel.send({ type:'broadcast', event:'join', payload:{ nama: namaSaya } });
-      document.getElementById('waitingNama').textContent = `Halo, ${namaSaya}!`;
-      showOnly('viewWaiting');
+  channel.on('broadcast', { event: 'join' }, ({ payload }) => {
+    const nama = (payload.nama || '').trim().slice(0, 24);
+    if (!nama) return;
+    if (!pemain[nama]) {
+      pemain[nama] = { warna: WARNA_AVATAR[Object.keys(pemain).length % WARNA_AVATAR.length], posisi: 0 };
     }
+    renderLobby();
+    if (soalIndex >= 0 && !gameOver) renderTrack();
   });
+  channel.on('broadcast', { event: 'jawab' }, ({ payload }) => {
+    const nama = (payload.nama || '').trim();
+    if (!nama || !pemain[nama]) return;
+    if (jawabanRonde[nama]) return;
+    jawabanRonde[nama] = { pilihan: payload.pilihan, waktu: payload.waktu };
+    updateJawabProgress();
+  });
+  channel.subscribe();
+}
+function renderLobby(){
+  const list = document.getElementById('lobbyList');
+  const namaArr = Object.keys(pemain);
+  document.getElementById('jumlahPeserta').textContent = namaArr.length;
+  list.innerHTML = namaArr.map(n => `<div class="chip"><span class="dot" style="background:${pemain[n].warna}"></span>${n}</div>`).join('') || '<span style="color:var(--ink-soft); font-size:14px;">Belum ada yang bergabung.</span>';
+  document.getElementById('btnMulai').disabled = namaArr.length === 0;
+}
+document.getElementById('btnMulai').addEventListener('click', () => {
+  document.getElementById('viewLobby').classList.add('hidden');
+  document.getElementById('viewSoal').classList.remove('hidden');
+  soalIndex = 0;
+  kirimSoal();
 });
-
-function tampilkanSoal(soal){
-  soalAktif = soal; sudahJawab = false; pilihanSaya = null;
-  document.getElementById('soalTag').textContent = `Soal ${soal.index + 1}/50`;
-  document.getElementById('soalTag').className = 'tag' + (soal.tipe !== 'normal' ? ' ' + soal.tipe : '');
+function renderGambarSoal(gambar){
+  if (!gambar || !gambar.length) return '';
+  return gambar.map(g => `
+    <div class="hazard-badge" style="background:${g.bg}; border-color:${g.border};">
+      <div class="emoji">${g.emoji}</div>
+      <div class="label">${g.label}</div>
+    </div>`).join('');
+}
+function kirimSoal(){
+  jawabanRonde = {};
+  roundClosed = false;
+  clearInterval(lanjutInterval);
+  const soal = SOAL[soalIndex];
+  const mulai = Date.now();
+  document.getElementById('soalTag').textContent = `Soal ${soalIndex+1}/${SOAL.length} · ${soal.topik}`;
+  document.getElementById('soalTag').className = 'soal-tag' + (soal.tipe !== 'normal' ? ' ' + soal.tipe : '');
   document.getElementById('soalText').textContent = soal.pertanyaan;
-  document.getElementById('opsiList').innerHTML = soal.opsi.map((o,i) => `
-    <button class="opsi-btn" data-idx="${i}"><span class="huruf">${String.fromCharCode(65+i)}</span>${o}</button>
+  document.getElementById('soalGambar').innerHTML = renderGambarSoal(soal.gambar);
+  document.getElementById('opsiGrid').innerHTML = soal.opsi.map((o,i) => `
+    <div class="opsi" id="opsi${i}"><span class="huruf">${String.fromCharCode(65+i)}</span>${o}</div>
   `).join('');
-  document.getElementById('statusJawab').textContent = '';
-  document.querySelectorAll('.opsi-btn').forEach(btn => btn.addEventListener('click', () => pilihJawaban(btn)));
-  showOnly('viewSoal');
-
-  clearInterval(timerInterval);
+  document.getElementById('btnLanjut').classList.add('hidden');
+  document.getElementById('lanjutInfo').classList.add('hidden');
+  document.getElementById('btnTutupRonde').classList.remove('hidden');
+  updateJawabProgress();
+  renderTrack();
+  channel.send({ type:'broadcast', event:'soal_baru', payload:{
+    index: soalIndex, pertanyaan: soal.pertanyaan, opsi: soal.opsi, tipe: soal.tipe, gambar: soal.gambar,
+    mulai, durasi: DURASI_RONDE
+  }});
+  let sisa = DURASI_RONDE;
   const timerEl = document.getElementById('timerTampil');
-  function tick(){
-    const sisa = Math.max(0, Math.ceil((soal.mulai + soal.durasi*1000 - Date.now())/1000));
-    timerEl.textContent = sisa;
-    timerEl.classList.toggle('warn', sisa <= 5);
-    if (sisa <= 0) clearInterval(timerInterval);
+  timerEl.textContent = sisa; timerEl.classList.remove('warn');
+  clearInterval(roundInterval);
+  roundInterval = setInterval(() => {
+    sisa--;
+    timerEl.textContent = Math.max(sisa,0);
+    if (sisa <= 5) timerEl.classList.add('warn');
+    if (sisa <= 0) { clearInterval(roundInterval); tutupRonde(); }
+  }, 1000);
+}
+function updateJawabProgress(){
+  const total = Object.keys(pemain).length;
+  const sudah = Object.keys(jawabanRonde).length;
+  document.getElementById('jawabProgress').textContent = `${sudah} dari ${total} siswa sudah menjawab`;
+  // Kalau semua yang gabung sudah jawab, langsung tutup ronde — tidak perlu nunggu timer habis.
+  // Ini yang paling banyak menghemat waktu dari target <30 menit untuk 50 soal.
+  if (!roundClosed && total > 0 && sudah >= total) {
+    clearInterval(roundInterval);
+    tutupRonde();
   }
-  tick();
-  timerInterval = setInterval(tick, 300);
 }
+document.getElementById('btnTutupRonde').addEventListener('click', () => { clearInterval(roundInterval); tutupRonde(); });
+function tutupRonde(){
+  if (roundClosed) return;
+  roundClosed = true;
+  clearInterval(roundInterval);
+  const soal = SOAL[soalIndex];
+  document.querySelectorAll('.opsi').forEach((el,i) => { if (i === soal.kunci) el.classList.add('benar'); });
+  document.getElementById('btnTutupRonde').classList.add('hidden');
+  Object.keys(pemain).forEach(nama => {
+    const j = jawabanRonde[nama];
+    const benar = j && j.pilihan === soal.kunci;
+    let delta = 0;
+    if (soal.tipe === 'bonus') delta = benar ? 2 : 0;
+    else if (soal.tipe === 'jebakan') delta = benar ? 1 : -1;
+    else delta = benar ? 1 : 0;
+    pemain[nama].posisi = Math.max(0, pemain[nama].posisi + delta);
+  });
+  // Skor maksimum yang mungkin dicapai sampai soal ini (dipakai siswa utk isi progress bar).
+  const maxSoFar = SOAL.slice(0, soalIndex + 1).reduce((t,s) => t + (s.tipe === 'bonus' ? 2 : 1), 0);
+  const posisiMap = {}; Object.keys(pemain).forEach(n => posisiMap[n] = pemain[n].posisi);
+  channel.send({ type:'broadcast', event:'hasil_ronde', payload:{ kunci: soal.kunci, posisi: posisiMap, maxSoFar } });
+  renderTrack();
 
-function pilihJawaban(btn){
-  if (sudahJawab || !soalAktif) return;
-  sudahJawab = true;
-  pilihanSaya = parseInt(btn.dataset.idx, 10);
-  document.querySelectorAll('.opsi-btn').forEach(b => { b.disabled = true; });
-  btn.classList.add('dipilih');
-  document.getElementById('statusJawab').textContent = 'Jawaban terkirim, tunggu ronde selesai...';
-  channel.send({ type:'broadcast', event:'jawab', payload:{ nama: namaSaya, pilihan: pilihanSaya, waktu: Date.now() } });
+  // Tidak ada lagi "finis duluan langsung menang" — semua 50 soal selalu dimainkan sampai
+  // habis supaya peringkat/skor akhirnya adil dipakai menentukan 10 besar bebas ulangan tambahan.
+  if (soalIndex + 1 >= SOAL.length) {
+    setTimeout(() => tampilkanHasilAkhir(), 1500);
+    return;
+  }
+
+  document.getElementById('btnLanjut').classList.remove('hidden');
+  if (autoLanjut) {
+    let sisaJeda = JEDA_HASIL;
+    const info = document.getElementById('lanjutInfo');
+    const cd = document.getElementById('lanjutCountdown');
+    info.classList.remove('hidden');
+    cd.textContent = sisaJeda;
+    clearInterval(lanjutInterval);
+    lanjutInterval = setInterval(() => {
+      sisaJeda--;
+      cd.textContent = Math.max(sisaJeda, 0);
+      if (sisaJeda <= 0) { clearInterval(lanjutInterval); soalIndex++; kirimSoal(); }
+    }, 1000);
+  }
 }
-
-function tampilkanHasil(hasil){
-  clearInterval(timerInterval);
-  const benar = sudahJawab && pilihanSaya === hasil.kunci;
-  const posisi = hasil.posisi[namaSaya] ?? 0;
-  const maxSoFar = hasil.maxSoFar || 1;
-
-  document.getElementById('fbEmoji').textContent = benar ? '✅' : (sudahJawab ? '❌' : '⏱️');
-  document.getElementById('fbTitle').textContent = benar ? 'Benar!' : (sudahJawab ? 'Kurang tepat' : 'Waktu habis');
-  document.getElementById('fbSub').textContent = soalAktif && soalAktif.tipe === 'bonus' && benar
-    ? '+2 poin (soal bonus!)'
-    : (soalAktif && soalAktif.tipe === 'jebakan' && !benar ? '-1 poin (soal jebakan)' : (benar ? '+1 poin' : '+0 poin'));
-  document.getElementById('fbPosisi').textContent = posisi;
-  document.getElementById('fbMax').textContent = maxSoFar;
-  document.getElementById('fbBar').style.width = Math.min(100, (posisi/maxSoFar)*100) + '%';
-  showOnly('viewFeedback');
+document.getElementById('btnLanjut').addEventListener('click', () => {
+  clearInterval(lanjutInterval);
+  soalIndex++;
+  kirimSoal();
+});
+document.getElementById('chkAutoLanjut').addEventListener('change', (e) => {
+  autoLanjut = e.target.checked;
+  if (!autoLanjut) { clearInterval(lanjutInterval); document.getElementById('lanjutInfo').classList.add('hidden'); }
+});
+function renderTrack(){
+  const wrap = document.getElementById('trackWrap');
+  const urut = Object.keys(pemain).sort((a,b) => pemain[b].posisi - pemain[a].posisi);
+  wrap.innerHTML = urut.map((nama,i) => {
+    const p = pemain[nama];
+    const pct = Math.min(100, (p.posisi / MAX_SKOR) * 100);
+    const emoji = AVATAR_EMOJI[i % AVATAR_EMOJI.length];
+    return `<div class="lane">
+      <div class="nama">${nama}</div>
+      <div class="bar">
+        <div class="fill" style="width:${pct}%; background:${p.warna}22;"></div>
+        <span class="finish-mark">🏁</span>
+        <span class="avatar" style="left:${pct}%;">${emoji}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
-
-function tampilkanHasilAkhir(data){
-  clearInterval(timerInterval);
-  const ranking = data.ranking || [];
-  const idx = ranking.findIndex(r => r.nama === namaSaya);
-  const skorSaya = idx >= 0 ? ranking[idx].skor : 0;
-  const peringkat = idx >= 0 ? (idx + 1) : '-';
-  const bebas = idx >= 0 && idx < data.topN;
-
-  document.getElementById('menangEmoji').textContent = bebas ? '🎓' : '🏁';
-  document.getElementById('menangTitle').textContent = bebas ? 'Bebas Ulangan Tambahan!' : 'Permainan Selesai';
-  document.getElementById('menangSub').innerHTML =
-    `Peringkat kamu: <b>${peringkat}</b> dari ${ranking.length} peserta<br>` +
-    `Skor: <b>${skorSaya}</b> / ${data.maxSkor}<br><br>` +
-    (bebas
-      ? 'Kamu masuk 10 skor tertinggi — tidak perlu ikut ulangan tambahan 🎉'
-      : 'Tetap semangat! Manfaatkan ulangan tambahan untuk memperkuat pemahamanmu ya.');
-  showOnly('viewMenang');
+function tampilkanHasilAkhir(){
+  gameOver = true;
+  document.getElementById('viewSoal').classList.add('hidden');
+  document.getElementById('viewWinner').classList.remove('hidden');
+  const urut = Object.keys(pemain).sort((a,b) => pemain[b].posisi - pemain[a].posisi);
+  document.getElementById('winnerNama').textContent = urut[0] || '-';
+  document.getElementById('rankList').innerHTML = urut.map((n,i) => `
+    <div class="rank-row${i < TOP_N_BEBAS ? ' bebas' : ''}">
+      <span>${i+1}. ${n}${i < TOP_N_BEBAS ? '<span class="rank-badge">🎓 BEBAS</span>' : ''}</span>
+      <span>${pemain[n].posisi} / ${MAX_SKOR} poin</span>
+    </div>
+  `).join('');
+  hasilAkhirRanking = urut.map(n => ({ nama: n, skor: pemain[n].posisi }));
+  channel.send({ type:'broadcast', event:'game_selesai', payload:{ ranking: hasilAkhirRanking, topN: TOP_N_BEBAS, maxSkor: MAX_SKOR } });
 }
+document.getElementById('btnUnduhHasil').addEventListener('click', () => {
+  let csv = 'Peringkat,Nama,Skor,Bebas Ulangan Tambahan\n';
+  hasilAkhirRanking.forEach((r,i) => { csv += `${i+1},"${r.nama.replace(/"/g,'""')}",${r.skor},${i < TOP_N_BEBAS ? 'YA' : ''}\n`; });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `hasil-balapan-sains-kelas8-${kode}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+document.getElementById('btnRoomBaru').addEventListener('click', () => {
+  document.getElementById('viewWinner').classList.add('hidden');
+  document.getElementById('viewLobby').classList.remove('hidden');
+  initRoom();
+});
+initRoom();
 </script>
 </body>
 </html>
