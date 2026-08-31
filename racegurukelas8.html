@@ -103,7 +103,7 @@
   </div>
   <!-- ===== LOBBY ===== -->
   <div class="card" id="viewLobby">
-    <p style="color:var(--ink-soft); margin-top:0;">Siswa buka <b>race-siswa-kelas8.html</b> di HP masing-masing, masukkan kode di atas dan nama mereka. 50 soal · 🎓 10 skor tertinggi bebas ulangan tambahan.</p>
+    <p style="color:var(--ink-soft); margin-top:0;">Siswa buka <b>race-siswa-kelas8.html</b> di HP masing-masing, masukkan kode di atas dan nama mereka. 50 soal · 🎓 <span id="infoTopN">10</span> skor tertinggi bebas ulangan tambahan.</p>
     <h3 style="margin-bottom:6px;">Peserta bergabung (<span id="jumlahPeserta">0</span>)</h3>
     <div class="lobby-list" id="lobbyList"></div>
     <button class="btn btn-primary" id="btnMulai" disabled>Mulai Balapan 🏁</button>
@@ -150,7 +150,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_6IvELi6Gpp7OtZxTTFaTpA_iE5n8IMZ";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const DURASI_RONDE = 12;     // detik per soal (dipersingkat supaya 50 soal muat <30 menit)
 const JEDA_HASIL   = 5;      // detik jeda tampil kunci jawaban sebelum lanjut otomatis
-const TOP_N_BEBAS  = 15;     // jumlah skor tertinggi yang bebas ulangan tambahan
+const TOP_N_BEBAS  = 10;     // jumlah skor tertinggi yang bebas ulangan tambahan
 /* =========================================================================
    BANK SOAL — IPA Kelas 8: Sistem Pencernaan & Peredaran Darah
    Topik: Makanan, Kandungan Zat Gizi, Sistem Pencernaan, Sistem Peredaran
@@ -432,6 +432,7 @@ document.getElementById('btnRoomBaru').addEventListener('click', () => {
   document.getElementById('viewLobby').classList.remove('hidden');
   initRoom();
 });
+document.getElementById('infoTopN').textContent = TOP_N_BEBAS;
 initRoom();
 </script>
 </body>
